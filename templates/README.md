@@ -9,7 +9,7 @@ This folder holds the **FilmScriptWriter** starter template used when:
 
 | File | Description |
 |------|-------------|
-| `FilmScriptWriter-Starter.fountain` | Full starter with Fountain + outline examples |
+| `FilmScriptWriter-Starter.fountain` | Factory starter: Fountain overview + three-act / sequence outline |
 
 ## Important
 

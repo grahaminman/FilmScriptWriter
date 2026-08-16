@@ -1,100 +1,176 @@
-Title: FilmScriptWriter Starter Template
+Title: {Project}
 Credit: Written by
-Author: Your Name
+Author: {Writer}
 Source: Based on original idea
-Draft date: 2026-01-01
+Draft date: {Date}
 Contact:
-  your.email@example.com
+  {Email}
 
-# Getting started
+[[ HOW TO USE THIS FILE
+Replace {Project}, {Writer}, {Date}, {Email} on the title page.
+Keep the Act / Sequence headings — they build the outline.
+Write scenes under the sequence they belong to.
+[[Notes]] do not print. Action and dialogue do.
+Delete this note when you no longer need it. ]]
 
-= This file is a *template*. When you save your work, use Save As so this original stays available.
+/* FOUNTAIN CHEAT (does not print)
 
-[[Notes like this are Fountain comments and do not appear in the PDF.]]
+Title page     Key: value at the very top. Blank line ends it.
+Scene heading  INT. PLACE - SPECIFIC - DAY
+               EXT.  EST.  I/E.  INT./EXT.
+Forced slug    .TEN YEARS LATER
+Action         What we see and hear. Present tense.
+Forced action  !THIS STAYS ACTION
+Character      NAME in capitals, own line, after a blank line
+Forced name    @McKenzie
+Extensions     NAME (V.O.)  (O.S.)  (CONT'D)  (INTO PHONE)
+Parenthetical  (under her breath) — one short phrase
+Dialogue       Spoken words. No quotation marks.
+Dual dialogue  Second name ends with ^
+Lyrics         ~line of song
+Emphasis       *italics*  **bold**  ***both***
+Transition     CUT TO:   or force with >SMASH CUT TO:
+Centred        >THE END<
+Note           [[ reminder — not in the PDF ]]
+Boneyard       /* cut text */
+Section        # Act    ## Sequence    ### Beat
+Synopsis       = one-line purpose of the section or scene
+Page break     ===
 
-/* Boneyard / draft scratch — also omitted from export
-   Use this for lines you are not ready to cut completely. */
+Blank line between elements. If two things stick, press Enter twice.
+*/
 
-INT. WRITER'S ROOM - DAY
+FADE IN:
 
-A corkboard full of index cards. Soft laptop GLOW. Coffee steam rises.
+# ACT ONE
 
-THE WRITER sits, fingers hovering over the keys.
+= Ordinary world. We meet the people. Something happens that they cannot ignore. The act ends when they are locked into the story (~page 25 of a 110-page feature; earlier in a short).
 
-WRITER
-(to self)
-Start with a scene heading. Then action. Then people talking.
+## Set Up
 
-They type. The screen fills with words.
+= Who are they? What do they already want? What must they not lose?
 
-CUT TO:
+[[ SET UP
+Not a scene yet — the job of the first pages.
+Show the world as it is, then crack it.
+Want (what they chase) is not the same as need (what they must learn). ]]
 
-EXT. CITY STREET - CONTINUOUS
+## Sequence 1
 
-Rain-slick asphalt. Neon reflections. Foot traffic moves past.
+= A sequence is a run of scenes with one job. Scenes are the steps. Sequences live inside acts. Acts live inside the story.
 
-.A FORCED SCENE HEADING
-(Scene headings can also be forced with a leading period.)
+[[ SCENE HEADINGS
+General → specific, left to right.
+INT. or EXT. · CITY · BUILDING · ROOM · TIME
+INT. = inside. EXT. = outside. EST. = a wide view. I/E. = both (a car, a doorway).
+New heading when the place or the time changes.
+Fountain prints the line in CAPITALS. ]]
 
-ACTION lines are normal paragraphs. They describe what we *see* and *hear*.
+INT. LONDON - WATERLOO - PLATFORM 2 - DAY
 
-You can emphasise with *italics*, **bold**, or ***both*** in Fountain.
+A board FLICKERS. Late commuters hug the yellow line. A paper coffee cup rolls, stops against a shoe.
 
-CHARACTER CUES are UPPERCASE on their own line after a blank line.
+MAYA (30s) does not pick it up. She watches the far tunnel. One bag. No phone out.
 
-ALICE
-Hello. This is dialogue.
+[[ ACTION
+Show it. Do not explain it.
+Present tense. What a camera can see or a mic can hear.
+Three or four lines, then a breath. One beat per sentence.
+If you cannot film the word "and", cut the word "and".
+First time we meet someone, their NAME is in CAPITALS. ]]
 
-BOB (V.O.)
-(wry)
-And this is a parenthetical under a character with a voice-over extension.
+A WHISTLE. The crowd tightens.
 
-ALICE
-We can go back and forth.
+GUARD (O.S.)
+Mind the gap.
 
-BOB
-For as long as the scene needs.
+MAYA
+(to the empty track)
+Don't you start.
 
->SMASH CUT TO:
+[[ SPEECH
+Character cue: NAME alone, capitals, after a blank line.
+(O.S.) they are in the scene, not in shot. (V.O.) we hear them, may not see them speak.
+Parenthetical: how the line is said, or a tiny bit of business. One phrase.
+Dialogue: no quotation marks. If they would not say it, cut it.
+Same spelling of the name every time. ]]
 
-INT. COFFEE SHOP - NIGHT
+The train SHOVES in. Doors open. Maya does not move.
 
-Same city, later. Warmer light. Soft MUSIC under.
+JON (40s, cheap suit, wrong platform energy) stops beside her.
 
-# Dual dialogue example
+JON
+You getting on, or posing?
 
-= Place a caret ^ after the second character name for dual dialogue in full Fountain tools.
+MAYA
+You first.
 
-ALICE
-I thought you'd never ask.
+They speak over each other as the alarm BEEPS.
 
-BOB ^
-I was waiting for the right moment.
+MAYA
+I said—
 
-# Transitions and centred text
+JON ^
+After you.
 
-FADE TO:
+[[ Dual dialogue: put ^ after the *second* character name. Preview prints the two speeches side by side. ]]
+
+She steps on. He does not. The doors close on her look.
+
+>CUT TO:
+
+## Sequence 2
+
+= Pressure arrives. The first problem that will not wait.
+
+[[ Write the next scene heading here.
+A new INT./EXT. line is usually enough — you do not need CUT TO: every time.
+Use a transition when the *way* you leave the scene matters. ]]
+
+## Sequence 3: The Cozzers
+
+= The law, or the thing that acts like the law, enters the frame. No going back to the old life.
+
+# ACT TWO
+
+= They pursue a plan. It works, then it costs. The middle is not "more stuff" — it is rising pressure with a turn in the centre.
+
+## Sequence 4: The Alibi
+
+= The story they will tell if this goes wrong. Plant it before you need it.
+
+## Sequence 5: The Plan
+
+= The job as they understand it. Roles. Timing. What they think success looks like.
+
+# Midpoint
+
+= The story flips. A false victory or a hard truth. After this, the old plan is dead even if they have not admitted it yet. Around the middle of the page count.
+
+## Sequence 6: The Robbery
+
+= The plan meets the world. Something they did not budget for walks in.
+
+# ACT THREE
+
+= Payoff. No new machinery unless you planted it. They choose, they pay, the world is different.
+
+## Sequence 7: The Escape
+
+= Getting out is harder than getting in. The clock is still running.
+
+## Sequence 8: The Set Up
+
+= Who was playing whom. The bill comes due.
+
+## Sequence 9
+
+= Aftermath. The personal cost, not another set-piece.
+
+## Sequence 10
+
+= Last image. Echo the first image if you can. Then stop.
+
+>FADE OUT.
 
 >THE END<
-
-# Markdown-style extras Fountain understands
-
-## Sections use hash marks
-### Nested outline levels help you organise
-
-= Synopses start with an equals sign (single, not a page break).
-
-Page breaks look like this:
-
-===
-
-INT. EPILOGUE - DAY
-
-One last beat. Keep writing. Save often.
-
-WRITER
-(smiling)
-And when you're done... Save As under a new name.
-The starter template will still be here next time.
-
-FADE OUT.
