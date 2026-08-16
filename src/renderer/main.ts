@@ -9,6 +9,7 @@ import { createPreview, applyPageCssVars, type PreviewHandle } from './preview/p
 import { createSyntaxSettingsPanel, type SyntaxSettingsHandle } from './ui/syntax-settings'
 import { createHelpPanel, type HelpPanelHandle } from './ui/help-panel'
 import { createWorkspaceSettingsPanel } from './ui/workspace-settings'
+import { createNewProjectDialog } from './ui/new-project-dialog'
 import { createIndexSidebar } from './ui/index-sidebar'
 import { createNotesSidebar } from './ui/notes-sidebar'
 import { createSyntaxCoachBar } from './ui/syntax-coach-bar'
@@ -132,6 +133,7 @@ let welcomeDismissed = false
 let syntaxSettings: SyntaxSettingsHandle
 let helpPanel: HelpPanelHandle
 let workspaceSettings: ReturnType<typeof createWorkspaceSettingsPanel>
+let newProjectDialog: ReturnType<typeof createNewProjectDialog>
 let indexSidebar: ReturnType<typeof createIndexSidebar>
 let notesSidebar: ReturnType<typeof createNotesSidebar>
 let indexVisible = true
@@ -260,6 +262,7 @@ function applyLocale(next: LocaleCode): void {
   syntaxSettings?.setLocale(locale)
   helpPanel?.setLocale(locale)
   workspaceSettings?.setLocale(locale)
+  newProjectDialog?.setLocale(locale)
   indexSidebar?.setLocale(locale)
   notesSidebar?.setLocale(locale)
   updateWelcomeCopy()
@@ -718,21 +721,74 @@ async function doNewUntitled(): Promise<void> {
   showWelcome(false)
 }
 
+async function confirmLeaveWorkspace(): Promise<boolean> {
+  if (!anyDirty()) return true
+  const choice = await window.api.confirmDiscard()
+  if (choice === 'cancel') return false
+  if (choice === 'save') {
+    for (const doc of docs.filter((d) => d.dirty)) {
+      const ok = await saveDoc(doc)
+      if (!ok) return false
+    }
+  }
+  return true
+}
+
+async function resetWorkspace(): Promise<void> {
+  project = null
+  notesDocId = null
+  docs = []
+  notesSidebar.setTitle('')
+  const untitled = addDoc({
+    path: null,
+    name: t(locale, 'status.untitled'),
+    content: '',
+    dirty: false,
+    kind: 'fountain',
+    isCurrentDraft: false
+  })
+  const pane = panes[0]
+  if (pane) loadDocIntoPane(pane, untitled)
+  while (panes.length > 1) {
+    const extra = panes.pop()
+    if (!extra) break
+    extra.editor.destroy()
+    extra.root.remove()
+  }
+  splitCount = 1
+  void window.api.setPreferences({ lastProjectPath: '' })
+  renderTabs()
+  refreshPreviewAndIndex()
+  updateTitle()
+}
+
 async function doNewProject(): Promise<void> {
-  if (!el.firstRunFolder.value) {
+  let folder = el.firstRunFolder.value.trim()
+  if (!folder) {
     const picked = await window.api.chooseProjectsFolder()
     if (picked.cancelled || !picked.path) return
-    el.firstRunFolder.value = picked.path
+    folder = picked.path
+    el.firstRunFolder.value = folder
   }
-  const name = el.firstRunName.value.trim() || window.prompt(t(locale, 'firstRun.projectName')) || ''
-  if (!name.trim()) return
-  const result = await window.api.createProject(name.trim(), el.firstRunFolder.value)
+  const spec = await newProjectDialog.ask({ folder, locale })
+  if (!spec) return
+  el.firstRunFolder.value = spec.folder
+  el.firstRunName.value = ''
+  if (!(await confirmLeaveWorkspace())) return
+  const result = await window.api.createProject(spec.name, spec.folder)
   if (result.cancelled || !result.project) return
   await loadProject(result.project)
   showWelcome(false)
 }
 
+async function doCloseProject(): Promise<void> {
+  if (!(await confirmLeaveWorkspace())) return
+  await resetWorkspace()
+  showWelcome(true, true)
+}
+
 async function doOpenProject(): Promise<void> {
+  if (!(await confirmLeaveWorkspace())) return
   const result = await window.api.openProject()
   if (result.cancelled || !result.project) return
   await loadProject(result.project)
@@ -843,9 +899,13 @@ async function doImport(mode: 'draft' | 'notes'): Promise<void> {
   refreshPreviewAndIndex()
 }
 
-function showWelcome(show: boolean): void {
-  if (show && !welcomeDismissed) el.welcome.classList.remove('hidden')
-  else el.welcome.classList.add('hidden')
+function showWelcome(show: boolean, force = false): void {
+  if (show && (force || !welcomeDismissed)) {
+    if (force) welcomeDismissed = false
+    el.welcome.classList.remove('hidden')
+  } else {
+    el.welcome.classList.add('hidden')
+  }
 }
 
 function setPreviewVisible(visible: boolean): void {
@@ -964,6 +1024,9 @@ function handleMenuAction(action: string): void {
   switch (action) {
     case 'file:new-project':
       void doNewProject()
+      break
+    case 'file:close-project':
+      void doCloseProject()
       break
     case 'file:new':
       void doNewUntitled()
@@ -1155,6 +1218,7 @@ async function bootstrap(): Promise<void> {
     (next) => applySyntaxColors(next.preset, next.custom, true)
   )
   helpPanel = createHelpPanel(document.getElementById('app') as HTMLElement)
+  newProjectDialog = createNewProjectDialog(document.getElementById('app') as HTMLElement)
   workspaceSettings = createWorkspaceSettingsPanel(document.getElementById('app') as HTMLElement, {
     onChooseFolder: async () => {
       const r = await window.api.chooseProjectsFolder()
