@@ -1,5 +1,5 @@
 /**
- * Workspace settings: projects base folder + autosave interval.
+ * Workspace settings: projects folder, autosave, and new-project template.
  */
 
 import { t } from '../../shared/i18n/locales'
@@ -32,11 +32,12 @@ export function createWorkspaceSettingsPanel(
     projectsBaseFolder: '',
     autosaveMinutes: 5
   }
+  let statusTimer: ReturnType<typeof setTimeout> | null = null
 
   const backdrop = document.createElement('div')
   backdrop.className = 'settings-backdrop hidden'
   backdrop.innerHTML = `
-    <div class="settings-panel" role="dialog" aria-labelledby="ws-title">
+    <div class="settings-panel settings-panel-wide" role="dialog" aria-labelledby="ws-title">
       <header class="settings-header">
         <h2 id="ws-title">Settings</h2>
         <button type="button" class="settings-close" id="ws-close" aria-label="Close">×</button>
@@ -51,6 +52,17 @@ export function createWorkspaceSettingsPanel(
           <span id="ws-autosave-label">Autosave</span>
           <select id="ws-autosave"></select>
         </label>
+
+        <h3 class="settings-subhead" id="ws-template-title">New project template</h3>
+        <p class="settings-hint" id="ws-template-hint"></p>
+        <p class="settings-path" id="ws-template-path"></p>
+        <textarea id="ws-template-editor" class="settings-template-editor" spellcheck="false"></textarea>
+        <div class="settings-actions settings-actions-wrap">
+          <button type="button" id="ws-template-choose">Use my file…</button>
+          <button type="button" id="ws-template-save">Save template</button>
+          <button type="button" id="ws-template-revert">Revert to original</button>
+        </div>
+        <p class="settings-status" id="ws-template-status" hidden></p>
       </div>
     </div>
   `
@@ -63,6 +75,14 @@ export function createWorkspaceSettingsPanel(
   const autosaveLabel = backdrop.querySelector('#ws-autosave-label') as HTMLElement
   const autosaveSel = backdrop.querySelector('#ws-autosave') as HTMLSelectElement
   const closeBtn = backdrop.querySelector('#ws-close') as HTMLButtonElement
+  const tmplTitle = backdrop.querySelector('#ws-template-title') as HTMLElement
+  const tmplHint = backdrop.querySelector('#ws-template-hint') as HTMLElement
+  const tmplPath = backdrop.querySelector('#ws-template-path') as HTMLElement
+  const tmplEditor = backdrop.querySelector('#ws-template-editor') as HTMLTextAreaElement
+  const tmplChoose = backdrop.querySelector('#ws-template-choose') as HTMLButtonElement
+  const tmplSave = backdrop.querySelector('#ws-template-save') as HTMLButtonElement
+  const tmplRevert = backdrop.querySelector('#ws-template-revert') as HTMLButtonElement
+  const tmplStatus = backdrop.querySelector('#ws-template-status') as HTMLElement
 
   const fillAutosave = (): void => {
     autosaveSel.innerHTML = ''
@@ -83,12 +103,40 @@ export function createWorkspaceSettingsPanel(
     folderLabel.textContent = t(locale, 'settings.baseFolder')
     browseBtn.textContent = t(locale, 'settings.changeFolder')
     autosaveLabel.textContent = t(locale, 'settings.autosave')
+    tmplTitle.textContent = t(locale, 'settings.template')
+    tmplHint.textContent = t(locale, 'settings.templateHint')
+    tmplChoose.textContent = t(locale, 'settings.templateChoose')
+    tmplSave.textContent = t(locale, 'settings.templateSave')
+    tmplRevert.textContent = t(locale, 'settings.templateRevert')
     fillAutosave()
+  }
+
+  const showStatus = (message: string): void => {
+    tmplStatus.hidden = false
+    tmplStatus.textContent = message
+    if (statusTimer) clearTimeout(statusTimer)
+    statusTimer = setTimeout(() => {
+      tmplStatus.hidden = true
+    }, 3500)
+  }
+
+  const applyTemplate = (info: {
+    userPath: string
+    content: string
+  }): void => {
+    tmplPath.textContent = info.userPath
+    tmplEditor.value = info.content
+  }
+
+  const loadTemplate = async (): Promise<void> => {
+    const result = await window.api.getTemplate()
+    if (!result.cancelled && result.template) applyTemplate(result.template)
   }
 
   const sync = (): void => {
     folderInput.value = state.projectsBaseFolder
     fillAutosave()
+    void loadTemplate()
   }
 
   backdrop.addEventListener('click', (e) => {
@@ -108,6 +156,29 @@ export function createWorkspaceSettingsPanel(
     const minutes = Number(autosaveSel.value)
     state.autosaveMinutes = minutes
     handlers.onChange({ autosaveMinutes: minutes })
+  })
+  tmplSave.addEventListener('click', () => {
+    void window.api.saveTemplate(tmplEditor.value).then((result) => {
+      if (result.cancelled || !result.template) return
+      applyTemplate(result.template)
+      showStatus(t(locale, 'settings.templateSaved'))
+    })
+  })
+  tmplChoose.addEventListener('click', () => {
+    void window.api.chooseTemplateFile().then((result) => {
+      if (result.cancelled || !result.template) return
+      applyTemplate(result.template)
+      showStatus(t(locale, 'settings.templateSaved'))
+    })
+  })
+  tmplRevert.addEventListener('click', () => {
+    const ok = window.confirm(t(locale, 'settings.templateRevert') + '?')
+    if (!ok) return
+    void window.api.revertTemplate().then((result) => {
+      if (result.cancelled || !result.template) return
+      applyTemplate(result.template)
+      showStatus(t(locale, 'settings.templateReverted'))
+    })
   })
 
   function close(): void {

@@ -38,6 +38,12 @@ import {
 } from './project-service'
 import { updateMenuState } from './menu'
 import { checkForUpdatesManual } from './auto-updater'
+import {
+  chooseAndInstallUserTemplate,
+  getTemplateInfo,
+  revertUserTemplate,
+  saveUserTemplate
+} from './template-service'
 
 function mainWindow(): BrowserWindow | null {
   const wins = BrowserWindow.getAllWindows()
@@ -346,6 +352,57 @@ export function registerIpcHandlers(): void {
       }
     }
   )
+
+  ipcMain.handle(IPC.TEMPLATE_GET, async () => {
+    try {
+      return { cancelled: false, template: await getTemplateInfo() }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_SAVE, async (_event, content: string) => {
+    try {
+      const template = await saveUserTemplate(content)
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_REVERT, async () => {
+    try {
+      const template = await revertUserTemplate()
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_CHOOSE, async () => {
+    const win = mainWindow()
+    if (!win) return { cancelled: true }
+    try {
+      const template = await chooseAndInstallUserTemplate(win)
+      if (!template) return { cancelled: true }
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(win, err instanceof Error ? err.message : String(err))
+      return { cancelled: true, error: String(err) }
+    }
+  })
 
   ipcMain.handle(IPC.PROJECT_OPEN_FILE, async () => {
     const win = mainWindow()

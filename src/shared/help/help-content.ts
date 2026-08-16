@@ -136,12 +136,15 @@ The status bar shows “Autosaved” after a successful pass. You can still save
   {
     id: 'settings',
     title: 'Settings',
-    tags: ['settings', 'base folder', 'autosave', 'theme'],
+    tags: ['settings', 'base folder', 'autosave', 'theme', 'template'],
     body: `Settings (and first-run) control:
 
 • Projects base folder — where every new project is created
 • Autosave interval
+• New project template — the Fountain file copied into every new project
 • Theme, language, font size, syntax colours, preview follow, typewriter mode
+
+The template lives in Documents/FilmScriptWriter/templates/. Edit it in Settings, or choose one of your own .fountain files. A factory copy is kept so Revert to original can restore the starter.
 
 Changing the base folder does not move existing projects. Open them with File → Open Project… or move the folders yourself.`
   },

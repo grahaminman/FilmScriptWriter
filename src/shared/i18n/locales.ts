@@ -71,6 +71,13 @@ export type MessageKey =
   | 'settings.autosave'
   | 'settings.autosaveOff'
   | 'settings.autosaveEvery'
+  | 'settings.template'
+  | 'settings.templateHint'
+  | 'settings.templateChoose'
+  | 'settings.templateSave'
+  | 'settings.templateRevert'
+  | 'settings.templateSaved'
+  | 'settings.templateReverted'
   | 'firstRun.title'
   | 'firstRun.body'
   | 'firstRun.chooseFolder'
@@ -184,13 +191,21 @@ const en_GB: Messages = {
   'menu.help.about': 'About',
   'menu.help.guide': 'Help and Instructions…',
   'menu.help.checkUpdates': 'Check for Updates…',
-  'menu.settings.workspace': 'Projects and Autosave…',
+  'menu.settings.workspace': 'Projects, Autosave and Template…',
   'settings.title': 'Settings',
   'settings.baseFolder': 'Projects folder',
   'settings.changeFolder': 'Change…',
   'settings.autosave': 'Autosave',
   'settings.autosaveOff': 'Off',
   'settings.autosaveEvery': 'Every {n} minutes',
+  'settings.template': 'New project template',
+  'settings.templateHint':
+    'This Fountain file is copied into every new project. Edit it here, or choose one of your own. A factory copy is kept so you can revert.',
+  'settings.templateChoose': 'Use my file…',
+  'settings.templateSave': 'Save template',
+  'settings.templateRevert': 'Revert to original',
+  'settings.templateSaved': 'Template saved. New projects will use this file.',
+  'settings.templateReverted': 'Template restored to the original starter.',
   'firstRun.title': 'Where should your projects live?',
   'firstRun.body':
     'Choose a base folder for every screenplay. Each project gets its own folder. You can change this later in Settings.',
@@ -309,13 +324,21 @@ const es_PY: Messages = {
   'menu.help.about': 'Acerca de',
   'menu.help.guide': 'Ayuda e instrucciones…',
   'menu.help.checkUpdates': 'Buscar actualizaciones…',
-  'menu.settings.workspace': 'Proyectos y autoguardado…',
+  'menu.settings.workspace': 'Proyectos, autoguardado y plantilla…',
   'settings.title': 'Ajustes',
   'settings.baseFolder': 'Carpeta de proyectos',
   'settings.changeFolder': 'Cambiar…',
   'settings.autosave': 'Autoguardado',
   'settings.autosaveOff': 'Desactivado',
   'settings.autosaveEvery': 'Cada {n} minutos',
+  'settings.template': 'Plantilla de proyecto nuevo',
+  'settings.templateHint':
+    'Este archivo Fountain se copia en cada proyecto nuevo. Edítelo aquí o elija el suyo. Se guarda una copia de fábrica para revertir.',
+  'settings.templateChoose': 'Usar mi archivo…',
+  'settings.templateSave': 'Guardar plantilla',
+  'settings.templateRevert': 'Revertir al original',
+  'settings.templateSaved': 'Plantilla guardada. Los proyectos nuevos la usarán.',
+  'settings.templateReverted': 'Plantilla restaurada al modelo original.',
   'firstRun.title': '¿Dónde deben guardarse los proyectos?',
   'firstRun.body':
     'Elija una carpeta base para todos los guiones. Cada proyecto tiene su propia carpeta. Puede cambiarla después en Ajustes.',
@@ -441,6 +464,14 @@ const fr_FR: Messages = {
   'settings.autosave': 'Enregistrement automatique',
   'settings.autosaveOff': 'Désactivé',
   'settings.autosaveEvery': 'Toutes les {n} minutes',
+  'settings.template': 'Modèle de nouveau projet',
+  'settings.templateHint':
+    'Ce fichier Fountain est copié dans chaque nouveau projet. Modifiez-le ici ou choisissez le vôtre. Une copie d’usine permet de rétablir l’original.',
+  'settings.templateChoose': 'Utiliser mon fichier…',
+  'settings.templateSave': 'Enregistrer le modèle',
+  'settings.templateRevert': 'Rétablir l’original',
+  'settings.templateSaved': 'Modèle enregistré. Les nouveaux projets l’utiliseront.',
+  'settings.templateReverted': 'Modèle restauré à partir de l’original.',
   'firstRun.title': 'Où doivent vivre vos projets ?',
   'firstRun.body':
     'Choisissez un dossier de base pour chaque scénario. Chaque projet a son propre dossier. Vous pourrez le changer dans Réglages.',

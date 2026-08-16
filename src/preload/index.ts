@@ -113,6 +113,47 @@ export interface ElectronAPI {
   writeProjectFile: (filePath: string, content: string) => Promise<FileResult>
   openFileInTab: () => Promise<FileResult>
 
+  getTemplate: () => Promise<
+    FileResult & {
+      template?: {
+        userPath: string
+        factoryPath: string
+        content: string
+        factoryAvailable: boolean
+      }
+    }
+  >
+  saveTemplate: (content: string) => Promise<
+    FileResult & {
+      template?: {
+        userPath: string
+        factoryPath: string
+        content: string
+        factoryAvailable: boolean
+      }
+    }
+  >
+  revertTemplate: () => Promise<
+    FileResult & {
+      template?: {
+        userPath: string
+        factoryPath: string
+        content: string
+        factoryAvailable: boolean
+      }
+    }
+  >
+  chooseTemplateFile: () => Promise<
+    FileResult & {
+      template?: {
+        userPath: string
+        factoryPath: string
+        content: string
+        factoryAvailable: boolean
+      }
+    }
+  >
+
   confirmDiscard: () => Promise<'save' | 'discard' | 'cancel'>
   showError: (message: string) => Promise<void>
   showAbout: () => Promise<void>
@@ -179,7 +220,12 @@ const api: ElectronAPI = {
   readProjectFile: (filePath) => ipcRenderer.invoke(IPC.PROJECT_READ_FILE, filePath),
   writeProjectFile: (filePath, content) =>
     ipcRenderer.invoke(IPC.PROJECT_WRITE_FILE, filePath, content),
-  openFileInTab: () => ipcRenderer.invoke(IPC.PROJECT_OPEN_FILE)
+  openFileInTab: () => ipcRenderer.invoke(IPC.PROJECT_OPEN_FILE),
+
+  getTemplate: () => ipcRenderer.invoke(IPC.TEMPLATE_GET),
+  saveTemplate: (content) => ipcRenderer.invoke(IPC.TEMPLATE_SAVE, content),
+  revertTemplate: () => ipcRenderer.invoke(IPC.TEMPLATE_REVERT),
+  chooseTemplateFile: () => ipcRenderer.invoke(IPC.TEMPLATE_CHOOSE)
 }
 
 contextBridge.exposeInMainWorld('api', api)

@@ -683,6 +683,11 @@ body {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
+.settings-panel-wide {
+  width: min(640px, 96vw);
+  max-height: min(88vh, 780px);
+}
+
 .settings-header {
   display: flex;
   align-items: center;
@@ -764,6 +769,46 @@ body {
 .settings-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.settings-actions-wrap {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.settings-subhead {
+  margin: 20px 0 6px;
+  font-size: 13px;
+}
+
+.settings-path {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.settings-template-editor {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--accent);
 }
 
 .settings-actions button {

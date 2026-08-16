@@ -1,21 +1,33 @@
 /**
  * Starter template management.
  *
- * The FilmScriptWriter starter template is:
- *  - Bundled with the app under resources/templates/ (read-only source)
- *  - Mirrored into the user's Documents/FilmScriptWriter/templates/ folder
- *    so it remains visible in the filesystem after packaging
- *  - Never used as the active document path — content is always loaded as
- *    an untitled buffer so Save / Save As cannot overwrite the template
+ * Bundled original  → resources/templates/ (read-only)
+ * Factory copy      → Documents/.../FilmScriptWriter-Starter.factory.fountain
+ *                     kept so Settings can revert
+ * User template     → Documents/.../FilmScriptWriter-Starter.fountain
+ *                     edited in Settings; used for every new project
+ *
+ * New projects always load the user template. File → Save will not write
+ * to the bundled or factory files.
  */
 
-import { app } from 'electron'
+import { BrowserWindow, app, dialog } from 'electron'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { pathExists } from './path-exists'
+import { FOUNTAIN_EXTENSION, OPEN_FILTERS } from '../shared/constants/screenplay'
 
 /** Canonical template file name (must match files under resources/templates). */
 export const STARTER_TEMPLATE_NAME = 'FilmScriptWriter-Starter.fountain'
+export const FACTORY_TEMPLATE_NAME = 'FilmScriptWriter-Starter.factory.fountain'
+
+export interface TemplateInfo {
+  userPath: string
+  factoryPath: string
+  bundledPath: string
+  content: string
+  factoryAvailable: boolean
+}
 
 /**
  * Resolve the bundled template path (dev vs packaged).
@@ -54,13 +66,22 @@ export function getUserTemplatePath(): string {
   return path.join(getUserTemplatesDir(), STARTER_TEMPLATE_NAME)
 }
 
+/** Untouched revert copy of the factory starter. */
+export function getFactoryTemplatePath(): string {
+  return path.join(getUserTemplatesDir(), FACTORY_TEMPLATE_NAME)
+}
+
 /**
  * True if `filePath` is the bundled or user starter template (must not be overwritten).
  */
 export function isProtectedTemplatePath(filePath: string | null | undefined): boolean {
   if (!filePath) return false
   const resolved = path.resolve(filePath)
-  const candidates = [getBundledTemplatePath(), getUserTemplatePath()].map((p) => {
+  const candidates = [
+    getBundledTemplatePath(),
+    getFactoryTemplatePath(),
+    getUserTemplatePath()
+  ].map((p) => {
     try {
       return path.resolve(p)
     } catch {
@@ -79,26 +100,38 @@ export async function ensureUserTemplateAvailable(): Promise<string> {
   const dir = getUserTemplatesDir()
   await fs.mkdir(dir, { recursive: true })
 
+  const factory = getFactoryTemplatePath()
+  if (!(await pathExists(factory))) {
+    await writeFromBundledOrFallback(factory)
+  }
+
   const dest = getUserTemplatePath()
-  const already = await pathExists(dest)
-  if (!already) {
-    const src = getBundledTemplatePath()
-    try {
-      await fs.copyFile(src, dest)
-    } catch (err) {
-      // Fall back: write embedded minimal content if bundle path fails
-      console.warn('[template] could not copy bundled template:', err)
-      await fs.writeFile(dest, await loadTemplateContent(), 'utf8')
+  if (!(await pathExists(dest))) {
+    if (await pathExists(factory)) {
+      await fs.copyFile(factory, dest)
+    } else {
+      await writeFromBundledOrFallback(dest)
     }
   }
   return dest
 }
 
+async function writeFromBundledOrFallback(dest: string): Promise<void> {
+  const src = getBundledTemplatePath()
+  try {
+    await fs.copyFile(src, dest)
+  } catch (err) {
+    console.warn('[template] could not copy bundled template:', err)
+    await fs.writeFile(dest, FALLBACK_TEMPLATE, 'utf8')
+  }
+}
+
 /**
- * Read starter template text. Tries bundled path, then user copy, then fallback.
+ * Read the template used for new projects. User file wins so Settings edits apply.
  */
 export async function loadTemplateContent(): Promise<string> {
-  const candidates = [getBundledTemplatePath(), getUserTemplatePath()]
+  await ensureUserTemplateAvailable()
+  const candidates = [getUserTemplatePath(), getFactoryTemplatePath(), getBundledTemplatePath()]
   for (const p of candidates) {
     try {
       const text = await fs.readFile(p, 'utf8')
@@ -109,6 +142,54 @@ export async function loadTemplateContent(): Promise<string> {
   }
   return FALLBACK_TEMPLATE
 }
+
+export async function getTemplateInfo(): Promise<TemplateInfo> {
+  await ensureUserTemplateAvailable()
+  const content = await loadTemplateContent()
+  return {
+    userPath: getUserTemplatePath(),
+    factoryPath: getFactoryTemplatePath(),
+    bundledPath: getBundledTemplatePath(),
+    content,
+    factoryAvailable: await pathExists(getFactoryTemplatePath())
+  }
+}
+
+export async function saveUserTemplate(content: string): Promise<TemplateInfo> {
+  await ensureUserTemplateAvailable()
+  await fs.writeFile(getUserTemplatePath(), content, 'utf8')
+  return getTemplateInfo()
+}
+
+export async function revertUserTemplate(): Promise<TemplateInfo> {
+  await ensureUserTemplateAvailable()
+  const factory = getFactoryTemplatePath()
+  if (await pathExists(factory)) {
+    await fs.copyFile(factory, getUserTemplatePath())
+  } else {
+    await writeFromBundledOrFallback(getUserTemplatePath())
+  }
+  return getTemplateInfo()
+}
+
+export async function chooseAndInstallUserTemplate(
+  win: BrowserWindow
+): Promise<TemplateInfo | null> {
+  await ensureUserTemplateAvailable()
+  const result = await dialog.showOpenDialog(win, {
+    title: 'Choose a Fountain file to use as the new-project template',
+    defaultPath: getUserTemplatesDir(),
+    filters: OPEN_FILTERS,
+    properties: ['openFile']
+  })
+  if (result.canceled || result.filePaths.length === 0) return null
+  const source = result.filePaths[0]
+  const text = await fs.readFile(source, 'utf8')
+  await fs.writeFile(getUserTemplatePath(), text, 'utf8')
+  return getTemplateInfo()
+}
+
+export { FOUNTAIN_EXTENSION }
 
 /**
  * Minimal inline fallback if all filesystem copies are missing.

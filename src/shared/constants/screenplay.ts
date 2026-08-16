@@ -239,7 +239,12 @@ export const IPC = {
   PROJECT_READ_FILE: 'project:read-file',
   PROJECT_WRITE_FILE: 'project:write-file',
   PROJECT_OPEN_FILE: 'project:open-file',
-  PROJECT_RESTORE: 'project:restore'
+  PROJECT_RESTORE: 'project:restore',
+
+  TEMPLATE_GET: 'template:get',
+  TEMPLATE_SAVE: 'template:save',
+  TEMPLATE_REVERT: 'template:revert',
+  TEMPLATE_CHOOSE: 'template:choose'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]
