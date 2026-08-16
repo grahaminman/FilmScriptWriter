@@ -13,21 +13,24 @@ It is shared so testers can try Fountain editing, export, and packaging. It is *
 
 ## Releases
 
+Older tags stay on the Releases page if a newer build misbehaves.
+
 | Tag | Status |
 |-----|--------|
-| **`v1.0.0.0`** | First published **beta** GitHub Release (Linux / macOS / Windows installers) — frozen on `main` |
+| **`v1.0.1`** | Current **beta** GitHub Release (Linux / macOS / Windows) — projects, tabs, notes, Fountain help, editable starter template |
+| **`v1.0.0.0`** | Previous beta — kept available |
 
-Installers: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.0
+Latest: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.1  
+Previous: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.0  
+All: https://github.com/grahaminman/FilmScriptWriter/releases
 
 ## Branches
 
 | Branch | Purpose |
 |--------|---------|
-| `main` | **v1.0.0.0 beta baseline** — what testers should install from Releases |
-| **`v1.0.1`** | **Active development** after v1.0.0.0 (package version `1.0.1`) |
+| `main` | Default branch (v1.0.1 line) |
+| **`v1.0.1`** | Active development (package version `1.0.1`) |
 | `next` | Optional sandbox for larger experiments |
-
-You are on the **`v1.0.1`** line when working on post-beta fixes and features. Merge back to `main` when ready for the next tagged release.
 
 ## Reporting issues
 
