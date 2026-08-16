@@ -27,7 +27,7 @@ Installers: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.
 | **`v1.0.1`** | **Active development** after v1.0.0.0 (package version `1.0.1`) |
 | `next` | Optional sandbox for larger experiments |
 
-Use the **`v1.0.1`** branch for post-beta fixes and features. Merge back to `main` when ready for the next tagged release.
+You are on the **`v1.0.1`** line when working on post-beta fixes and features. Merge back to `main` when ready for the next tagged release.
 
 ## Reporting issues
 

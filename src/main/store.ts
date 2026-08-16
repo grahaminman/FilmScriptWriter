@@ -44,6 +44,29 @@ export interface AppPreferences {
   syntaxColorsCustom: SyntaxColorPalette
   /** Editor body font size in CSS pixels. */
   editorFontSize: number
+  /**
+   * Absolute folder that holds every project directory.
+   * Empty until first-run (or Settings) chooses one.
+   */
+  projectsBaseFolder: string
+  /** True after the user has chosen a projects base folder. */
+  hasCompletedFirstRun: boolean
+  /** Last opened project directory. */
+  lastProjectPath: string
+  /**
+   * Autosave interval in minutes. 0 = off. Default 5.
+   */
+  autosaveMinutes: number
+  /** Index sidebar visible. */
+  indexVisible: boolean
+  /** Notes sidebar visible. */
+  notesVisible: boolean
+  /** Fountain syntax coach bar is retracted to a single line. */
+  syntaxCoachCollapsed: boolean
+  /** Right pane shows the page preview or the full Fountain syntax help. */
+  rightPaneMode: 'preview' | 'help'
+  /** Retractable syntax index inside the Fountain help pane. */
+  fountainHelpIndexCollapsed: boolean
   windowBounds: {
     width: number
     height: number
@@ -64,6 +87,15 @@ const defaults: AppPreferences = {
   syntaxColorPreset: 'default',
   syntaxColorsCustom: { ...SYNTAX_PRESET_DEFAULT },
   editorFontSize: FONT_SIZE_DEFAULT,
+  projectsBaseFolder: '',
+  hasCompletedFirstRun: false,
+  lastProjectPath: '',
+  autosaveMinutes: 5,
+  indexVisible: true,
+  notesVisible: true,
+  syntaxCoachCollapsed: false,
+  rightPaneMode: 'preview',
+  fountainHelpIndexCollapsed: false,
   windowBounds: {
     width: 1400,
     height: 900
@@ -108,8 +140,42 @@ export function getPreferences(): AppPreferences {
     editorFontSize: clampFontSize(
       prefsStore.get('editorFontSize', defaults.editorFontSize)
     ),
+    projectsBaseFolder: prefsStore.get(
+      'projectsBaseFolder',
+      defaults.projectsBaseFolder
+    ),
+    hasCompletedFirstRun: prefsStore.get(
+      'hasCompletedFirstRun',
+      defaults.hasCompletedFirstRun
+    ),
+    lastProjectPath: prefsStore.get('lastProjectPath', defaults.lastProjectPath),
+    autosaveMinutes: clampAutosave(
+      prefsStore.get('autosaveMinutes', defaults.autosaveMinutes)
+    ),
+    indexVisible: prefsStore.get('indexVisible', defaults.indexVisible),
+    notesVisible: prefsStore.get('notesVisible', defaults.notesVisible),
+    syntaxCoachCollapsed: prefsStore.get(
+      'syntaxCoachCollapsed',
+      defaults.syntaxCoachCollapsed
+    ),
+    rightPaneMode:
+      prefsStore.get('rightPaneMode', defaults.rightPaneMode) === 'help'
+        ? 'help'
+        : 'preview',
+    fountainHelpIndexCollapsed: prefsStore.get(
+      'fountainHelpIndexCollapsed',
+      defaults.fountainHelpIndexCollapsed
+    ),
     windowBounds: prefsStore.get('windowBounds', defaults.windowBounds)
   }
+}
+
+const AUTOSAVE_ALLOWED = new Set([0, 1, 2, 5, 10, 15, 30])
+
+function clampAutosave(n: number): number {
+  if (!Number.isFinite(n)) return 5
+  const rounded = Math.round(n)
+  return AUTOSAVE_ALLOWED.has(rounded) ? rounded : 5
 }
 
 export function setPreference<K extends keyof AppPreferences>(
@@ -118,6 +184,8 @@ export function setPreference<K extends keyof AppPreferences>(
 ): AppPreferences {
   if (key === 'editorFontSize') {
     prefsStore.set(key, clampFontSize(value as number) as AppPreferences[K])
+  } else if (key === 'autosaveMinutes') {
+    prefsStore.set(key, clampAutosave(value as number) as AppPreferences[K])
   } else {
     prefsStore.set(key, value)
   }
@@ -129,6 +197,8 @@ export function setPreferences(partial: Partial<AppPreferences>): AppPreferences
     if (v === undefined) continue
     if (k === 'editorFontSize') {
       prefsStore.set('editorFontSize', clampFontSize(v as number))
+    } else if (k === 'autosaveMinutes') {
+      prefsStore.set('autosaveMinutes', clampAutosave(v as number))
     } else {
       prefsStore.set(k as keyof AppPreferences, v as never)
     }

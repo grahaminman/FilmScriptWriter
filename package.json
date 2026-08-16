@@ -1,7 +1,7 @@
 {
   "name": "filmscriptwriter",
-  "version": "1.0.0",
-  "description": "FilmScriptWriter (BETA) \u2014 Fountain screenplay editor for desktop. Early preview.",
+  "version": "1.0.1",
+  "description": "FilmScriptWriter (BETA) \u2014 Fountain screenplay editor for desktop. Development line 1.0.1.",
   "main": "./out/main/index.js",
   "author": {
     "name": "Graham Inman",

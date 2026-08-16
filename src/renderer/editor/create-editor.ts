@@ -48,6 +48,7 @@ export interface EditorHandle {
   openFind: () => void
   openFindReplace: () => void
   getCursorLine: () => number
+  setCursorLine: (line: number) => void
   onCursorLineChange: (cb: (line: number) => void) => () => void
   destroy: () => void
 }
@@ -65,6 +66,8 @@ export interface CreateEditorOptions {
   onChange?: (text: string) => void
   onDirty?: (dirty: boolean) => void
   onCursorLine?: (line: number) => void
+  /** When false, skip Fountain language + line highlighter (markdown / notes). */
+  fountainMode?: boolean
 }
 
 /**
@@ -82,6 +85,7 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
   let fontSize = options.fontSize ?? FONT_SIZE_DEFAULT
   let syntaxOn = options.syntaxHighlighting !== false
   let typewriterOn = options.typewriterMode === true
+  const fountainMode = options.fountainMode !== false
 
   const cursorListeners = new Set<(line: number) => void>()
 
@@ -96,8 +100,7 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
       lineNumbers(),
       highlightActiveLine(),
       history(),
-      fountain(),
-      smartSearch(),
+      ...(fountainMode ? [fountain(), smartSearch()] : []),
       highlightSelectionMatches(),
       keymap.of([
         ...defaultKeymap,
@@ -109,7 +112,7 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
       themeComp.of([]),
       fontComp.of(fontSizeTheme(fontSize)),
       // Line decorations + CSS vars — reliable per-element colours
-      highlightComp.of(syntaxOn ? fountainLineHighlighter() : []),
+      highlightComp.of(syntaxOn && fountainMode ? fountainLineHighlighter() : []),
       typewriterComp.of(typewriterOn ? typewriterExtension() : []),
       placeholderComp.of(
         placeholder(t(locale, 'editor.placeholder' as MessageKey))
@@ -168,7 +171,7 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
       syntaxOn = enabled
       view.dispatch({
         effects: highlightComp.reconfigure(
-          enabled ? fountainLineHighlighter() : []
+          enabled && fountainMode ? fountainLineHighlighter() : []
         )
       })
     },
@@ -193,6 +196,16 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
     },
     getCursorLine: () => {
       return view.state.doc.lineAt(view.state.selection.main.head).number
+    },
+    setCursorLine: (line: number) => {
+      const max = view.state.doc.lines
+      const n = Math.min(max, Math.max(1, Math.round(line)))
+      const l = view.state.doc.line(n)
+      view.dispatch({
+        selection: { anchor: l.from },
+        scrollIntoView: true
+      })
+      view.focus()
     },
     onCursorLineChange: (cb) => {
       cursorListeners.add(cb)

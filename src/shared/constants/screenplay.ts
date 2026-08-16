@@ -151,10 +151,18 @@ export const OPEN_FILTERS = [
     extensions: ['fountain', 'txt']
   },
   {
+    name: 'Project files',
+    extensions: ['fountain', 'txt', 'md', 'pdf']
+  },
+  {
     name: 'All Files',
     extensions: ['*']
   }
 ]
+
+/** Allowed autosave intervals in minutes (0 = off). */
+export const AUTOSAVE_MINUTES_OPTIONS = [0, 1, 2, 5, 10, 15, 30] as const
+export const AUTOSAVE_MINUTES_DEFAULT = 5
 
 export const SAVE_FOUNTAIN_FILTERS = [
   {
@@ -219,7 +227,24 @@ export const IPC = {
   APP_CHECK_UPDATES: 'app:check-updates',
 
   // Export helpers (renderer may ask main to write binary)
-  EXPORT_WRITE_BUFFER: 'export:write-buffer'
+  EXPORT_WRITE_BUFFER: 'export:write-buffer',
+
+  // Projects / workspace
+  PROJECT_GET: 'project:get',
+  PROJECT_CREATE: 'project:create',
+  PROJECT_OPEN: 'project:open',
+  PROJECT_LIST_RECENT: 'project:list-recent',
+  PROJECT_CHOOSE_BASE: 'project:choose-base',
+  PROJECT_IMPORT: 'project:import',
+  PROJECT_READ_FILE: 'project:read-file',
+  PROJECT_WRITE_FILE: 'project:write-file',
+  PROJECT_OPEN_FILE: 'project:open-file',
+  PROJECT_RESTORE: 'project:restore',
+
+  TEMPLATE_GET: 'template:get',
+  TEMPLATE_SAVE: 'template:save',
+  TEMPLATE_REVERT: 'template:revert',
+  TEMPLATE_CHOOSE: 'template:choose'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

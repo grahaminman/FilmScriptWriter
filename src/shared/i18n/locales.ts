@@ -19,7 +19,11 @@ export type MessageKey =
   | 'menu.settings'
   | 'menu.help'
   | 'menu.file.new'
+  | 'menu.file.newProject'
   | 'menu.file.open'
+  | 'menu.file.openProject'
+  | 'menu.file.importDraft'
+  | 'menu.file.importNotes'
   | 'menu.file.save'
   | 'menu.file.saveAs'
   | 'menu.file.quit'
@@ -32,6 +36,13 @@ export type MessageKey =
   | 'menu.edit.find'
   | 'menu.edit.findReplace'
   | 'menu.view.preview'
+  | 'menu.view.syntaxHelp'
+  | 'menu.view.index'
+  | 'menu.view.notes'
+  | 'menu.view.syntaxCoach'
+  | 'menu.view.split1'
+  | 'menu.view.split2'
+  | 'menu.view.split3'
   | 'menu.view.previewFollow'
   | 'menu.view.typewriter'
   | 'menu.view.syntax'
@@ -51,7 +62,44 @@ export type MessageKey =
   | 'menu.language.es_PY'
   | 'menu.language.fr_FR'
   | 'menu.help.about'
+  | 'menu.help.guide'
   | 'menu.help.checkUpdates'
+  | 'menu.settings.workspace'
+  | 'settings.title'
+  | 'settings.baseFolder'
+  | 'settings.changeFolder'
+  | 'settings.autosave'
+  | 'settings.autosaveOff'
+  | 'settings.autosaveEvery'
+  | 'settings.template'
+  | 'settings.templateHint'
+  | 'settings.templateChoose'
+  | 'settings.templateSave'
+  | 'settings.templateRevert'
+  | 'settings.templateSelectAll'
+  | 'settings.templateUnsaved'
+  | 'settings.templateSaved'
+  | 'settings.templateReverted'
+  | 'firstRun.title'
+  | 'firstRun.body'
+  | 'firstRun.chooseFolder'
+  | 'firstRun.projectName'
+  | 'firstRun.create'
+  | 'notes.title'
+  | 'notes.empty'
+  | 'notes.add'
+  | 'index.title'
+  | 'index.search'
+  | 'index.scenes'
+  | 'index.characters'
+  | 'index.notes'
+  | 'index.files'
+  | 'index.empty'
+  | 'help.title'
+  | 'help.search'
+  | 'help.empty'
+  | 'status.autosaved'
+  | 'welcome.firstRun'
   | 'dialog.unsaved.title'
   | 'dialog.unsaved.message'
   | 'dialog.unsaved.save'
@@ -99,8 +147,12 @@ const en_GB: Messages = {
   'menu.language': 'Language',
   'menu.settings': 'Settings',
   'menu.help': 'Help',
-  'menu.file.new': 'New',
-  'menu.file.open': 'Open…',
+  'menu.file.new': 'New Untitled',
+  'menu.file.newProject': 'New Project…',
+  'menu.file.open': 'Open File…',
+  'menu.file.openProject': 'Open Project…',
+  'menu.file.importDraft': 'Import as Current Draft…',
+  'menu.file.importNotes': 'Import as Notes…',
   'menu.file.save': 'Save',
   'menu.file.saveAs': 'Save As…',
   'menu.file.quit': 'Quit',
@@ -113,6 +165,13 @@ const en_GB: Messages = {
   'menu.edit.find': 'Find',
   'menu.edit.findReplace': 'Find and Replace…',
   'menu.view.preview': 'Toggle Preview',
+  'menu.view.syntaxHelp': 'Fountain Syntax Help',
+  'menu.view.index': 'Index Sidebar',
+  'menu.view.notes': 'Notes Sidebar',
+  'menu.view.syntaxCoach': 'Fountain Help Bar',
+  'menu.view.split1': 'One Pane',
+  'menu.view.split2': 'Two Panes',
+  'menu.view.split3': 'Three Panes',
   'menu.view.previewFollow': 'Preview Follows Editor',
   'menu.view.typewriter': 'Typewriter Mode',
   'menu.view.syntax': 'Syntax Highlighting',
@@ -132,7 +191,47 @@ const en_GB: Messages = {
   'menu.language.es_PY': 'Español (Paraguay)',
   'menu.language.fr_FR': 'Français (France)',
   'menu.help.about': 'About',
+  'menu.help.guide': 'Help and Instructions…',
   'menu.help.checkUpdates': 'Check for Updates…',
+  'menu.settings.workspace': 'Projects, Autosave and Template…',
+  'settings.title': 'Settings',
+  'settings.baseFolder': 'Projects folder',
+  'settings.changeFolder': 'Change…',
+  'settings.autosave': 'Autosave',
+  'settings.autosaveOff': 'Off',
+  'settings.autosaveEvery': 'Every {n} minutes',
+  'settings.template': 'New project template',
+  'settings.templateHint':
+    'This Fountain file is copied into every new project. Edit it here, or choose one of your own. A factory copy is kept so you can revert.',
+  'settings.templateChoose': 'Use my file…',
+  'settings.templateSave': 'Save template',
+  'settings.templateRevert': 'Revert to original',
+  'settings.templateSelectAll': 'Select all',
+  'settings.templateUnsaved':
+    'The template has unsaved edits. Close Settings and discard them?',
+  'settings.templateSaved': 'Template saved. New projects will use this file.',
+  'settings.templateReverted': 'Template restored to the original starter.',
+  'firstRun.title': 'Where should your projects live?',
+  'firstRun.body':
+    'Choose a base folder for every screenplay. Each project gets its own folder. You can change this later in Settings.',
+  'firstRun.chooseFolder': 'Choose folder…',
+  'firstRun.projectName': 'Project name',
+  'firstRun.create': 'Create project',
+  'notes.title': 'Notes',
+  'notes.empty': 'No notes yet. Type [[ Note 1]] in the script or add a note here.',
+  'notes.add': 'Add note',
+  'index.title': 'Index',
+  'index.search': 'Search index…',
+  'index.scenes': 'Scenes',
+  'index.characters': 'Characters',
+  'index.notes': 'Notes',
+  'index.files': 'Files',
+  'index.empty': 'Nothing matches.',
+  'help.title': 'Help',
+  'help.search': 'Search help…',
+  'help.empty': 'No articles match that search.',
+  'status.autosaved': 'Autosaved',
+  'welcome.firstRun': 'Set up your projects folder, then name the first screenplay.',
   'dialog.unsaved.title': 'Unsaved Changes',
   'dialog.unsaved.message':
     'You have unsaved changes. Do you want to save them before continuing?',
@@ -158,7 +257,7 @@ const en_GB: Messages = {
     'Start writing your screenplay in Fountain format…\n\nINT. COFFEE SHOP - DAY\n\nA quiet morning. SUNLIGHT streams through the windows.\n\nALICE\n(smiling)\nHello, world.',
   'welcome.title': 'Welcome',
   'welcome.body':
-    'Create a new screenplay or open an existing .fountain file to begin.',
+    'Create a new project, or open a project folder / .fountain file to begin.',
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
   'common.close': 'Close',
@@ -184,8 +283,12 @@ const es_PY: Messages = {
   'menu.language': 'Idioma',
   'menu.settings': 'Ajustes',
   'menu.help': 'Ayuda',
-  'menu.file.new': 'Nuevo',
-  'menu.file.open': 'Abrir…',
+  'menu.file.new': 'Nuevo sin título',
+  'menu.file.newProject': 'Proyecto nuevo…',
+  'menu.file.open': 'Abrir archivo…',
+  'menu.file.openProject': 'Abrir proyecto…',
+  'menu.file.importDraft': 'Importar como borrador actual…',
+  'menu.file.importNotes': 'Importar como notas…',
   'menu.file.save': 'Guardar',
   'menu.file.saveAs': 'Guardar como…',
   'menu.file.quit': 'Salir',
@@ -198,6 +301,13 @@ const es_PY: Messages = {
   'menu.edit.find': 'Buscar',
   'menu.edit.findReplace': 'Buscar y reemplazar…',
   'menu.view.preview': 'Alternar vista previa',
+  'menu.view.syntaxHelp': 'Ayuda de sintaxis Fountain',
+  'menu.view.index': 'Índice',
+  'menu.view.notes': 'Notas',
+  'menu.view.syntaxCoach': 'Barra de ayuda Fountain',
+  'menu.view.split1': 'Un panel',
+  'menu.view.split2': 'Dos paneles',
+  'menu.view.split3': 'Tres paneles',
   'menu.view.previewFollow': 'Vista previa sigue al editor',
   'menu.view.typewriter': 'Modo máquina de escribir',
   'menu.view.syntax': 'Resaltado de sintaxis',
@@ -217,7 +327,47 @@ const es_PY: Messages = {
   'menu.language.es_PY': 'Español (Paraguay)',
   'menu.language.fr_FR': 'Français (France)',
   'menu.help.about': 'Acerca de',
+  'menu.help.guide': 'Ayuda e instrucciones…',
   'menu.help.checkUpdates': 'Buscar actualizaciones…',
+  'menu.settings.workspace': 'Proyectos, autoguardado y plantilla…',
+  'settings.title': 'Ajustes',
+  'settings.baseFolder': 'Carpeta de proyectos',
+  'settings.changeFolder': 'Cambiar…',
+  'settings.autosave': 'Autoguardado',
+  'settings.autosaveOff': 'Desactivado',
+  'settings.autosaveEvery': 'Cada {n} minutos',
+  'settings.template': 'Plantilla de proyecto nuevo',
+  'settings.templateHint':
+    'Este archivo Fountain se copia en cada proyecto nuevo. Edítelo aquí o elija el suyo. Se guarda una copia de fábrica para revertir.',
+  'settings.templateChoose': 'Usar mi archivo…',
+  'settings.templateSave': 'Guardar plantilla',
+  'settings.templateRevert': 'Revertir al original',
+  'settings.templateSelectAll': 'Seleccionar todo',
+  'settings.templateUnsaved':
+    'La plantilla tiene cambios sin guardar. ¿Cerrar Ajustes y descartarlos?',
+  'settings.templateSaved': 'Plantilla guardada. Los proyectos nuevos la usarán.',
+  'settings.templateReverted': 'Plantilla restaurada al modelo original.',
+  'firstRun.title': '¿Dónde deben guardarse los proyectos?',
+  'firstRun.body':
+    'Elija una carpeta base para todos los guiones. Cada proyecto tiene su propia carpeta. Puede cambiarla después en Ajustes.',
+  'firstRun.chooseFolder': 'Elegir carpeta…',
+  'firstRun.projectName': 'Nombre del proyecto',
+  'firstRun.create': 'Crear proyecto',
+  'notes.title': 'Notas',
+  'notes.empty': 'Aún no hay notas. Escriba [[ Note 1]] en el guion o añada una aquí.',
+  'notes.add': 'Añadir nota',
+  'index.title': 'Índice',
+  'index.search': 'Buscar en el índice…',
+  'index.scenes': 'Escenas',
+  'index.characters': 'Personajes',
+  'index.notes': 'Notas',
+  'index.files': 'Archivos',
+  'index.empty': 'Nada coincide.',
+  'help.title': 'Ayuda',
+  'help.search': 'Buscar en la ayuda…',
+  'help.empty': 'Ningún artículo coincide.',
+  'status.autosaved': 'Autoguardado',
+  'welcome.firstRun': 'Elija la carpeta de proyectos y el nombre del primer guion.',
   'dialog.unsaved.title': 'Cambios sin guardar',
   'dialog.unsaved.message':
     'Hay cambios sin guardar. ¿Desea guardarlos antes de continuar?',
@@ -243,7 +393,7 @@ const es_PY: Messages = {
     'Empiece a escribir su guion en formato Fountain…\n\nINT. CAFETERÍA - DÍA\n\nUna mañana tranquila. La LUZ DEL SOL entra por las ventanas.\n\nALICIA\n(sonriendo)\nHola, mundo.',
   'welcome.title': 'Bienvenido',
   'welcome.body':
-    'Cree un guion nuevo o abra un archivo .fountain existente para comenzar.',
+    'Cree un proyecto nuevo o abra una carpeta / archivo .fountain para comenzar.',
   'common.ok': 'Aceptar',
   'common.cancel': 'Cancelar',
   'common.close': 'Cerrar',
@@ -269,8 +419,12 @@ const fr_FR: Messages = {
   'menu.language': 'Langue',
   'menu.settings': 'Réglages',
   'menu.help': 'Aide',
-  'menu.file.new': 'Nouveau',
-  'menu.file.open': 'Ouvrir…',
+  'menu.file.new': 'Nouveau sans titre',
+  'menu.file.newProject': 'Nouveau projet…',
+  'menu.file.open': 'Ouvrir un fichier…',
+  'menu.file.openProject': 'Ouvrir un projet…',
+  'menu.file.importDraft': 'Importer comme brouillon actuel…',
+  'menu.file.importNotes': 'Importer comme notes…',
   'menu.file.save': 'Enregistrer',
   'menu.file.saveAs': 'Enregistrer sous…',
   'menu.file.quit': 'Quitter',
@@ -283,6 +437,13 @@ const fr_FR: Messages = {
   'menu.edit.find': 'Rechercher',
   'menu.edit.findReplace': 'Rechercher et remplacer…',
   'menu.view.preview': 'Basculer l’aperçu',
+  'menu.view.syntaxHelp': 'Aide syntaxe Fountain',
+  'menu.view.index': 'Index',
+  'menu.view.notes': 'Notes',
+  'menu.view.syntaxCoach': 'Barre d’aide Fountain',
+  'menu.view.split1': 'Un volet',
+  'menu.view.split2': 'Deux volets',
+  'menu.view.split3': 'Trois volets',
   'menu.view.previewFollow': 'L’aperçu suit l’éditeur',
   'menu.view.typewriter': 'Mode machine à écrire',
   'menu.view.syntax': 'Coloration syntaxique',
@@ -302,7 +463,47 @@ const fr_FR: Messages = {
   'menu.language.es_PY': 'Español (Paraguay)',
   'menu.language.fr_FR': 'Français (France)',
   'menu.help.about': 'À propos',
+  'menu.help.guide': 'Aide et instructions…',
   'menu.help.checkUpdates': 'Rechercher les mises à jour…',
+  'menu.settings.workspace': 'Projets et enregistrement auto…',
+  'settings.title': 'Réglages',
+  'settings.baseFolder': 'Dossier des projets',
+  'settings.changeFolder': 'Changer…',
+  'settings.autosave': 'Enregistrement automatique',
+  'settings.autosaveOff': 'Désactivé',
+  'settings.autosaveEvery': 'Toutes les {n} minutes',
+  'settings.template': 'Modèle de nouveau projet',
+  'settings.templateHint':
+    'Ce fichier Fountain est copié dans chaque nouveau projet. Modifiez-le ici ou choisissez le vôtre. Une copie d’usine permet de rétablir l’original.',
+  'settings.templateChoose': 'Utiliser mon fichier…',
+  'settings.templateSave': 'Enregistrer le modèle',
+  'settings.templateRevert': 'Rétablir l’original',
+  'settings.templateSelectAll': 'Tout sélectionner',
+  'settings.templateUnsaved':
+    'Le modèle a des modifications non enregistrées. Fermer Réglages et les abandonner ?',
+  'settings.templateSaved': 'Modèle enregistré. Les nouveaux projets l’utiliseront.',
+  'settings.templateReverted': 'Modèle restauré à partir de l’original.',
+  'firstRun.title': 'Où doivent vivre vos projets ?',
+  'firstRun.body':
+    'Choisissez un dossier de base pour chaque scénario. Chaque projet a son propre dossier. Vous pourrez le changer dans Réglages.',
+  'firstRun.chooseFolder': 'Choisir un dossier…',
+  'firstRun.projectName': 'Nom du projet',
+  'firstRun.create': 'Créer le projet',
+  'notes.title': 'Notes',
+  'notes.empty': 'Pas encore de notes. Tapez [[ Note 1]] dans le script ou ajoutez-en ici.',
+  'notes.add': 'Ajouter une note',
+  'index.title': 'Index',
+  'index.search': 'Rechercher dans l’index…',
+  'index.scenes': 'Scènes',
+  'index.characters': 'Personnages',
+  'index.notes': 'Notes',
+  'index.files': 'Fichiers',
+  'index.empty': 'Aucun résultat.',
+  'help.title': 'Aide',
+  'help.search': 'Rechercher dans l’aide…',
+  'help.empty': 'Aucun article ne correspond.',
+  'status.autosaved': 'Enregistré automatiquement',
+  'welcome.firstRun': 'Choisissez le dossier des projets, puis le nom du premier scénario.',
   'dialog.unsaved.title': 'Modifications non enregistrées',
   'dialog.unsaved.message':
     'Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant de continuer ?',
@@ -328,7 +529,7 @@ const fr_FR: Messages = {
     'Commencez à écrire votre scénario au format Fountain…\n\nINT. CAFÉ - JOUR\n\nUn matin calme. La LUMIÈRE DU SOLEIL entre par les fenêtres.\n\nALICE\n(souriante)\nBonjour le monde.',
   'welcome.title': 'Bienvenue',
   'welcome.body':
-    'Créez un nouveau scénario ou ouvrez un fichier .fountain existant pour commencer.',
+    'Créez un nouveau projet, ou ouvrez un dossier / fichier .fountain pour commencer.',
   'common.ok': 'OK',
   'common.cancel': 'Annuler',
   'common.close': 'Fermer',

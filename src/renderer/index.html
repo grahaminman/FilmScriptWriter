@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src 'self' blob: data:"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FilmScriptWriter (Beta)</title>
@@ -13,7 +13,15 @@
     <div id="app">
       <header class="app-toolbar" role="banner">
         <span class="doc-title" id="doc-title">Untitled</span>
+        <span class="project-label" id="project-label"></span>
         <span class="spacer"></span>
+        <div class="toolbar-group" id="toolbar-split" title="Split">
+          <button type="button" id="btn-split-1" aria-label="One pane">1</button>
+          <button type="button" id="btn-split-2" aria-label="Two panes">2</button>
+          <button type="button" id="btn-split-3" aria-label="Three panes">3</button>
+        </div>
+        <button type="button" id="btn-toggle-index" title="Index">Index</button>
+        <button type="button" id="btn-toggle-notes" title="Notes">Notes</button>
         <div class="toolbar-group" id="toolbar-font" title="Font size">
           <button type="button" id="btn-font-dec" aria-label="Decrease font">A−</button>
           <span class="font-size-label" id="font-size-label">14</span>
@@ -22,24 +30,44 @@
         <button type="button" id="btn-find" title="Find">Find</button>
         <button type="button" id="btn-replace" title="Find and Replace">Replace</button>
         <button type="button" id="btn-toggle-preview" title="Toggle preview">Preview</button>
+        <button type="button" id="btn-toggle-syntax-help" title="Fountain syntax help">Syntax</button>
         <button type="button" id="btn-syntax-colors" title="Syntax colours">Colours</button>
+        <button type="button" id="btn-settings" title="Settings">Settings</button>
+        <button type="button" id="btn-help" title="Help">Help</button>
         <button type="button" id="btn-theme" title="Toggle theme">Theme</button>
       </header>
+      <div class="syntax-coach" id="syntax-coach" aria-live="polite"></div>
 
       <main class="workspace" id="workspace">
-        <section class="editor-pane" aria-label="Editor">
-          <div id="editor"></div>
+        <aside class="sidebar index-sidebar" id="index-sidebar" aria-label="Index"></aside>
+        <aside class="sidebar notes-sidebar" id="notes-sidebar" aria-label="Notes"></aside>
+        <section class="center-column" id="center-column">
+          <div class="tab-bar hidden" id="tab-bar" role="tablist"></div>
+          <div class="split-panes" id="split-panes"></div>
         </section>
         <div class="pane-resizer" id="pane-resizer" role="separator" aria-orientation="vertical"></div>
-        <aside class="preview-pane" id="preview-pane" aria-label="Preview"></aside>
+        <aside class="preview-pane" id="preview-pane" aria-label="Preview">
+          <div class="preview-host" id="preview-host"></div>
+          <div class="fountain-help hidden" id="fountain-help"></div>
+        </aside>
 
         <div class="welcome-overlay" id="welcome-overlay">
-          <div class="welcome-card">
+          <div class="welcome-card welcome-card-wide">
             <h1 id="welcome-title">Welcome</h1>
             <p id="welcome-body">Create a new screenplay or open an existing file.</p>
+            <div class="first-run-fields" id="first-run-fields">
+              <label class="field-label" id="first-run-folder-label">Projects folder</label>
+              <div class="folder-row">
+                <input type="text" id="first-run-folder" readonly />
+                <button type="button" id="first-run-browse">Choose folder…</button>
+              </div>
+              <label class="field-label" for="first-run-name" id="first-run-name-label">Project name</label>
+              <input type="text" id="first-run-name" placeholder="MyScript" />
+            </div>
             <div class="welcome-actions">
-              <button type="button" class="primary" id="welcome-new">New</button>
-              <button type="button" id="welcome-open">Open…</button>
+              <button type="button" class="primary" id="welcome-new">New project</button>
+              <button type="button" id="welcome-open">Open project…</button>
+              <button type="button" id="welcome-open-file">Open file…</button>
               <button type="button" id="welcome-dismiss">Close</button>
             </div>
           </div>

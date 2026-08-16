@@ -20,10 +20,30 @@ import {
   setDocumentDirty,
   setDocumentPath,
   showAbout,
-  showError
+  showError,
+  writeKnownFile
 } from './file-service'
+import {
+  chooseProjectsBaseFolder,
+  createProject,
+  defaultProjectsBaseFolder,
+  getProjectsBaseFolder,
+  importIntoProject,
+  listProject,
+  listRecentProjects,
+  openProjectDialog,
+  readProjectFile,
+  tryRestoreLastProject,
+  writeProjectFile
+} from './project-service'
 import { updateMenuState } from './menu'
 import { checkForUpdatesManual } from './auto-updater'
+import {
+  chooseAndInstallUserTemplate,
+  getTemplateInfo,
+  revertUserTemplate,
+  saveUserTemplate
+} from './template-service'
 
 function mainWindow(): BrowserWindow | null {
   const wins = BrowserWindow.getAllWindows()
@@ -115,11 +135,16 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IPC.FILE_SAVE,
-    async (_event, content: string, forceSaveAs = false) => {
+    async (
+      _event,
+      content: string,
+      forceSaveAs = false,
+      explicitPath?: string | null
+    ) => {
       const win = mainWindow()
       if (!win) return { cancelled: true }
       try {
-        const result = await saveFile(win, content, forceSaveAs)
+        const result = await saveFile(win, content, forceSaveAs, explicitPath)
         if (!result) return { cancelled: true }
         updateMenuState(win, { dirty: false, hasPath: true })
         return { cancelled: false, path: result.path }
@@ -214,5 +239,181 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('help:about', async () => {
     const win = mainWindow()
     if (win) await showAbout(win)
+  })
+
+  ipcMain.handle(IPC.PROJECT_GET, async (_event, projectPath?: string) => {
+    const target = projectPath || getPreferences().lastProjectPath
+    if (!target) return null
+    try {
+      return await listProject(target)
+    } catch {
+      return null
+    }
+  })
+
+  ipcMain.handle(IPC.PROJECT_RESTORE, async () => {
+    return tryRestoreLastProject()
+  })
+
+  ipcMain.handle(IPC.PROJECT_CREATE, async (_event, name: string, base?: string) => {
+    const win = mainWindow()
+    try {
+      const snap = await createProject(name, base)
+      if (win) updateMenuState(win, { dirty: false, hasPath: true })
+      return { cancelled: false, project: snap }
+    } catch (err) {
+      await showError(win, err instanceof Error ? err.message : String(err))
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.PROJECT_OPEN, async () => {
+    const win = mainWindow()
+    if (!win) return { cancelled: true }
+    try {
+      const snap = await openProjectDialog(win)
+      if (!snap) return { cancelled: true }
+      return { cancelled: false, project: snap }
+    } catch (err) {
+      await showError(win, err instanceof Error ? err.message : String(err))
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.PROJECT_LIST_RECENT, async () => listRecentProjects())
+
+  ipcMain.handle(IPC.PROJECT_CHOOSE_BASE, async () => {
+    const win = mainWindow()
+    if (!win) return { cancelled: true }
+    const folder = await chooseProjectsBaseFolder(win)
+    if (!folder) return { cancelled: true, path: getProjectsBaseFolder() }
+    return {
+      cancelled: false,
+      path: folder,
+      defaultPath: defaultProjectsBaseFolder()
+    }
+  })
+
+  ipcMain.handle(
+    IPC.PROJECT_IMPORT,
+    async (_event, projectPath: string, mode: 'draft' | 'notes') => {
+      const win = mainWindow()
+      if (!win) return { cancelled: true }
+      try {
+        const result = await importIntoProject(win, projectPath, mode)
+        if (!result) return { cancelled: true }
+        return {
+          cancelled: false,
+          path: result.path,
+          project: result.snapshot
+        }
+      } catch (err) {
+        await showError(win, err instanceof Error ? err.message : String(err))
+        return { cancelled: true, error: String(err) }
+      }
+    }
+  )
+
+  ipcMain.handle(IPC.PROJECT_READ_FILE, async (_event, filePath: string) => {
+    try {
+      const file = await readProjectFile(filePath)
+      return {
+        cancelled: false,
+        path: file.path,
+        content: file.content,
+        kind: file.kind,
+        binaryBase64: file.binary ? file.binary.toString('base64') : undefined
+      }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(
+    IPC.PROJECT_WRITE_FILE,
+    async (_event, filePath: string, content: string) => {
+      try {
+        if (filePath.toLowerCase().endsWith('.fountain') || filePath.toLowerCase().endsWith('.txt')) {
+          await writeKnownFile(filePath, content)
+        } else {
+          await writeProjectFile(filePath, content)
+        }
+        return { cancelled: false, path: filePath }
+      } catch (err) {
+        await showError(
+          mainWindow(),
+          err instanceof Error ? err.message : String(err)
+        )
+        return { cancelled: true, error: String(err) }
+      }
+    }
+  )
+
+  ipcMain.handle(IPC.TEMPLATE_GET, async () => {
+    try {
+      return { cancelled: false, template: await getTemplateInfo() }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_SAVE, async (_event, content: string) => {
+    try {
+      const template = await saveUserTemplate(content)
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_REVERT, async () => {
+    try {
+      const template = await revertUserTemplate()
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(
+        mainWindow(),
+        err instanceof Error ? err.message : String(err)
+      )
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.TEMPLATE_CHOOSE, async () => {
+    const win = mainWindow()
+    if (!win) return { cancelled: true }
+    try {
+      const template = await chooseAndInstallUserTemplate(win)
+      if (!template) return { cancelled: true }
+      return { cancelled: false, template }
+    } catch (err) {
+      await showError(win, err instanceof Error ? err.message : String(err))
+      return { cancelled: true, error: String(err) }
+    }
+  })
+
+  ipcMain.handle(IPC.PROJECT_OPEN_FILE, async () => {
+    const win = mainWindow()
+    if (!win) return { cancelled: true }
+    try {
+      const opened = await openFileDialog(win)
+      if (!opened) return { cancelled: true }
+      return { cancelled: false, content: opened.content, path: opened.path }
+    } catch (err) {
+      await showError(win, err instanceof Error ? err.message : String(err))
+      return { cancelled: true, error: String(err) }
+    }
   })
 }

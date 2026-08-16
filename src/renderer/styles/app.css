@@ -160,6 +160,123 @@ body {
   color: var(--text-muted);
 }
 
+/* ---- Fountain syntax coach (under the toolbar) ---- */
+.syntax-coach {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  max-height: 148px;
+  overflow: hidden;
+  transition: max-height 0.18s ease, padding 0.18s ease;
+}
+
+.syntax-coach.collapsed {
+  align-items: center;
+  max-height: 32px;
+  padding: 4px 12px;
+}
+
+.syntax-coach.collapsed .syntax-coach-body {
+  display: none;
+}
+
+.syntax-coach.collapsed .syntax-coach-mini {
+  display: inline-flex;
+}
+
+.syntax-coach-toggle {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+  margin-top: 2px;
+}
+
+.syntax-coach.collapsed .syntax-coach-toggle {
+  margin-top: 0;
+}
+
+.syntax-coach-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.syntax-coach-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.syntax-coach-kicker {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.syntax-coach-title {
+  font-size: calc(13px * var(--ui-scale, 1));
+}
+
+.syntax-coach-explain,
+.syntax-coach-next {
+  margin: 0 0 4px;
+  font-size: calc(12px * var(--ui-scale, 1));
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.syntax-coach-next {
+  color: var(--text-muted);
+}
+
+.syntax-coach-syntax {
+  margin: 4px 0 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+.syntax-coach-mini {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.syntax-coach.flash .syntax-coach-title {
+  animation: coach-flash 0.35s ease;
+}
+
+@keyframes coach-flash {
+  from {
+    color: var(--accent);
+  }
+  to {
+    color: var(--text);
+  }
+}
+
 /* ---- Main workspace ---- */
 .workspace {
   display: flex;
@@ -192,11 +309,22 @@ body {
 .preview-pane {
   width: 46%;
   min-width: 280px;
-  max-width: 60%;
+  max-width: 70%;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   min-height: 0;
+}
+
+.preview-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-host.hidden {
+  display: none;
 }
 
 .preview-pane.hidden {
@@ -555,6 +683,11 @@ body {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
+.settings-panel-wide {
+  width: min(640px, 96vw);
+  max-height: min(88vh, 780px);
+}
+
 .settings-header {
   display: flex;
   align-items: center;
@@ -638,6 +771,46 @@ body {
   justify-content: flex-end;
 }
 
+.settings-actions-wrap {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.settings-subhead {
+  margin: 20px 0 6px;
+  font-size: 13px;
+}
+
+.settings-path {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.settings-template-editor {
+  width: 100%;
+  min-height: 280px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--accent);
+}
+
 .settings-actions button {
   appearance: none;
   border: 1px solid var(--border);
@@ -652,4 +825,598 @@ body {
 .settings-actions button:hover {
   border-color: var(--accent);
   background: var(--accent-muted);
+}
+
+/* ---- Project / first-run ---- */
+.project-label {
+  font-size: calc(12px * var(--ui-scale, 1));
+  color: var(--text-muted);
+  max-width: 24vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.welcome-card-wide {
+  max-width: 520px;
+  text-align: left;
+}
+
+.first-run-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.first-run-fields.hidden {
+  display: none;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.folder-row {
+  display: flex;
+  gap: 8px;
+}
+
+.folder-row input,
+#first-run-name {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ---- Sidebars ---- */
+.sidebar {
+  width: 220px;
+  min-width: 36px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  min-height: 0;
+}
+
+.sidebar.hidden {
+  display: none;
+}
+
+.sidebar.collapsed {
+  width: 36px;
+  min-width: 36px;
+}
+
+.sidebar.collapsed .sidebar-body,
+.sidebar.collapsed .sidebar-search,
+.sidebar.collapsed .index-filters,
+.sidebar.collapsed .sidebar-sub,
+.sidebar.collapsed .sidebar-add {
+  display: none;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.sidebar-search {
+  margin: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 8px 12px;
+  min-height: 0;
+}
+
+.sidebar-body h3 {
+  margin: 12px 4px 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.sidebar-body ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-body li button {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sidebar-body li button:hover,
+.sidebar-body li button.current {
+  background: var(--accent-muted);
+}
+
+.sidebar-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px;
+  line-height: 1.4;
+}
+
+.sidebar-sub {
+  margin: 0;
+  padding: 4px 10px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.sidebar-add {
+  margin: 8px;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.index-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 8px 8px;
+}
+
+.index-filters button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.index-filters button.active {
+  background: var(--accent-muted);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.note-card {
+  margin-bottom: 10px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.note-card h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.note-card textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px;
+}
+
+/* ---- Center: tabs + split ---- */
+.center-column {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.tab-bar {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px 0;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.tab-bar.hidden {
+  display: none;
+}
+
+.tab-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px 6px 0 0;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.tab-btn .tab-close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.split-panes {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.file-pane {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  min-height: 0;
+  position: relative;
+}
+
+.file-pane:last-child {
+  border-right: none;
+}
+
+.file-pane.focused {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.file-pane .pane-editor,
+.file-pane .pane-pdf {
+  flex: 1;
+  min-height: 0;
+}
+
+.file-pane .pane-editor .cm-editor {
+  height: 100%;
+}
+
+.file-pane .pane-pdf {
+  background: var(--bg);
+}
+
+.file-pane .pane-pdf iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #525659;
+}
+
+.file-pane .pane-pdf.hidden,
+.file-pane .pane-editor.hidden {
+  display: none;
+}
+
+.workspace.preview-hidden #pane-resizer,
+.preview-pane.hidden {
+  display: none;
+}
+
+/* Preview stays on the far right in dual/triple layouts */
+.preview-pane {
+  order: 20;
+}
+
+#pane-resizer {
+  order: 19;
+}
+
+/* ---- Help overlay ---- */
+.help-panel {
+  width: min(860px, 94vw);
+  height: min(78vh, 720px);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.help-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.help-nav {
+  width: 240px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.help-nav input {
+  margin: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.help-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 12px;
+  overflow: auto;
+}
+
+.help-nav li button {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.help-nav li button.active,
+.help-nav li button:hover {
+  background: var(--accent-muted);
+}
+
+.help-article {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 20px 28px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.help-article h3 {
+  margin: 0 0 12px;
+}
+
+.help-article p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+
+.help-empty {
+  color: var(--text-muted);
+  padding: 8px;
+}
+
+/* Old single #editor host is unused; keep harmless */
+#editor {
+  display: none;
+}
+
+.editor-pane {
+  display: none;
+}
+
+/* ---- Fountain syntax help (swaps with preview) ---- */
+.fountain-help {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--surface);
+}
+
+.fountain-help.hidden {
+  display: none;
+}
+
+.fountain-help-doc {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 14px 16px 36px;
+}
+
+.fountain-help-intro h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.fountain-help-intro p {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fountain-help-group {
+  margin: 18px 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fountain-help-topic {
+  margin-bottom: 18px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  scroll-margin-top: 8px;
+}
+
+.fountain-help-topic.active {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.fountain-help-topic h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.fountain-help-topic p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fountain-help-syntax {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.fountain-help-index {
+  width: 220px;
+  min-width: 36px;
+  border-left: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fountain-help-index.collapsed {
+  width: 36px;
+}
+
+.fountain-help-index.collapsed .fountain-help-index-list,
+.fountain-help-index.collapsed .fountain-help-index-head strong {
+  display: none;
+}
+
+.fountain-help-index-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.fountain-help-index-list {
+  flex: 1;
+  overflow: auto;
+  padding: 0 6px 12px;
+}
+
+.fountain-help-index-list h3 {
+  margin: 10px 4px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.fountain-help-index-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fountain-help-index-list button {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fountain-help-index-list button:hover,
+.fountain-help-index-list button.active {
+  background: var(--accent-muted);
+}
+
+.fountain-help-index-list .fh-opt {
+  font-size: 12px;
+}
+
+.fountain-help-index-list code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
 }
