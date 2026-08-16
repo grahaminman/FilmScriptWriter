@@ -13,15 +13,18 @@
 
 ![FilmScriptWriter v1.0.0 Beta](docs/screenshots/FilmScriptWriter-v.1.0.0-Beta.png)
 
-## Features
+## Features (v1.0.1 beta)
 
 | Feature | Description |
 |--------|-------------|
 | **Projects** | First-run asks for a base folder; each screenplay lives in `{base}/{Name}/` |
 | **Draft names** | Current draft is `{Name}-draft-YYYY-MM-DD.fountain` (newest date wins) |
+| **New-project template** | Edit or replace the starter Fountain file in Settings; revert to the factory copy |
 | **Supporting files** | Notes and research as `.md`; PDFs and older drafts open as tabs |
 | **Tabs + split** | Work on more than one file; up to 3 panes side by side |
 | **Preview** | Paginated preview only for the current draft, always on the right |
+| **Fountain help** | Swap the right pane for a full syntax reference; retractable index of every element |
+| **Syntax coach** | Retractable bar under the toolbar follows what you type (notes, boneyard, scenes…) |
 | **Notes sidebar** | `[[ Note 1]]` in the script → `# note 1` in an editable sidebar (`Notes-{title}.md`) |
 | **Index** | Expandable left index: files, scenes, characters, notes (search + filter) |
 | **Autosave** | Default every 5 minutes; change or turn off in Settings |
@@ -45,13 +48,23 @@
 
 | Branch | Use for |
 |--------|---------|
-| `main` | **v1.0.0.0** beta baseline; tagged installers come from here |
-| **`v1.0.1`** | **Active development** (this branch) — package version `1.0.1` |
+| `main` | Default branch — **v1.0.1** beta (merged from the development line) |
+| **`v1.0.1`** | Active development — package version `1.0.1` |
 | `next` | Optional sandbox for larger experiments |
 
 ## Downloads (beta)
 
-**GitHub Release v1.0.0.0:** https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.0
+Still **beta**. Prefer the latest tag; keep an older build if you need to roll back.
+
+**Latest — v1.0.1:** https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.1
+
+| Platform | Asset |
+|----------|--------|
+| Windows | `FilmScriptWriter-1.0.1-Setup.exe` |
+| macOS | `FilmScriptWriter-1.0.1-x64.dmg` / `FilmScriptWriter-1.0.1-arm64.dmg` |
+| Linux | `FilmScriptWriter-1.0.1.AppImage` / `FilmScriptWriter-1.0.1.deb` |
+
+**Previous — v1.0.0.0** (kept available): https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.0
 
 | Platform | Asset |
 |----------|--------|
@@ -59,16 +72,18 @@
 | macOS | `FilmScriptWriter-1.0.0-x64.dmg` / `FilmScriptWriter-1.0.0-arm64.dmg` |
 | Linux | `FilmScriptWriter-1.0.0.AppImage` / `FilmScriptWriter-1.0.0.deb` |
 
+All pre-releases: https://github.com/grahaminman/FilmScriptWriter/releases
+
 ## CI installers (Windows / macOS / Linux)
 
 You do not need your own Mac or Windows machine to **produce** installers.
 
 1. Push to GitHub (this repo)
 2. Open **Actions** → **Build installers (beta)** → **Run workflow**
-3. Optionally enable **create_release** and set tag (e.g. `v1.0.0.0`) to publish a pre-release
+3. Optionally enable **create_release** and set a **new** tag (e.g. `v1.0.1`) — older tags stay published
 4. Download artifacts from the run, or from the GitHub Release page
 
-Or push a version tag: `git tag v1.0.0.0 && git push origin v1.0.0.0`
+Or push a version tag: `git tag v1.0.1 && git push origin v1.0.1`
 
 ## Quick start
 
@@ -208,9 +223,11 @@ On first launch (and whenever **File → New** is used), FilmScriptWriter loads 
 | `templates/FilmScriptWriter-Starter.fountain` | Copy in the project repo for browsing / version control |
 | `Documents/FilmScriptWriter/templates/FilmScriptWriter-Starter.fountain` | User-visible copy installed on first run |
 
-**The template is never overwritten by Save.** Loading it always opens an *untitled* buffer. Use **Save As** to create your own screenplay. The original template remains in the folders above for the next New / first-run.
+**Settings → Projects, Autosave and Template** lets you edit that starter, replace it with your own `.fountain` file, or revert to a kept factory copy. New projects copy the current user template (and stamp the project title).
 
-On subsequent launches, the app reopens the **last file you opened or saved** (if it still exists). If that file is missing, it falls back to the starter template.
+**The factory template is never overwritten by Save.** Loading it as a document always opens an *untitled* buffer. Use **Save As** to create your own screenplay.
+
+On subsequent launches, the app reopens the **last project or file** (if it still exists).
 
 ## Fountain syntax (cheat sheet)
 
@@ -243,8 +260,9 @@ Stored with `electron-store` in the user data directory:
 
 - Theme (`light` | `dark` | `system`)
 - Locale (`en_GB` | `es_PY` | `fr_FR`)
-- Last open/save directory
-- Preview panel visibility
+- Last open/save directory and last project
+- Projects base folder and autosave interval
+- Preview / Fountain help pane, index, notes, syntax coach
 - Window bounds
 
 ## Auto-update
@@ -277,13 +295,18 @@ Packaged builds use `electron-updater` with the `publish` block in `package.json
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl/Cmd+N` | New |
-| `Ctrl/Cmd+O` | Open |
+| `Ctrl/Cmd+N` | New project |
+| `Ctrl/Cmd+Shift+N` | New untitled |
+| `Ctrl/Cmd+O` | Open file |
+| `Ctrl/Cmd+Shift+O` | Open project |
 | `Ctrl/Cmd+S` | Save |
 | `Ctrl/Cmd+Shift+S` | Save As |
 | `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | Undo / Redo |
 | `Ctrl/Cmd+F` | Find |
 | `Ctrl/Cmd+P` | Toggle preview |
+| `Ctrl/Cmd+Shift+P` | Fountain syntax help |
+| `Ctrl/Cmd+/` | Searchable help |
+| `Ctrl/Cmd+1` / `2` / `3` | One / two / three panes |
 
 ## License
 
