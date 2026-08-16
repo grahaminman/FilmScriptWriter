@@ -59,7 +59,7 @@ If two things stick together that should be separate, press Enter twice.`
     group: 'start',
     body: `The very first lines of the file can be a title page — the cover, not the story.
 
-Title: Lust For Life
+Title: MyScript
 Credit: written by
 Author: Your Name
 Source: a true story

@@ -2,7 +2,7 @@
  * Project notes: one markdown file per screenplay title, plus [[tokens]]
  * in the Fountain editor that map to `# heading` sections.
  *
- * Example: project "Lust For Life" → `Notes-lust for life.md`
+ * Example: project "MyScript" → `Notes-myscript.md`
  *          editor token `[[ Note 1]]` → heading `# note 1`
  */
 

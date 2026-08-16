@@ -14,13 +14,13 @@ import {
 
 describe('draft filenames', () => {
   it('formats project-name-draft-date', () => {
-    expect(formatDraftFileName('Lust For Life', '2026-08-16')).toBe(
-      'Lust For Life-draft-2026-08-16.fountain'
+    expect(formatDraftFileName('MyScript', '2026-08-16')).toBe(
+      'MyScript-draft-2026-08-16.fountain'
     )
   })
 
   it('parses ISO and compact draft dates', () => {
-    expect(parseDraftDate('Lust For Life-draft-2026-08-16.fountain')).toBe(
+    expect(parseDraftDate('MyScript-draft-2026-08-16.fountain')).toBe(
       '2026-08-16'
     )
     expect(parseDraftDate('script-draft-20260801.fountain')).toBe('2026-08-01')
@@ -30,18 +30,18 @@ describe('draft filenames', () => {
 
   it('picks the newest dated fountain as current draft', () => {
     const files = [
-      'Lust For Life.fountain',
-      'Lust For Life-draft-2026-07-01.fountain',
-      'Lust For Life-draft-2026-08-16.fountain',
-      'Notes-lust for life.md'
+      'MyScript.fountain',
+      'MyScript-draft-2026-07-01.fountain',
+      'MyScript-draft-2026-08-16.fountain',
+      'Notes-myscript.md'
     ]
     expect(pickCurrentDraft(files)).toBe(
-      'Lust For Life-draft-2026-08-16.fountain'
+      'MyScript-draft-2026-08-16.fountain'
     )
-    expect(isCurrentDraft('Lust For Life-draft-2026-08-16.fountain', files)).toBe(
+    expect(isCurrentDraft('MyScript-draft-2026-08-16.fountain', files)).toBe(
       true
     )
-    expect(isCurrentDraft('Lust For Life.fountain', files)).toBe(false)
+    expect(isCurrentDraft('MyScript.fountain', files)).toBe(false)
   })
 
   it('prefers any dated file over an undated one', () => {
@@ -55,14 +55,14 @@ describe('draft filenames', () => {
   })
 
   it('adds a date when importing as the current draft', () => {
-    expect(importAsCurrentDraftName('Lust For Life', '2026-08-16')).toBe(
-      'Lust For Life-draft-2026-08-16.fountain'
+    expect(importAsCurrentDraftName('MyScript', '2026-08-16')).toBe(
+      'MyScript-draft-2026-08-16.fountain'
     )
   })
 
   it('strips dates when importing as notes', () => {
-    expect(importAsNotesName('Lust For Life-draft-2026-01-02.fountain')).toBe(
-      'Lust For Life.md'
+    expect(importAsNotesName('MyScript-draft-2026-01-02.fountain')).toBe(
+      'MyScript.md'
     )
     expect(importAsNotesName('research.pdf')).toBe('research.pdf')
   })
@@ -72,7 +72,7 @@ describe('draft filenames', () => {
   })
 
   it('sanitises project names', () => {
-    expect(sanitizeProjectName('  Lust / For : Life  ')).toBe('Lust For Life')
+    expect(sanitizeProjectName('  My / Script : Name  ')).toBe('My Script Name')
   })
 
   it('todayIso is a valid date', () => {

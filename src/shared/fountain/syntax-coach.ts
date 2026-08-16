@@ -71,7 +71,7 @@ const TIPS: Record<string, SyntaxCoachTip> = {
   title: {
     id: 'title',
     title: 'Title page',
-    syntax: 'Title: Lust For Life\nCredit: written by\nAuthor: Your Name\nDraft date: 16 August 2026',
+    syntax: 'Title: MyScript\nCredit: written by\nAuthor: Your Name\nDraft date: 16 August 2026',
     explanation:
       'The first lines of a Fountain file can be a title page: a Key, a colon, then the value. A blank line ends the title page and the script itself begins. This is the cover of your screenplay, not the story.',
     next: 'Common keys: Title, Author, Credit, Source, Draft date, Contact. Press Enter twice when you are ready to write the first scene.'

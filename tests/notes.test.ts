@@ -16,7 +16,7 @@ import {
 
 describe('project notes', () => {
   it('names the notes file after the title', () => {
-    expect(notesFileName('Lust For Life')).toBe('Notes-lust for life.md')
+    expect(notesFileName('MyScript')).toBe('Notes-myscript.md')
   })
 
   it('maps [[ Note 1]] to heading note 1', () => {
@@ -44,8 +44,8 @@ describe('project notes', () => {
   })
 
   it('starts a notes file for a title', () => {
-    expect(starterNotesMarkdown('Lust For Life')).toContain('# notes')
-    expect(starterNotesMarkdown('Lust For Life')).toContain('Lust For Life')
+    expect(starterNotesMarkdown('MyScript')).toContain('# notes')
+    expect(starterNotesMarkdown('MyScript')).toContain('MyScript')
   })
 })
 

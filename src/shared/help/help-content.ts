@@ -20,7 +20,7 @@ A project is one screenplay and its supporting files, kept in a folder named aft
 
 To start writing:
 1. Choose the base folder (or accept Documents/FilmScriptWriter/Projects).
-2. Enter a project name, for example Lust For Life.
+2. Enter a project name, for example MyScript.
 3. FilmScriptWriter creates the folder and the first draft file.`
   },
   {
@@ -29,9 +29,9 @@ To start writing:
     tags: ['folder', 'fountain', 'markdown', 'notes', 'draft'],
     body: `Each project lives under your base folder:
 
-  Base folder / Lust For Life /
-    Lust For Life-draft-2026-08-16.fountain   ← current draft
-    Notes-lust for life.md                    ← notes for this title
+  Base folder / MyScript /
+    MyScript-draft-2026-08-16.fountain   ← current draft
+    Notes-myscript.md                    ← notes for this title
     outline.md, research.md, reference.pdf    ← anything else you add
 
 The primary screenplay is always a .fountain file. Supporting files are Markdown (.md) unless they are PDFs or older drafts.
@@ -99,7 +99,7 @@ Assign a file to a pane by focusing the pane, then clicking a tab.`
     title: 'Notes sidebar and [[tokens]]',
     tags: ['notes', 'sidebar', 'token', 'preview'],
     body: `Each project has a notes file named after the title:
-  Lust For Life → Notes-lust for life.md
+  MyScript → Notes-myscript.md
 
 The notes sidebar sits to the left of the editor and can be shown or hidden.
 
