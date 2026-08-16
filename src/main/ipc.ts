@@ -59,7 +59,17 @@ export function registerIpcHandlers(): void {
       const next = setPreferences(partial)
       const win = mainWindow()
       // Rebuild menu when locale/theme changes from renderer
-      if (partial.locale !== undefined || partial.theme !== undefined) {
+      if (
+        partial.locale !== undefined ||
+        partial.theme !== undefined ||
+        partial.indexVisible !== undefined ||
+        partial.notesVisible !== undefined ||
+        partial.syntaxCoachCollapsed !== undefined ||
+        partial.rightPaneMode !== undefined ||
+        partial.previewFollow !== undefined ||
+        partial.typewriterMode !== undefined ||
+        partial.syntaxHighlighting !== undefined
+      ) {
         updateMenuState(win, {})
       }
       // Broadcast to all windows

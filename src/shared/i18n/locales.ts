@@ -20,6 +20,7 @@ export type MessageKey =
   | 'menu.help'
   | 'menu.file.new'
   | 'menu.file.newProject'
+  | 'menu.file.closeProject'
   | 'menu.file.open'
   | 'menu.file.openProject'
   | 'menu.file.importDraft'
@@ -85,6 +86,7 @@ export type MessageKey =
   | 'firstRun.chooseFolder'
   | 'firstRun.projectName'
   | 'firstRun.create'
+  | 'dialog.newProject.hint'
   | 'notes.title'
   | 'notes.empty'
   | 'notes.add'
@@ -149,6 +151,7 @@ const en_GB: Messages = {
   'menu.help': 'Help',
   'menu.file.new': 'New Untitled',
   'menu.file.newProject': 'New Project…',
+  'menu.file.closeProject': 'Close Project',
   'menu.file.open': 'Open File…',
   'menu.file.openProject': 'Open Project…',
   'menu.file.importDraft': 'Import as Current Draft…',
@@ -217,6 +220,8 @@ const en_GB: Messages = {
   'firstRun.chooseFolder': 'Choose folder…',
   'firstRun.projectName': 'Project name',
   'firstRun.create': 'Create project',
+  'dialog.newProject.hint':
+    'This closes the current project and creates a new folder with a dated draft.',
   'notes.title': 'Notes',
   'notes.empty': 'No notes yet. Type [[ Note 1]] in the script or add a note here.',
   'notes.add': 'Add note',
@@ -285,6 +290,7 @@ const es_PY: Messages = {
   'menu.help': 'Ayuda',
   'menu.file.new': 'Nuevo sin título',
   'menu.file.newProject': 'Proyecto nuevo…',
+  'menu.file.closeProject': 'Cerrar proyecto',
   'menu.file.open': 'Abrir archivo…',
   'menu.file.openProject': 'Abrir proyecto…',
   'menu.file.importDraft': 'Importar como borrador actual…',
@@ -353,6 +359,8 @@ const es_PY: Messages = {
   'firstRun.chooseFolder': 'Elegir carpeta…',
   'firstRun.projectName': 'Nombre del proyecto',
   'firstRun.create': 'Crear proyecto',
+  'dialog.newProject.hint':
+    'Se cierra el proyecto actual y se crea una carpeta nueva con un borrador fechado.',
   'notes.title': 'Notas',
   'notes.empty': 'Aún no hay notas. Escriba [[ Note 1]] en el guion o añada una aquí.',
   'notes.add': 'Añadir nota',
@@ -421,6 +429,7 @@ const fr_FR: Messages = {
   'menu.help': 'Aide',
   'menu.file.new': 'Nouveau sans titre',
   'menu.file.newProject': 'Nouveau projet…',
+  'menu.file.closeProject': 'Fermer le projet',
   'menu.file.open': 'Ouvrir un fichier…',
   'menu.file.openProject': 'Ouvrir un projet…',
   'menu.file.importDraft': 'Importer comme brouillon actuel…',
@@ -489,6 +498,8 @@ const fr_FR: Messages = {
   'firstRun.chooseFolder': 'Choisir un dossier…',
   'firstRun.projectName': 'Nom du projet',
   'firstRun.create': 'Créer le projet',
+  'dialog.newProject.hint':
+    'Ferme le projet actuel et crée un dossier avec un brouillon daté.',
   'notes.title': 'Notes',
   'notes.empty': 'Pas encore de notes. Tapez [[ Note 1]] dans le script ou ajoutez-en ici.',
   'notes.add': 'Ajouter une note',
