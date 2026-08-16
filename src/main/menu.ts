@@ -19,7 +19,11 @@ import { getPreferences, setPreference } from './store'
 
 export type MenuAction =
   | 'file:new'
+  | 'file:new-project'
   | 'file:open'
+  | 'file:open-project'
+  | 'file:import-draft'
+  | 'file:import-notes'
   | 'file:save'
   | 'file:save-as'
   | 'file:export-fountain'
@@ -34,6 +38,11 @@ export type MenuAction =
   | 'edit:find'
   | 'edit:find-replace'
   | 'view:toggle-preview'
+  | 'view:toggle-index'
+  | 'view:toggle-notes'
+  | 'view:split-1'
+  | 'view:split-2'
+  | 'view:split-3'
   | 'view:preview-follow'
   | 'view:typewriter'
   | 'view:syntax'
@@ -50,7 +59,9 @@ export type MenuAction =
   | 'language:es_PY'
   | 'language:fr_FR'
   | 'help:about'
+  | 'help:guide'
   | 'help:check-updates'
+  | 'settings:workspace'
 
 export interface MenuState {
   dirty: boolean
@@ -93,14 +104,32 @@ export function buildApplicationMenu(
     label: tr('menu.file'),
     submenu: [
       {
-        label: tr('menu.file.new'),
+        label: tr('menu.file.newProject'),
         accelerator: 'CmdOrCtrl+N',
+        click: () => send(win, 'file:new-project')
+      },
+      {
+        label: tr('menu.file.new'),
+        accelerator: 'CmdOrCtrl+Shift+N',
         click: () => send(win, 'file:new')
+      },
+      {
+        label: tr('menu.file.openProject'),
+        accelerator: 'CmdOrCtrl+Shift+O',
+        click: () => send(win, 'file:open-project')
       },
       {
         label: tr('menu.file.open'),
         accelerator: 'CmdOrCtrl+O',
         click: () => send(win, 'file:open')
+      },
+      {
+        label: tr('menu.file.importDraft'),
+        click: () => send(win, 'file:import-draft')
+      },
+      {
+        label: tr('menu.file.importNotes'),
+        click: () => send(win, 'file:import-notes')
       },
       { type: 'separator' },
       {
@@ -183,6 +212,45 @@ export function buildApplicationMenu(
         accelerator: 'CmdOrCtrl+P',
         click: () => send(win, 'view:toggle-preview')
       },
+      {
+        label: tr('menu.view.index'),
+        type: 'checkbox',
+        checked: prefs.indexVisible,
+        click: () => {
+          const next = !getPreferences().indexVisible
+          setPreference('indexVisible', next)
+          buildApplicationMenu(win, currentMenuState)
+          send(win, 'view:toggle-index')
+        }
+      },
+      {
+        label: tr('menu.view.notes'),
+        type: 'checkbox',
+        checked: prefs.notesVisible,
+        click: () => {
+          const next = !getPreferences().notesVisible
+          setPreference('notesVisible', next)
+          buildApplicationMenu(win, currentMenuState)
+          send(win, 'view:toggle-notes')
+        }
+      },
+      { type: 'separator' },
+      {
+        label: tr('menu.view.split1'),
+        accelerator: 'CmdOrCtrl+1',
+        click: () => send(win, 'view:split-1')
+      },
+      {
+        label: tr('menu.view.split2'),
+        accelerator: 'CmdOrCtrl+2',
+        click: () => send(win, 'view:split-2')
+      },
+      {
+        label: tr('menu.view.split3'),
+        accelerator: 'CmdOrCtrl+3',
+        click: () => send(win, 'view:split-3')
+      },
+      { type: 'separator' },
       {
         label: tr('menu.view.previewFollow'),
         type: 'checkbox',
@@ -307,6 +375,11 @@ export function buildApplicationMenu(
       {
         label: tr('menu.view.syntaxColors'),
         click: () => send(win, 'view:syntax-colors')
+      },
+      { type: 'separator' },
+      {
+        label: tr('menu.settings.workspace'),
+        click: () => send(win, 'settings:workspace')
       }
     ]
   }
@@ -371,6 +444,11 @@ export function buildApplicationMenu(
   const helpMenu: MenuItemConstructorOptions = {
     label: tr('menu.help'),
     submenu: [
+      {
+        label: tr('menu.help.guide'),
+        accelerator: 'CmdOrCtrl+/',
+        click: () => send(win, 'help:guide')
+      },
       {
         label: tr('menu.help.about'),
         click: () => send(win, 'help:about')

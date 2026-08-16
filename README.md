@@ -17,18 +17,18 @@
 
 | Feature | Description |
 |--------|-------------|
+| **Projects** | First-run asks for a base folder; each screenplay lives in `{base}/{Name}/` |
+| **Draft names** | Current draft is `{Name}-draft-YYYY-MM-DD.fountain` (newest date wins) |
+| **Supporting files** | Notes and research as `.md`; PDFs and older drafts open as tabs |
+| **Tabs + split** | Work on more than one file; up to 3 panes side by side |
+| **Preview** | Paginated preview only for the current draft, always on the right |
+| **Notes sidebar** | `[[ Note 1]]` in the script → `# note 1` in an editable sidebar (`Notes-{title}.md`) |
+| **Index** | Expandable left index: files, scenes, characters, notes (search + filter) |
+| **Autosave** | Default every 5 minutes; change or turn off in Settings |
+| **Help** | Searchable in-app instructions (Help → Help and Instructions, Ctrl/Cmd+/) |
 | **Fountain editor** | CodeMirror 6 with full Fountain syntax highlighting |
-| **Auto-uppercase** | Scene headings forced to ALL CAPS while typing; character cues capitalised when completed |
-| **Character autocomplete** | Remembers every character in the document and offers ranked completions on cue lines |
-| **File formats** | Open/save `.fountain` and `.txt`; remembers last directory between sessions |
 | **Export** | Fountain, Final Draft XML (`.fdx`), and Hollywood-paginated PDF |
-| **Live preview** | Side panel using the same pagination rules as PDF export |
-| **Status bar** | Live word count and Hollywood page count |
-| **Native menus** | File, Edit, View, Export, Theme, Language, Help with enable/disable states |
-| **Themes** | Light, Dark, and System |
-| **i18n** | English (UK), Spanish (Paraguay), French (France) |
-| **Auto-update** | `electron-updater` hooks for packaged GitHub releases |
-| **Installers** | Windows NSIS `.exe`, macOS `.dmg`, Linux `.AppImage` + `.deb` |
+| **Themes / i18n** | Light, Dark, System · English (UK), Spanish (Paraguay), French (France) |
 
 ## Requirements
 

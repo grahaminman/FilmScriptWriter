@@ -22,7 +22,30 @@ export interface AppPreferences {
   syntaxColorPreset: 'default' | 'highContrast' | 'soft' | 'custom'
   syntaxColorsCustom: Record<string, string>
   editorFontSize: number
+  projectsBaseFolder: string
+  hasCompletedFirstRun: boolean
+  lastProjectPath: string
+  autosaveMinutes: number
+  indexVisible: boolean
+  notesVisible: boolean
   windowBounds: { width: number; height: number; x?: number; y?: number }
+}
+
+export interface ProjectFileInfo {
+  path: string
+  name: string
+  kind: 'fountain' | 'markdown' | 'pdf' | 'text' | 'other'
+  isCurrentDraft: boolean
+  isNotes: boolean
+  date: string | null
+}
+
+export interface ProjectSnapshot {
+  projectPath: string
+  projectName: string
+  files: ProjectFileInfo[]
+  currentDraftPath: string | null
+  notesPath: string | null
 }
 
 export interface FileResult {
@@ -55,11 +78,37 @@ export interface ElectronAPI {
 
   newFile: () => Promise<FileResult>
   openFile: () => Promise<FileResult>
-  saveFile: (content: string, forceSaveAs?: boolean) => Promise<FileResult>
+  saveFile: (
+    content: string,
+    forceSaveAs?: boolean,
+    explicitPath?: string | null
+  ) => Promise<FileResult>
   saveFileAs: (content: string) => Promise<FileResult>
   exportFountain: (content: string) => Promise<FileResult>
   exportFdx: (content: string) => Promise<FileResult>
   exportPdf: (content: string) => Promise<FileResult>
+
+  getProject: (projectPath?: string) => Promise<ProjectSnapshot | null>
+  restoreProject: () => Promise<ProjectSnapshot | null>
+  createProject: (
+    name: string,
+    base?: string
+  ) => Promise<FileResult & { project?: ProjectSnapshot }>
+  openProject: () => Promise<FileResult & { project?: ProjectSnapshot }>
+  listRecentProjects: () => Promise<{ name: string; path: string }[]>
+  chooseProjectsFolder: () => Promise<FileResult & { path?: string; defaultPath?: string }>
+  importIntoProject: (
+    projectPath: string,
+    mode: 'draft' | 'notes'
+  ) => Promise<FileResult & { project?: ProjectSnapshot }>
+  readProjectFile: (filePath: string) => Promise<
+    FileResult & {
+      kind?: string
+      binaryBase64?: string
+    }
+  >
+  writeProjectFile: (filePath: string, content: string) => Promise<FileResult>
+  openFileInTab: () => Promise<FileResult>
 
   confirmDiscard: () => Promise<'save' | 'discard' | 'cancel'>
   showError: (message: string) => Promise<void>
@@ -93,8 +142,8 @@ const api: ElectronAPI = {
 
   newFile: () => ipcRenderer.invoke(IPC.FILE_NEW),
   openFile: () => ipcRenderer.invoke(IPC.FILE_OPEN),
-  saveFile: (content, forceSaveAs = false) =>
-    ipcRenderer.invoke(IPC.FILE_SAVE, content, forceSaveAs),
+  saveFile: (content, forceSaveAs = false, explicitPath = null) =>
+    ipcRenderer.invoke(IPC.FILE_SAVE, content, forceSaveAs, explicitPath),
   saveFileAs: (content) => ipcRenderer.invoke(IPC.FILE_SAVE_AS, content),
   exportFountain: (content) => ipcRenderer.invoke(IPC.FILE_EXPORT_FOUNTAIN, content),
   exportFdx: (content) => ipcRenderer.invoke(IPC.FILE_EXPORT_FDX, content),
@@ -114,7 +163,20 @@ const api: ElectronAPI = {
 
   updateMenuState: (state) => {
     ipcRenderer.send('menu:update-state', state)
-  }
+  },
+
+  getProject: (projectPath) => ipcRenderer.invoke(IPC.PROJECT_GET, projectPath),
+  restoreProject: () => ipcRenderer.invoke(IPC.PROJECT_RESTORE),
+  createProject: (name, base) => ipcRenderer.invoke(IPC.PROJECT_CREATE, name, base),
+  openProject: () => ipcRenderer.invoke(IPC.PROJECT_OPEN),
+  listRecentProjects: () => ipcRenderer.invoke(IPC.PROJECT_LIST_RECENT),
+  chooseProjectsFolder: () => ipcRenderer.invoke(IPC.PROJECT_CHOOSE_BASE),
+  importIntoProject: (projectPath, mode) =>
+    ipcRenderer.invoke(IPC.PROJECT_IMPORT, projectPath, mode),
+  readProjectFile: (filePath) => ipcRenderer.invoke(IPC.PROJECT_READ_FILE, filePath),
+  writeProjectFile: (filePath, content) =>
+    ipcRenderer.invoke(IPC.PROJECT_WRITE_FILE, filePath, content),
+  openFileInTab: () => ipcRenderer.invoke(IPC.PROJECT_OPEN_FILE)
 }
 
 contextBridge.exposeInMainWorld('api', api)

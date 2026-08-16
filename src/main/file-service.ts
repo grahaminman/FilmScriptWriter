@@ -138,7 +138,7 @@ function locale(): ReturnType<typeof getPreferences>['locale'] {
  */
 export async function openFileDialog(
   win: BrowserWindow
-): Promise<{ path: string; content: string } | null> {
+): Promise<{ path: string | null; content: string } | null> {
   const result = await dialog.showOpenDialog(win, {
     title: t(locale(), 'menu.file.open'),
     defaultPath: defaultDir(),
@@ -163,14 +163,38 @@ export async function openFileDialog(
 }
 
 /**
+ * Write text to an already-known path (autosave / tab save).
+ * Fountain files go through the export normaliser; markdown is raw.
+ */
+export async function writeKnownFile(
+  filePath: string,
+  content: string
+): Promise<{ path: string }> {
+  if (isProtectedTemplatePath(filePath)) {
+    throw new Error('The starter template is protected and cannot be overwritten.')
+  }
+  const ext = path.extname(filePath).toLowerCase()
+  const payload =
+    ext === '.fountain' || ext === '.txt' ? prepareFountainExport(content) : content
+  await fs.writeFile(filePath, payload, 'utf8')
+  setDocumentPath(filePath)
+  documentState.dirty = false
+  return { path: filePath }
+}
+
+/**
  * Save content to the current path, or run Save As when none is set.
  */
 export async function saveFile(
   win: BrowserWindow,
   content: string,
-  forceSaveAs = false
+  forceSaveAs = false,
+  explicitPath?: string | null
 ): Promise<{ path: string } | null> {
-  let target = documentState.filePath
+  if (explicitPath && !forceSaveAs && !isProtectedTemplatePath(explicitPath)) {
+    return writeKnownFile(explicitPath, content)
+  }
+  let target = explicitPath || documentState.filePath
 
   // Always force a picker when path is missing, is a protected template,
   // or the caller requested Save As — the starter must never be overwritten.
@@ -204,6 +228,8 @@ export async function saveFile(
       return null
     }
   }
+
+  if (!target) return null
 
   const payload = prepareFountainExport(content)
   await fs.writeFile(target, payload, 'utf8')
