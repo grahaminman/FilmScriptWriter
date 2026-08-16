@@ -397,7 +397,7 @@ function flushPane(pane: FilePane): void {
   doc.content = pane.editor.getValue()
 }
 
-function loadDocIntoPane(pane: FilePane, doc: OpenDoc, focus = true): void {
+function loadDocIntoPane(pane: FilePane, doc: OpenDoc): void {
   flushPane(pane)
   pane.docId = doc.id
   const wantFountain = doc.kind === 'fountain'
@@ -423,50 +423,12 @@ function loadDocIntoPane(pane: FilePane, doc: OpenDoc, focus = true): void {
       suppressDirty = false
     }
   }
-  if (focus) {
-    focusedPaneId = pane.id
-    updatePaneFocus()
-    renderTabs()
-    updateTitle()
-    updateStatusLabels()
-    refreshPreviewAndIndex()
-  }
-}
-
-/** Visible panes always follow tab order: pane 0 = tab 0, pane 1 = tab 1, … */
-function syncPanesToTabOrder(focusDocId?: string): void {
-  for (const pane of panes) flushPane(pane)
-  for (let i = 0; i < panes.length; i++) {
-    const doc = docs[i]
-    if (!doc) continue
-    if (panes[i].docId !== doc.id) {
-      loadDocIntoPane(panes[i], doc, false)
-    }
-  }
-  const keepId = focusDocId ?? focusedDoc()?.id
-  const keepPane = keepId ? panes.find((p) => p.docId === keepId) : undefined
-  if (keepPane) focusedPaneId = keepPane.id
-  else if (panes[0]) focusedPaneId = panes[0].id
+  focusedPaneId = pane.id
   updatePaneFocus()
   renderTabs()
   updateTitle()
   updateStatusLabels()
   refreshPreviewAndIndex()
-}
-
-function moveTab(fromId: string, toId: string, place: 'before' | 'after'): void {
-  if (fromId === toId) return
-  const from = docs.findIndex((d) => d.id === fromId)
-  if (from < 0) return
-  const [item] = docs.splice(from, 1)
-  let dest = docs.findIndex((d) => d.id === toId)
-  if (dest < 0) {
-    docs.splice(from, 0, item)
-    return
-  }
-  if (place === 'after') dest += 1
-  docs.splice(dest, 0, item)
-  syncPanesToTabOrder(item.id)
 }
 
 function makeEditor(parent: HTMLElement, fountainMode: boolean, initial: string): EditorHandle {
@@ -529,7 +491,6 @@ function createPane(doc: OpenDoc): FilePane {
 }
 
 function setSplitCount(n: number): void {
-  for (const pane of panes) flushPane(pane)
   splitCount = Math.min(3, Math.max(1, n))
   while (panes.length > splitCount) {
     const extra = panes.pop()
@@ -543,7 +504,10 @@ function setSplitCount(n: number): void {
     if (!fallback) break
     panes.push(createPane(fallback))
   }
-  syncPanesToTabOrder()
+  if (!panes.some((p) => p.id === focusedPaneId) && panes[0]) {
+    focusedPaneId = panes[0].id
+  }
+  updatePaneFocus()
 }
 
 function updatePaneFocus(): void {
@@ -563,13 +527,11 @@ function renderTabs(): void {
     btn.type = 'button'
     btn.className = `tab-btn${doc.id === activeId ? ' active' : ''}`
     btn.setAttribute('role', 'tab')
-    btn.draggable = true
     const label = document.createElement('span')
     label.textContent = `${displayName(doc)}${doc.dirty ? ' •' : ''}`
     const close = document.createElement('span')
     close.className = 'tab-close'
     close.textContent = '×'
-    close.draggable = false
     close.addEventListener('click', (e) => {
       e.stopPropagation()
       void closeDoc(doc.id)
@@ -577,71 +539,11 @@ function renderTabs(): void {
     btn.appendChild(label)
     btn.appendChild(close)
     btn.addEventListener('click', () => {
-      if (tabDidDrag) {
-        tabDidDrag = false
-        return
-      }
-      const index = docs.findIndex((d) => d.id === doc.id)
-      if (index >= 0 && index < panes.length) {
-        focusedPaneId = panes[index].id
-        updatePaneFocus()
-        renderTabs()
-        updateTitle()
-        updateStatusLabels()
-      }
+      const pane = panes.find((p) => p.id === focusedPaneId) ?? panes[0]
+      if (pane) loadDocIntoPane(pane, doc)
     })
-    bindTabDrag(btn, doc.id)
     el.tabBar.appendChild(btn)
   }
-}
-
-let tabDragFromId: string | null = null
-let tabDidDrag = false
-
-function clearTabDropMarks(): void {
-  el.tabBar
-    .querySelectorAll('.tab-btn.drop-before, .tab-btn.drop-after, .tab-btn.dragging')
-    .forEach((n) => n.classList.remove('drop-before', 'drop-after', 'dragging'))
-}
-
-function dropPlace(btn: HTMLElement, clientX: number): 'before' | 'after' {
-  const rect = btn.getBoundingClientRect()
-  return clientX < rect.left + rect.width / 2 ? 'before' : 'after'
-}
-
-function bindTabDrag(btn: HTMLButtonElement, docId: string): void {
-  btn.addEventListener('dragstart', (e) => {
-    tabDragFromId = docId
-    tabDidDrag = false
-    btn.classList.add('dragging')
-    e.dataTransfer?.setData('text/plain', docId)
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
-  })
-  btn.addEventListener('dragend', () => {
-    tabDragFromId = null
-    clearTabDropMarks()
-  })
-  btn.addEventListener('dragover', (e) => {
-    if (!tabDragFromId || tabDragFromId === docId) return
-    e.preventDefault()
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
-    tabDidDrag = true
-    const place = dropPlace(btn, e.clientX)
-    btn.classList.toggle('drop-before', place === 'before')
-    btn.classList.toggle('drop-after', place === 'after')
-  })
-  btn.addEventListener('dragleave', () => {
-    btn.classList.remove('drop-before', 'drop-after')
-  })
-  btn.addEventListener('drop', (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const fromId = tabDragFromId || e.dataTransfer?.getData('text/plain')
-    const place = dropPlace(btn, e.clientX)
-    clearTabDropMarks()
-    if (fromId) moveTab(fromId, docId, place)
-    tabDragFromId = null
-  })
 }
 
 function addDoc(partial: Omit<OpenDoc, 'id'> & { id?: string }): OpenDoc {
@@ -665,10 +567,7 @@ function addDoc(partial: Omit<OpenDoc, 'id'> & { id?: string }): OpenDoc {
   return doc
 }
 
-async function openPath(
-  filePath: string,
-  opts?: { currentDraft?: boolean; background?: boolean }
-): Promise<OpenDoc | null> {
+async function openPath(filePath: string, opts?: { currentDraft?: boolean }): Promise<OpenDoc | null> {
   const result = await window.api.readProjectFile(filePath)
   if (result.cancelled || !result.path) return null
   const kind = (result.kind as DocKind) || kindFromPath(result.path)
@@ -686,17 +585,9 @@ async function openPath(
     pdfBase64: result.binaryBase64
   })
   if (project && result.path === project.notesPath) notesDocId = doc.id
-  const index = docs.findIndex((d) => d.id === doc.id)
-  const focusIdx = Math.max(0, panes.findIndex((p) => p.id === focusedPaneId))
-  if (!opts?.background && index >= splitCount && panes.length > 0) {
-    docs.splice(index, 1)
-    docs.splice(focusIdx, 0, doc)
-  }
-  if (panes.length === 0) {
-    panes.push(createPane(doc))
-    focusedPaneId = panes[0].id
-  }
-  syncPanesToTabOrder(opts?.background ? focusedDoc()?.id : doc.id)
+  const pane = panes.find((p) => p.id === focusedPaneId) ?? panes[0]
+  if (pane) loadDocIntoPane(pane, doc)
+  renderTabs()
   return doc
 }
 
@@ -714,7 +605,7 @@ async function closeDoc(id: string): Promise<void> {
   docs = docs.filter((d) => d.id !== id)
   if (notesDocId === id) notesDocId = null
   if (docs.length === 0) {
-    addDoc({
+    const untitled = addDoc({
       path: null,
       name: t(locale, 'status.untitled'),
       content: '',
@@ -722,8 +613,14 @@ async function closeDoc(id: string): Promise<void> {
       kind: 'fountain',
       isCurrentDraft: false
     })
+    for (const pane of panes) loadDocIntoPane(pane, untitled)
+  } else {
+    for (const pane of panes) {
+      if (pane.docId === id) loadDocIntoPane(pane, docs[0])
+    }
   }
-  syncPanesToTabOrder()
+  renderTabs()
+  refreshPreviewAndIndex()
 }
 
 // ---------------------------------------------------------------------------
@@ -744,7 +641,8 @@ async function doNewUntitled(): Promise<void> {
     kind: 'fountain',
     isCurrentDraft: false
   })
-  syncPanesToTabOrder(doc.id)
+  const pane = panes[0]
+  if (pane) loadDocIntoPane(pane, doc)
   showWelcome(false)
 }
 
@@ -783,7 +681,8 @@ async function doOpenFile(): Promise<void> {
       kind: 'fountain',
       isCurrentDraft: false
     })
-    syncPanesToTabOrder(doc.id)
+    const pane = panes.find((p) => p.id === focusedPaneId) ?? panes[0]
+    if (pane) loadDocIntoPane(pane, doc)
   }
   showWelcome(false)
 }
@@ -797,12 +696,12 @@ async function loadProject(snap: ProjectSnapshot): Promise<void> {
     await openPath(snap.currentDraftPath, { currentDraft: true })
   }
   if (snap.notesPath) {
-    const notes = await openPath(snap.notesPath, {
-      currentDraft: false,
-      background: true
-    })
+    const notes = await openPath(snap.notesPath, { currentDraft: false })
     if (notes) notesDocId = notes.id
-    syncPanesToTabOrder(currentDraftDoc()?.id)
+    // Keep focus on the current draft after opening notes
+    const draft = currentDraftDoc()
+    const pane = panes[0]
+    if (draft && pane) loadDocIntoPane(pane, draft)
   }
   if (docs.length === 0) {
     await doNewUntitled()
@@ -1184,15 +1083,11 @@ async function bootstrap(): Promise<void> {
     onJump: (entry) => {
       const draft = currentDraftDoc()
       if (!draft || !entry.line) return
-      if (!panes.some((p) => p.docId === draft.id) && panes[0]) {
-        const from = docs.findIndex((d) => d.id === draft.id)
-        if (from > 0) {
-          docs.splice(from, 1)
-          docs.unshift(draft)
-          syncPanesToTabOrder(draft.id)
-        }
+      let pane = panes.find((p) => p.docId === draft.id)
+      if (!pane) {
+        pane = panes[0]
+        if (pane) loadDocIntoPane(pane, draft)
       }
-      const pane = panes.find((p) => p.docId === draft.id)
       pane?.editor.setCursorLine(entry.line)
     }
   })

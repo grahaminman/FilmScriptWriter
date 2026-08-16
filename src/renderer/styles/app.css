@@ -912,24 +912,11 @@ body {
   border-radius: 6px 6px 0 0;
   padding: 5px 8px;
   font-size: 12px;
-  cursor: grab;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-}
-
-.tab-btn.dragging {
-  opacity: 0.45;
-  cursor: grabbing;
-}
-
-.tab-btn.drop-before {
-  box-shadow: inset 3px 0 0 var(--accent);
-}
-
-.tab-btn.drop-after {
-  box-shadow: inset -3px 0 0 var(--accent);
 }
 
 .tab-btn.active {
