@@ -38,6 +38,7 @@ export type MenuAction =
   | 'edit:find'
   | 'edit:find-replace'
   | 'view:toggle-preview'
+  | 'view:syntax-help'
   | 'view:toggle-index'
   | 'view:toggle-notes'
   | 'view:toggle-syntax-coach'
@@ -212,6 +213,13 @@ export function buildApplicationMenu(
         label: tr('menu.view.preview'),
         accelerator: 'CmdOrCtrl+P',
         click: () => send(win, 'view:toggle-preview')
+      },
+      {
+        label: tr('menu.view.syntaxHelp'),
+        accelerator: 'CmdOrCtrl+Shift+P',
+        type: 'checkbox',
+        checked: prefs.rightPaneMode === 'help',
+        click: () => send(win, 'view:syntax-help')
       },
       {
         label: tr('menu.view.index'),

@@ -12,6 +12,8 @@ import { createWorkspaceSettingsPanel } from './ui/workspace-settings'
 import { createIndexSidebar } from './ui/index-sidebar'
 import { createNotesSidebar } from './ui/notes-sidebar'
 import { createSyntaxCoachBar } from './ui/syntax-coach-bar'
+import { createFountainHelpPane } from './ui/fountain-help-pane'
+import { COACH_TO_TOPIC } from '../shared/fountain/syntax-reference'
 import { classifyDocumentLines } from './editor/fountain-line-highlighter'
 import {
   resolveSyntaxCoach,
@@ -117,6 +119,8 @@ let preview: PreviewHandle
 let locale: LocaleCode = 'en_GB'
 let theme: ThemeMode = 'system'
 let previewVisible = true
+let rightPaneMode: 'preview' | 'help' = 'preview'
+let fountainHelp: ReturnType<typeof createFountainHelpPane>
 let previewFollow = true
 let typewriterMode = false
 let syntaxHighlighting = true
@@ -142,6 +146,8 @@ const FOLLOW_DEBOUNCE_MS = 80
 
 const el = {
   previewPane: document.getElementById('preview-pane') as HTMLElement,
+  previewHost: document.getElementById('preview-host') as HTMLElement,
+  fountainHelp: document.getElementById('fountain-help') as HTMLElement,
   workspace: document.getElementById('workspace') as HTMLElement,
   splitPanes: document.getElementById('split-panes') as HTMLElement,
   tabBar: document.getElementById('tab-bar') as HTMLElement,
@@ -155,6 +161,7 @@ const el = {
   statusFontValue: document.getElementById('status-font-value') as HTMLElement,
   fontSizeLabel: document.getElementById('font-size-label') as HTMLElement,
   btnPreview: document.getElementById('btn-toggle-preview') as HTMLButtonElement,
+  btnSyntaxHelp: document.getElementById('btn-toggle-syntax-help') as HTMLButtonElement,
   btnIndex: document.getElementById('btn-toggle-index') as HTMLButtonElement,
   btnNotes: document.getElementById('btn-toggle-notes') as HTMLButtonElement,
   btnSyntaxColors: document.getElementById('btn-syntax-colors') as HTMLButtonElement,
@@ -229,6 +236,7 @@ function applyLocale(next: LocaleCode): void {
   for (const pane of panes) pane.editor.setLocale(next)
   preview?.setLocale(next)
   el.btnPreview.textContent = t(locale, 'menu.view.preview')
+  if (el.btnSyntaxHelp) el.btnSyntaxHelp.textContent = t(locale, 'menu.view.syntaxHelp')
   el.btnIndex.textContent = t(locale, 'index.title')
   el.btnNotes.textContent = t(locale, 'notes.title')
   if (el.btnSyntaxColors) {
@@ -375,26 +383,36 @@ function refreshSyntaxCoach(): void {
   const line = state.doc.lineAt(pos)
   const kinds = classifyDocumentLines(state.doc)
   const prevText = line.number > 1 ? state.doc.line(line.number - 1).text : ''
-  syntaxCoach.update(
-    resolveSyntaxCoach({
-      lineText: line.text,
-      lineKind: (kinds[line.number] ?? 'unknown') as CoachLineKind,
-      previousKind:
-        line.number > 1
-          ? ((kinds[line.number - 1] ?? 'unknown') as CoachLineKind)
-          : 'unknown',
-      prevBlank: line.number === 1 || prevText.trim() === '',
-      cursorCol: pos - line.from,
-      isFountain: true
-    })
-  )
+  const tip = resolveSyntaxCoach({
+    lineText: line.text,
+    lineKind: (kinds[line.number] ?? 'unknown') as CoachLineKind,
+    previousKind:
+      line.number > 1
+        ? ((kinds[line.number - 1] ?? 'unknown') as CoachLineKind)
+        : 'unknown',
+    prevBlank: line.number === 1 || prevText.trim() === '',
+    cursorCol: pos - line.from,
+    isFountain: true
+  })
+  syntaxCoach.update(tip)
+  if (rightPaneMode === 'help' && fountainHelp) {
+    const topic = COACH_TO_TOPIC[tip.id]
+    if (topic) fountainHelp.highlight(topic)
+  }
 }
 
 function refreshPreviewAndIndex(): void {
   const draft = currentDraftDoc()
-  const showPreview = Boolean(draft) && previewVisible
-  el.previewPane.classList.toggle('hidden', !showPreview)
-  el.workspace.classList.toggle('preview-hidden', !showPreview)
+  const helpOn = rightPaneMode === 'help'
+  const showPages = !helpOn && Boolean(draft) && previewVisible
+  const showPane = helpOn || showPages
+  el.previewPane.classList.toggle('hidden', !showPane)
+  el.workspace.classList.toggle('preview-hidden', !showPane)
+  el.previewHost.classList.toggle('hidden', helpOn)
+  if (fountainHelp) {
+    if (helpOn) fountainHelp.show()
+    else fountainHelp.hide()
+  }
   if (draft) {
     preview.render(draft.content)
     if (previewFollow) {
@@ -832,7 +850,18 @@ function showWelcome(show: boolean): void {
 
 function setPreviewVisible(visible: boolean): void {
   previewVisible = visible
-  void window.api.setPreferences({ previewVisible: visible })
+  if (visible) rightPaneMode = 'preview'
+  void window.api.setPreferences({
+    previewVisible: visible,
+    rightPaneMode: visible ? 'preview' : rightPaneMode
+  })
+  refreshPreviewAndIndex()
+}
+
+function setRightPaneMode(mode: 'preview' | 'help'): void {
+  rightPaneMode = mode
+  if (mode === 'preview') previewVisible = true
+  void window.api.setPreferences({ rightPaneMode: mode, previewVisible })
   refreshPreviewAndIndex()
 }
 
@@ -992,7 +1021,11 @@ function handleMenuAction(action: string): void {
       focusedEditor()?.openFindReplace()
       break
     case 'view:toggle-preview':
-      setPreviewVisible(!previewVisible)
+      if (rightPaneMode === 'help') setRightPaneMode('preview')
+      else setPreviewVisible(!previewVisible)
+      break
+    case 'view:syntax-help':
+      setRightPaneMode(rightPaneMode === 'help' ? 'preview' : 'help')
       break
     case 'view:toggle-index':
       void window.api.getPreferences().then((p) => setIndexVisible(p.indexVisible, false))
@@ -1106,7 +1139,12 @@ async function bootstrap(): Promise<void> {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
   applySyntaxColors(syntaxColorPreset, syntaxColorsCustom, false)
 
-  preview = createPreview(el.previewPane, locale)
+  preview = createPreview(el.previewHost, locale)
+  fountainHelp = createFountainHelpPane(el.fountainHelp, (collapsed) => {
+    void window.api.setPreferences({ fountainHelpIndexCollapsed: collapsed })
+  })
+  fountainHelp.setCollapsed(Boolean(prefs.fountainHelpIndexCollapsed))
+  rightPaneMode = prefs.rightPaneMode === 'help' ? 'help' : 'preview'
   syntaxSettings = createSyntaxSettingsPanel(
     document.getElementById('app') as HTMLElement,
     {
@@ -1196,7 +1234,13 @@ async function bootstrap(): Promise<void> {
     showWelcome(first || Boolean(startup.fromTemplate))
   }
 
-  el.btnPreview.addEventListener('click', () => setPreviewVisible(!previewVisible))
+  el.btnPreview.addEventListener('click', () => {
+    if (rightPaneMode === 'help') setRightPaneMode('preview')
+    else setPreviewVisible(!previewVisible)
+  })
+  el.btnSyntaxHelp.addEventListener('click', () => {
+    setRightPaneMode(rightPaneMode === 'help' ? 'preview' : 'help')
+  })
   el.btnIndex.addEventListener('click', () => setIndexVisible(!indexVisible))
   el.btnNotes.addEventListener('click', () => setNotesVisible(!notesVisible))
   el.btnSyntaxColors?.addEventListener('click', () => syntaxSettings?.open())
@@ -1257,6 +1301,10 @@ async function bootstrap(): Promise<void> {
     if (p.theme !== theme) applyTheme(p.theme)
     if (p.previewVisible !== previewVisible) {
       previewVisible = p.previewVisible
+      refreshPreviewAndIndex()
+    }
+    if (p.rightPaneMode && p.rightPaneMode !== rightPaneMode) {
+      rightPaneMode = p.rightPaneMode
       refreshPreviewAndIndex()
     }
     if (p.previewFollow !== previewFollow) setPreviewFollow(p.previewFollow, false)

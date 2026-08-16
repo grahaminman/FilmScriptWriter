@@ -146,6 +146,19 @@ The status bar shows “Autosaved” after a successful pass. You can still save
 Changing the base folder does not move existing projects. Open them with File → Open Project… or move the folders yourself.`
   },
   {
+    id: 'syntax-help',
+    title: 'Fountain syntax help',
+    tags: ['fountain', 'syntax', 'help', 'preview', 'index'],
+    body: `The right-hand pane can show either the paginated preview or a full Fountain syntax reference.
+
+Toolbar: Preview  ·  Fountain Syntax Help
+Menu: View → Fountain Syntax Help (Ctrl/Cmd+Shift+P)
+
+The reference is written for people new to screenwriting. A retractable index on the right lists every option with its syntax. Click an item to jump. Collapse the list with › if you want more room for the article.
+
+The thin coach bar under the toolbar still follows what you type. When the full help is open it highlights the matching topic.`
+  },
+  {
     id: 'preview',
     title: 'Preview and export',
     tags: ['preview', 'pdf', 'fdx', 'export'],

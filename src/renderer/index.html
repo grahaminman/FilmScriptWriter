@@ -30,6 +30,7 @@
         <button type="button" id="btn-find" title="Find">Find</button>
         <button type="button" id="btn-replace" title="Find and Replace">Replace</button>
         <button type="button" id="btn-toggle-preview" title="Toggle preview">Preview</button>
+        <button type="button" id="btn-toggle-syntax-help" title="Fountain syntax help">Syntax</button>
         <button type="button" id="btn-syntax-colors" title="Syntax colours">Colours</button>
         <button type="button" id="btn-settings" title="Settings">Settings</button>
         <button type="button" id="btn-help" title="Help">Help</button>
@@ -45,7 +46,10 @@
           <div class="split-panes" id="split-panes"></div>
         </section>
         <div class="pane-resizer" id="pane-resizer" role="separator" aria-orientation="vertical"></div>
-        <aside class="preview-pane" id="preview-pane" aria-label="Preview"></aside>
+        <aside class="preview-pane" id="preview-pane" aria-label="Preview">
+          <div class="preview-host" id="preview-host"></div>
+          <div class="fountain-help hidden" id="fountain-help"></div>
+        </aside>
 
         <div class="welcome-overlay" id="welcome-overlay">
           <div class="welcome-card welcome-card-wide">

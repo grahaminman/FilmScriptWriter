@@ -63,6 +63,10 @@ export interface AppPreferences {
   notesVisible: boolean
   /** Fountain syntax coach bar is retracted to a single line. */
   syntaxCoachCollapsed: boolean
+  /** Right pane shows the page preview or the full Fountain syntax help. */
+  rightPaneMode: 'preview' | 'help'
+  /** Retractable syntax index inside the Fountain help pane. */
+  fountainHelpIndexCollapsed: boolean
   windowBounds: {
     width: number
     height: number
@@ -90,6 +94,8 @@ const defaults: AppPreferences = {
   indexVisible: true,
   notesVisible: true,
   syntaxCoachCollapsed: false,
+  rightPaneMode: 'preview',
+  fountainHelpIndexCollapsed: false,
   windowBounds: {
     width: 1400,
     height: 900
@@ -151,6 +157,14 @@ export function getPreferences(): AppPreferences {
     syntaxCoachCollapsed: prefsStore.get(
       'syntaxCoachCollapsed',
       defaults.syntaxCoachCollapsed
+    ),
+    rightPaneMode:
+      prefsStore.get('rightPaneMode', defaults.rightPaneMode) === 'help'
+        ? 'help'
+        : 'preview',
+    fountainHelpIndexCollapsed: prefsStore.get(
+      'fountainHelpIndexCollapsed',
+      defaults.fountainHelpIndexCollapsed
     ),
     windowBounds: prefsStore.get('windowBounds', defaults.windowBounds)
   }

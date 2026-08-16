@@ -36,6 +36,7 @@ export type MessageKey =
   | 'menu.edit.find'
   | 'menu.edit.findReplace'
   | 'menu.view.preview'
+  | 'menu.view.syntaxHelp'
   | 'menu.view.index'
   | 'menu.view.notes'
   | 'menu.view.syntaxCoach'
@@ -155,6 +156,7 @@ const en_GB: Messages = {
   'menu.edit.find': 'Find',
   'menu.edit.findReplace': 'Find and Replace…',
   'menu.view.preview': 'Toggle Preview',
+  'menu.view.syntaxHelp': 'Fountain Syntax Help',
   'menu.view.index': 'Index Sidebar',
   'menu.view.notes': 'Notes Sidebar',
   'menu.view.syntaxCoach': 'Fountain Help Bar',
@@ -279,6 +281,7 @@ const es_PY: Messages = {
   'menu.edit.find': 'Buscar',
   'menu.edit.findReplace': 'Buscar y reemplazar…',
   'menu.view.preview': 'Alternar vista previa',
+  'menu.view.syntaxHelp': 'Ayuda de sintaxis Fountain',
   'menu.view.index': 'Índice',
   'menu.view.notes': 'Notas',
   'menu.view.syntaxCoach': 'Barra de ayuda Fountain',
@@ -403,6 +406,7 @@ const fr_FR: Messages = {
   'menu.edit.find': 'Rechercher',
   'menu.edit.findReplace': 'Rechercher et remplacer…',
   'menu.view.preview': 'Basculer l’aperçu',
+  'menu.view.syntaxHelp': 'Aide syntaxe Fountain',
   'menu.view.index': 'Index',
   'menu.view.notes': 'Notes',
   'menu.view.syntaxCoach': 'Barre d’aide Fountain',

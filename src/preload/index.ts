@@ -29,6 +29,8 @@ export interface AppPreferences {
   indexVisible: boolean
   notesVisible: boolean
   syntaxCoachCollapsed: boolean
+  rightPaneMode: 'preview' | 'help'
+  fountainHelpIndexCollapsed: boolean
   windowBounds: { width: number; height: number; x?: number; y?: number }
 }
 
