@@ -36,6 +36,12 @@ import {
   type SyntaxColorPalette,
   type SyntaxColorPresetId
 } from '../shared/constants/syntax-colors'
+import {
+  DEFAULT_SPELLCHECK_LANGUAGES,
+  sanitizeDictionaryUrl,
+  sanitizeSpellcheckLanguages,
+  type SpellcheckLanguageId
+} from '../shared/constants/spellcheck'
 import { undo, redo } from '@codemirror/commands'
 import { buildScriptIndex } from '../shared/project/index-outline'
 
@@ -140,6 +146,9 @@ let indexVisible = true
 let notesVisible = true
 let syntaxCoach: ReturnType<typeof createSyntaxCoachBar>
 let coachTimer: ReturnType<typeof setTimeout> | null = null
+let spellcheckEnabled = true
+let spellcheckLanguages: SpellcheckLanguageId[] = [...DEFAULT_SPELLCHECK_LANGUAGES]
+let spellcheckDictionaryUrl = ''
 
 let statsTimer: ReturnType<typeof setTimeout> | null = null
 let followTimer: ReturnType<typeof setTimeout> | null = null
@@ -513,6 +522,8 @@ function makeEditor(parent: HTMLElement, fountainMode: boolean, initial: string)
     syntaxHighlighting,
     typewriterMode,
     fountainMode,
+    spellcheckEnabled,
+    spellcheckLanguages,
     onChange: (text) => {
       const pane = panes.find((p) => p.editorHost === parent || p.editor === handle)
       const doc = docs.find((d) => d.id === pane?.docId)
@@ -947,6 +958,23 @@ function setSyntax(enabled: boolean, persist = true): void {
   if (persist) void window.api.setPreferences({ syntaxHighlighting: enabled })
 }
 
+function languagesChanged(a: readonly string[] | undefined, b: readonly string[]): boolean {
+  const left = sanitizeSpellcheckLanguages(a)
+  if (left.length !== b.length) return true
+  return left.some((code, i) => code !== b[i])
+}
+
+function applySpellcheck(
+  enabled: boolean,
+  languages: SpellcheckLanguageId[]
+): void {
+  spellcheckEnabled = enabled
+  spellcheckLanguages = sanitizeSpellcheckLanguages(languages)
+  for (const pane of panes) {
+    pane.editor.setSpellcheck(spellcheckEnabled, spellcheckLanguages)
+  }
+}
+
 function setIndexVisible(visible: boolean, persist = true): void {
   indexVisible = visible
   indexSidebar.setVisible(visible)
@@ -1153,7 +1181,10 @@ function handleMenuAction(action: string): void {
     case 'settings:workspace':
       workspaceSettings.open({
         projectsBaseFolder: el.firstRunFolder.value,
-        autosaveMinutes
+        autosaveMinutes,
+        spellcheckEnabled,
+        spellcheckLanguages,
+        spellcheckDictionaryUrl
       })
       break
     case 'help:guide':
@@ -1193,6 +1224,9 @@ async function bootstrap(): Promise<void> {
   indexVisible = prefs.indexVisible !== false
   notesVisible = prefs.notesVisible !== false
   autosaveMinutes = prefs.autosaveMinutes ?? 5
+  spellcheckEnabled = prefs.spellcheckEnabled !== false
+  spellcheckLanguages = sanitizeSpellcheckLanguages(prefs.spellcheckLanguages)
+  spellcheckDictionaryUrl = sanitizeDictionaryUrl(prefs.spellcheckDictionaryUrl)
   el.firstRunFolder.value = prefs.projectsBaseFolder || ''
   if (prefs.hasCompletedFirstRun && prefs.projectsBaseFolder) {
     el.firstRunFields.classList.add('hidden')
@@ -1234,6 +1268,24 @@ async function bootstrap(): Promise<void> {
       if (partial.autosaveMinutes !== undefined) {
         void window.api.setPreferences({ autosaveMinutes: partial.autosaveMinutes })
         armAutosave(partial.autosaveMinutes)
+      }
+      if (partial.spellcheckEnabled !== undefined) {
+        applySpellcheck(partial.spellcheckEnabled, spellcheckLanguages)
+        void window.api.setPreferences({ spellcheckEnabled: partial.spellcheckEnabled })
+      }
+      if (partial.spellcheckLanguages !== undefined) {
+        applySpellcheck(spellcheckEnabled, partial.spellcheckLanguages)
+        void window.api.setPreferences({
+          spellcheckLanguages: partial.spellcheckLanguages
+        })
+      }
+      if (partial.spellcheckDictionaryUrl !== undefined) {
+        spellcheckDictionaryUrl = sanitizeDictionaryUrl(
+          partial.spellcheckDictionaryUrl
+        )
+        void window.api.setPreferences({
+          spellcheckDictionaryUrl: spellcheckDictionaryUrl
+        })
       }
     }
   })
@@ -1311,7 +1363,10 @@ async function bootstrap(): Promise<void> {
   el.btnSettings.addEventListener('click', () =>
     workspaceSettings.open({
       projectsBaseFolder: el.firstRunFolder.value,
-      autosaveMinutes
+      autosaveMinutes,
+      spellcheckEnabled,
+      spellcheckLanguages,
+      spellcheckDictionaryUrl
     })
   )
   el.btnHelp.addEventListener('click', () => helpPanel.open())
@@ -1384,6 +1439,18 @@ async function bootstrap(): Promise<void> {
       el.firstRunFolder.value = p.projectsBaseFolder
     }
     if (p.editorFontSize !== editorFontSize) applyFontSize(p.editorFontSize, false)
+    if (
+      p.spellcheckEnabled !== spellcheckEnabled ||
+      languagesChanged(p.spellcheckLanguages, spellcheckLanguages)
+    ) {
+      applySpellcheck(
+        p.spellcheckEnabled !== false,
+        sanitizeSpellcheckLanguages(p.spellcheckLanguages)
+      )
+    }
+    if (p.spellcheckDictionaryUrl !== undefined) {
+      spellcheckDictionaryUrl = sanitizeDictionaryUrl(p.spellcheckDictionaryUrl)
+    }
   })
 
   window.addEventListener('keydown', (e) => {

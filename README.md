@@ -28,6 +28,7 @@
 | **Notes sidebar** | `[[ Note 1]]` in the script → `# note 1` in an editable sidebar (`Notes-{title}.md`) |
 | **Index** | Expandable left index: files, scenes, characters, notes (search + filter) |
 | **Autosave** | Default every 5 minutes; change or turn off in Settings |
+| **Spell check** | Chromium Hunspell, default British English; optional US English and Latin American / Paraguay Spanish. Dictionaries download to a local folder for offline use |
 | **Help** | Searchable in-app instructions (Help → Help and Instructions, Ctrl/Cmd+/) |
 | **Fountain editor** | CodeMirror 6 with full Fountain syntax highlighting |
 | **Export** | Fountain, Final Draft XML (`.fdx`), and Hollywood-paginated PDF |
@@ -223,7 +224,7 @@ On first launch (and whenever **File → New** is used), FilmScriptWriter loads 
 | `templates/FilmScriptWriter-Starter.fountain` | Copy in the project repo for browsing / version control |
 | `Documents/FilmScriptWriter/templates/FilmScriptWriter-Starter.fountain` | User-visible copy installed on first run |
 
-**Settings → Projects, Autosave and Template** lets you edit that starter, replace it with your own `.fountain` file, or revert to a kept factory copy. New projects copy the current user template (and stamp the project title).
+**Settings → Projects, Autosave and Template** lets you edit that starter, replace it with your own `.fountain` file, or revert to a kept factory copy. New projects copy the current user template (and stamp the project title). The same dialog (and **Settings → Spell check**) turns the live spell checker on or off, chooses **English (UK)**, **English (US)** and **Spanish (Latin America / Paraguay)**, and downloads Hunspell dictionaries into a local folder so checking still works offline. You can also point the download URL at a self-hosted copy of the `.bdic` files.
 
 **The factory template is never overwritten by Save.** Loading it as a document always opens an *untitled* buffer. Use **Save As** to create your own screenplay.
 

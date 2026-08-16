@@ -14,8 +14,16 @@ import {
   type MenuItemConstructorOptions
 } from 'electron'
 import { IPC, type LocaleCode, type ThemeMode } from '../shared/constants/screenplay'
+import {
+  SPELLCHECK_LANGUAGE_OPTIONS,
+  type SpellcheckLanguageId
+} from '../shared/constants/spellcheck'
 import { t, type MessageKey } from '../shared/i18n/locales'
 import { getPreferences, setPreference } from './store'
+import {
+  applySpellcheckToAllSessions,
+  downloadSpellcheckDictionaries
+} from './spellcheck'
 
 export type MenuAction =
   | 'file:new'
@@ -403,6 +411,43 @@ export function buildApplicationMenu(
       },
       { type: 'separator' },
       {
+        label: tr('menu.settings.spellcheck'),
+        submenu: [
+          {
+            label: tr('settings.spellcheckEnabled'),
+            type: 'checkbox',
+            checked: prefs.spellcheckEnabled,
+            click: () => {
+              setPreference(
+                'spellcheckEnabled',
+                !getPreferences().spellcheckEnabled
+              )
+              applySpellcheckToAllSessions()
+              buildApplicationMenu(win, currentMenuState)
+            }
+          },
+          { type: 'separator' },
+          ...SPELLCHECK_LANGUAGE_OPTIONS.map((opt) => ({
+            label: tr(spellcheckLabelKey(opt.id)),
+            type: 'checkbox' as const,
+            checked: prefs.spellcheckLanguages.includes(opt.id),
+            click: () => {
+              toggleSpellcheckLanguage(opt.id)
+              applySpellcheckToAllSessions()
+              buildApplicationMenu(win, currentMenuState)
+            }
+          })),
+          { type: 'separator' },
+          {
+            label: tr('settings.spellcheckDownload'),
+            click: () => {
+              void downloadSpellcheckDictionaries()
+            }
+          }
+        ]
+      },
+      { type: 'separator' },
+      {
         label: tr('menu.settings.workspace'),
         click: () => send(win, 'settings:workspace')
       }
@@ -538,4 +583,18 @@ export function updateMenuState(
 
 export function getMenuState(): MenuState {
   return { ...currentMenuState }
+}
+
+function spellcheckLabelKey(id: SpellcheckLanguageId): MessageKey {
+  if (id === 'en-US') return 'settings.spellcheckEnUS'
+  if (id === 'es-419') return 'settings.spellcheckEs'
+  return 'settings.spellcheckEnGB'
+}
+
+function toggleSpellcheckLanguage(id: SpellcheckLanguageId): void {
+  const current = getPreferences().spellcheckLanguages
+  const next = current.includes(id)
+    ? current.filter((code) => code !== id)
+    : [...current, id]
+  setPreference('spellcheckLanguages', next)
 }

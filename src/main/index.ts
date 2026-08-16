@@ -13,6 +13,12 @@ import { getPreferences, setPreference } from './store'
 import { initAutoUpdater } from './auto-updater'
 import { confirmDiscard, getDocumentState } from './file-service'
 import { ensureUserTemplateAvailable } from './template-service'
+import {
+  applySpellcheckToSession,
+  initSpellcheck,
+  installSpellcheckContextMenu,
+  registerHunspellPath
+} from './spellcheck'
 import { IPC } from '../shared/constants/screenplay'
 
 // Disable GPU sandbox issues on some Linux hosts during development
@@ -40,7 +46,8 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      spellcheck: true
     }
   })
 
@@ -83,6 +90,8 @@ function createWindow(): void {
   })
 
   buildApplicationMenu(mainWindow)
+  applySpellcheckToSession(mainWindow.webContents.session)
+  installSpellcheckContextMenu(mainWindow)
 
   // Load renderer
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -92,11 +101,17 @@ function createWindow(): void {
   }
 }
 
+// Hunspell path must be set before Chromium starts.
+registerHunspellPath()
+
 app.whenReady().then(() => {
   registerIpcHandlers()
   // Install starter template into Documents/FilmScriptWriter/templates (idempotent)
   void ensureUserTemplateAvailable().catch((err) => {
     console.warn('[template] ensure failed:', err)
+  })
+  void initSpellcheck().catch((err) => {
+    console.warn('[spellcheck] init failed:', err)
   })
   createWindow()
   initAutoUpdater(() => mainWindow)

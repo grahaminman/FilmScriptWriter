@@ -39,6 +39,12 @@ import {
 import { updateMenuState } from './menu'
 import { checkForUpdatesManual } from './auto-updater'
 import {
+  applySpellcheckToAllSessions,
+  downloadSpellcheckDictionaries,
+  getSpellcheckStatus,
+  openDictionaryFolder
+} from './spellcheck'
+import {
   chooseAndInstallUserTemplate,
   getTemplateInfo,
   revertUserTemplate,
@@ -68,9 +74,19 @@ export function registerIpcHandlers(): void {
         partial.rightPaneMode !== undefined ||
         partial.previewFollow !== undefined ||
         partial.typewriterMode !== undefined ||
-        partial.syntaxHighlighting !== undefined
+        partial.syntaxHighlighting !== undefined ||
+        partial.spellcheckEnabled !== undefined ||
+        partial.spellcheckLanguages !== undefined ||
+        partial.spellcheckDictionaryUrl !== undefined
       ) {
         updateMenuState(win, {})
+      }
+      if (
+        partial.spellcheckEnabled !== undefined ||
+        partial.spellcheckLanguages !== undefined ||
+        partial.spellcheckDictionaryUrl !== undefined
+      ) {
+        applySpellcheckToAllSessions()
       }
       // Broadcast to all windows
       for (const w of BrowserWindow.getAllWindows()) {
@@ -79,6 +95,12 @@ export function registerIpcHandlers(): void {
       return next
     }
   )
+
+  ipcMain.handle(IPC.SPELLCHECK_STATUS, () => getSpellcheckStatus())
+  ipcMain.handle(IPC.SPELLCHECK_DOWNLOAD, (_event, languages?: string[]) =>
+    downloadSpellcheckDictionaries(languages)
+  )
+  ipcMain.handle(IPC.SPELLCHECK_OPEN_FOLDER, () => openDictionaryFolder())
 
   ipcMain.handle(IPC.FILE_GET_STATE, () => getDocumentState())
 
