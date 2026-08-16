@@ -28,6 +28,7 @@ export interface AppPreferences {
   autosaveMinutes: number
   indexVisible: boolean
   notesVisible: boolean
+  syntaxCoachCollapsed: boolean
   windowBounds: { width: number; height: number; x?: number; y?: number }
 }
 

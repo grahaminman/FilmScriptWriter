@@ -11,6 +11,12 @@ import { createHelpPanel, type HelpPanelHandle } from './ui/help-panel'
 import { createWorkspaceSettingsPanel } from './ui/workspace-settings'
 import { createIndexSidebar } from './ui/index-sidebar'
 import { createNotesSidebar } from './ui/notes-sidebar'
+import { createSyntaxCoachBar } from './ui/syntax-coach-bar'
+import { classifyDocumentLines } from './editor/fountain-line-highlighter'
+import {
+  resolveSyntaxCoach,
+  type CoachLineKind
+} from '../shared/fountain/syntax-coach'
 import { t } from '../shared/i18n/locales'
 import {
   FONT_SIZE_DEFAULT,
@@ -126,6 +132,8 @@ let indexSidebar: ReturnType<typeof createIndexSidebar>
 let notesSidebar: ReturnType<typeof createNotesSidebar>
 let indexVisible = true
 let notesVisible = true
+let syntaxCoach: ReturnType<typeof createSyntaxCoachBar>
+let coachTimer: ReturnType<typeof setTimeout> | null = null
 
 let statsTimer: ReturnType<typeof setTimeout> | null = null
 let followTimer: ReturnType<typeof setTimeout> | null = null
@@ -179,7 +187,8 @@ const el = {
   firstRunNameLabel: document.getElementById('first-run-name-label') as HTMLElement,
   resizer: document.getElementById('pane-resizer') as HTMLElement,
   indexRoot: document.getElementById('index-sidebar') as HTMLElement,
-  notesRoot: document.getElementById('notes-sidebar') as HTMLElement
+  notesRoot: document.getElementById('notes-sidebar') as HTMLElement,
+  syntaxCoach: document.getElementById('syntax-coach') as HTMLElement
 }
 
 // ---------------------------------------------------------------------------
@@ -339,6 +348,48 @@ function scheduleFollow(line: number): void {
   }, FOLLOW_DEBOUNCE_MS)
 }
 
+function scheduleSyntaxCoach(): void {
+  if (coachTimer) clearTimeout(coachTimer)
+  coachTimer = setTimeout(() => refreshSyntaxCoach(), 50)
+}
+
+function refreshSyntaxCoach(): void {
+  if (!syntaxCoach) return
+  const doc = focusedDoc()
+  const pane = panes.find((p) => p.id === focusedPaneId) ?? panes[0]
+  const isFountain = doc?.kind === 'fountain'
+  if (!pane || !isFountain) {
+    syntaxCoach.update(
+      resolveSyntaxCoach({
+        lineText: '',
+        lineKind: 'unknown',
+        prevBlank: true,
+        cursorCol: 0,
+        isFountain: false
+      })
+    )
+    return
+  }
+  const state = pane.editor.view.state
+  const pos = state.selection.main.head
+  const line = state.doc.lineAt(pos)
+  const kinds = classifyDocumentLines(state.doc)
+  const prevText = line.number > 1 ? state.doc.line(line.number - 1).text : ''
+  syntaxCoach.update(
+    resolveSyntaxCoach({
+      lineText: line.text,
+      lineKind: (kinds[line.number] ?? 'unknown') as CoachLineKind,
+      previousKind:
+        line.number > 1
+          ? ((kinds[line.number - 1] ?? 'unknown') as CoachLineKind)
+          : 'unknown',
+      prevBlank: line.number === 1 || prevText.trim() === '',
+      cursorCol: pos - line.from,
+      isFountain: true
+    })
+  )
+}
+
 function refreshPreviewAndIndex(): void {
   const draft = currentDraftDoc()
   const showPreview = Boolean(draft) && previewVisible
@@ -448,11 +499,13 @@ function makeEditor(parent: HTMLElement, fountainMode: boolean, initial: string)
       doc.content = text
       markDirty(doc, true)
       if (doc.isCurrentDraft) scheduleStats()
+      scheduleSyntaxCoach()
     },
     onCursorLine: (line) => {
       const pane = panes.find((p) => p.editor === handle)
       const doc = docs.find((d) => d.id === pane?.docId)
       if (doc?.isCurrentDraft) scheduleFollow(line)
+      scheduleSyntaxCoach()
     }
   })
   return handle
@@ -514,6 +567,7 @@ function updatePaneFocus(): void {
   for (const pane of panes) {
     pane.root.classList.toggle('focused', pane.id === focusedPaneId)
   }
+  scheduleSyntaxCoach()
 }
 
 function renderTabs(): void {
@@ -946,6 +1000,11 @@ function handleMenuAction(action: string): void {
     case 'view:toggle-notes':
       void window.api.getPreferences().then((p) => setNotesVisible(p.notesVisible, false))
       break
+    case 'view:toggle-syntax-coach':
+      void window.api.getPreferences().then((p) => {
+        syntaxCoach?.setCollapsed(p.syntaxCoachCollapsed)
+      })
+      break
     case 'view:split-1':
       setSplitCount(1)
       break
@@ -1100,6 +1159,11 @@ async function bootstrap(): Promise<void> {
     }
   })
 
+  syntaxCoach = createSyntaxCoachBar(el.syntaxCoach, (collapsed) => {
+    void window.api.setPreferences({ syntaxCoachCollapsed: collapsed })
+  })
+  syntaxCoach.setCollapsed(Boolean(prefs.syntaxCoachCollapsed))
+
   applyLocale(locale)
   applyFontSize(editorFontSize, false)
   setIndexVisible(indexVisible, false)
@@ -1200,6 +1264,9 @@ async function bootstrap(): Promise<void> {
     if (p.syntaxHighlighting !== syntaxHighlighting) setSyntax(p.syntaxHighlighting, false)
     if (p.indexVisible !== indexVisible) setIndexVisible(p.indexVisible, false)
     if (p.notesVisible !== notesVisible) setNotesVisible(p.notesVisible, false)
+    if (p.syntaxCoachCollapsed !== syntaxCoach.isCollapsed()) {
+      syntaxCoach.setCollapsed(p.syntaxCoachCollapsed)
+    }
     if (p.autosaveMinutes !== autosaveMinutes) armAutosave(p.autosaveMinutes)
     if (p.projectsBaseFolder && p.projectsBaseFolder !== el.firstRunFolder.value) {
       el.firstRunFolder.value = p.projectsBaseFolder
@@ -1215,6 +1282,7 @@ async function bootstrap(): Promise<void> {
   })
 
   focusedEditor()?.focus()
+  refreshSyntaxCoach()
 }
 
 void bootstrap()

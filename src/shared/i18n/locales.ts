@@ -38,6 +38,7 @@ export type MessageKey =
   | 'menu.view.preview'
   | 'menu.view.index'
   | 'menu.view.notes'
+  | 'menu.view.syntaxCoach'
   | 'menu.view.split1'
   | 'menu.view.split2'
   | 'menu.view.split3'
@@ -156,6 +157,7 @@ const en_GB: Messages = {
   'menu.view.preview': 'Toggle Preview',
   'menu.view.index': 'Index Sidebar',
   'menu.view.notes': 'Notes Sidebar',
+  'menu.view.syntaxCoach': 'Fountain Help Bar',
   'menu.view.split1': 'One Pane',
   'menu.view.split2': 'Two Panes',
   'menu.view.split3': 'Three Panes',
@@ -279,6 +281,7 @@ const es_PY: Messages = {
   'menu.view.preview': 'Alternar vista previa',
   'menu.view.index': 'Índice',
   'menu.view.notes': 'Notas',
+  'menu.view.syntaxCoach': 'Barra de ayuda Fountain',
   'menu.view.split1': 'Un panel',
   'menu.view.split2': 'Dos paneles',
   'menu.view.split3': 'Tres paneles',
@@ -402,6 +405,7 @@ const fr_FR: Messages = {
   'menu.view.preview': 'Basculer l’aperçu',
   'menu.view.index': 'Index',
   'menu.view.notes': 'Notes',
+  'menu.view.syntaxCoach': 'Barre d’aide Fountain',
   'menu.view.split1': 'Un volet',
   'menu.view.split2': 'Deux volets',
   'menu.view.split3': 'Trois volets',

@@ -61,6 +61,8 @@ export interface AppPreferences {
   indexVisible: boolean
   /** Notes sidebar visible. */
   notesVisible: boolean
+  /** Fountain syntax coach bar is retracted to a single line. */
+  syntaxCoachCollapsed: boolean
   windowBounds: {
     width: number
     height: number
@@ -87,6 +89,7 @@ const defaults: AppPreferences = {
   autosaveMinutes: 5,
   indexVisible: true,
   notesVisible: true,
+  syntaxCoachCollapsed: false,
   windowBounds: {
     width: 1400,
     height: 900
@@ -145,6 +148,10 @@ export function getPreferences(): AppPreferences {
     ),
     indexVisible: prefsStore.get('indexVisible', defaults.indexVisible),
     notesVisible: prefsStore.get('notesVisible', defaults.notesVisible),
+    syntaxCoachCollapsed: prefsStore.get(
+      'syntaxCoachCollapsed',
+      defaults.syntaxCoachCollapsed
+    ),
     windowBounds: prefsStore.get('windowBounds', defaults.windowBounds)
   }
 }

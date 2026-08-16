@@ -40,6 +40,7 @@ export type MenuAction =
   | 'view:toggle-preview'
   | 'view:toggle-index'
   | 'view:toggle-notes'
+  | 'view:toggle-syntax-coach'
   | 'view:split-1'
   | 'view:split-2'
   | 'view:split-3'
@@ -232,6 +233,17 @@ export function buildApplicationMenu(
           setPreference('notesVisible', next)
           buildApplicationMenu(win, currentMenuState)
           send(win, 'view:toggle-notes')
+        }
+      },
+      {
+        label: tr('menu.view.syntaxCoach'),
+        type: 'checkbox',
+        checked: !prefs.syntaxCoachCollapsed,
+        click: () => {
+          const next = !getPreferences().syntaxCoachCollapsed
+          setPreference('syntaxCoachCollapsed', next)
+          buildApplicationMenu(win, currentMenuState)
+          send(win, 'view:toggle-syntax-coach')
         }
       },
       { type: 'separator' },
