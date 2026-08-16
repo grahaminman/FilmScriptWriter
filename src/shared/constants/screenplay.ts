@@ -244,7 +244,11 @@ export const IPC = {
   TEMPLATE_GET: 'template:get',
   TEMPLATE_SAVE: 'template:save',
   TEMPLATE_REVERT: 'template:revert',
-  TEMPLATE_CHOOSE: 'template:choose'
+  TEMPLATE_CHOOSE: 'template:choose',
+
+  SPELLCHECK_STATUS: 'spellcheck:status',
+  SPELLCHECK_DOWNLOAD: 'spellcheck:download',
+  SPELLCHECK_OPEN_FOLDER: 'spellcheck:open-folder'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

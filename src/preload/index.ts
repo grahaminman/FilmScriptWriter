@@ -31,7 +31,28 @@ export interface AppPreferences {
   syntaxCoachCollapsed: boolean
   rightPaneMode: 'preview' | 'help'
   fountainHelpIndexCollapsed: boolean
+  spellcheckEnabled: boolean
+  spellcheckLanguages: Array<'en-GB' | 'en-US' | 'es-419'>
+  spellcheckDictionaryUrl: string
   windowBounds: { width: number; height: number; x?: number; y?: number }
+}
+
+export interface SpellcheckFileStatus {
+  language: string
+  present: boolean
+  path: string
+}
+
+export interface SpellcheckStatus {
+  enabled: boolean
+  languages: string[]
+  appliedLanguages: string[]
+  availableLanguages: string[]
+  dictionaryDir: string
+  dictionaryUrl: string
+  usesHunspell: boolean
+  files: SpellcheckFileStatus[]
+  lastError: string
 }
 
 export interface ProjectFileInfo {
@@ -167,6 +188,12 @@ export interface ElectronAPI {
     canUndo?: boolean
     canRedo?: boolean
   }) => void
+
+  getSpellcheckStatus: () => Promise<SpellcheckStatus>
+  downloadSpellcheckDictionaries: (
+    languages?: string[]
+  ) => Promise<SpellcheckStatus>
+  openSpellcheckFolder: () => Promise<void>
 }
 
 const api: ElectronAPI = {
@@ -225,7 +252,12 @@ const api: ElectronAPI = {
   getTemplate: () => ipcRenderer.invoke(IPC.TEMPLATE_GET),
   saveTemplate: (content) => ipcRenderer.invoke(IPC.TEMPLATE_SAVE, content),
   revertTemplate: () => ipcRenderer.invoke(IPC.TEMPLATE_REVERT),
-  chooseTemplateFile: () => ipcRenderer.invoke(IPC.TEMPLATE_CHOOSE)
+  chooseTemplateFile: () => ipcRenderer.invoke(IPC.TEMPLATE_CHOOSE),
+
+  getSpellcheckStatus: () => ipcRenderer.invoke(IPC.SPELLCHECK_STATUS),
+  downloadSpellcheckDictionaries: (languages) =>
+    ipcRenderer.invoke(IPC.SPELLCHECK_DOWNLOAD, languages),
+  openSpellcheckFolder: () => ipcRenderer.invoke(IPC.SPELLCHECK_OPEN_FOLDER)
 }
 
 contextBridge.exposeInMainWorld('api', api)

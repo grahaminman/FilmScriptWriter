@@ -20,6 +20,12 @@ import {
   type SyntaxColorPalette,
   type SyntaxColorPresetId
 } from '../shared/constants/syntax-colors'
+import {
+  DEFAULT_SPELLCHECK_LANGUAGES,
+  sanitizeDictionaryUrl,
+  sanitizeSpellcheckLanguages,
+  type SpellcheckLanguageId
+} from '../shared/constants/spellcheck'
 
 export interface AppPreferences {
   theme: ThemeMode
@@ -67,6 +73,18 @@ export interface AppPreferences {
   rightPaneMode: 'preview' | 'help'
   /** Retractable syntax index inside the Fountain help pane. */
   fountainHelpIndexCollapsed: boolean
+  /** Chromium spellchecker is on. */
+  spellcheckEnabled: boolean
+  /**
+   * Hunspell language ids: en-GB (default), en-US, es-419.
+   * Independent of the UI locale.
+   */
+  spellcheckLanguages: SpellcheckLanguageId[]
+  /**
+   * Optional http(s) base URL for self-hosted .bdic files.
+   * Empty = built-in Google CDN + GitHub Hunspell mirrors.
+   */
+  spellcheckDictionaryUrl: string
   windowBounds: {
     width: number
     height: number
@@ -96,6 +114,9 @@ const defaults: AppPreferences = {
   syntaxCoachCollapsed: false,
   rightPaneMode: 'preview',
   fountainHelpIndexCollapsed: false,
+  spellcheckEnabled: true,
+  spellcheckLanguages: [...DEFAULT_SPELLCHECK_LANGUAGES],
+  spellcheckDictionaryUrl: '',
   windowBounds: {
     width: 1400,
     height: 900
@@ -166,6 +187,15 @@ export function getPreferences(): AppPreferences {
       'fountainHelpIndexCollapsed',
       defaults.fountainHelpIndexCollapsed
     ),
+    spellcheckEnabled: Boolean(
+      prefsStore.get('spellcheckEnabled', defaults.spellcheckEnabled)
+    ),
+    spellcheckLanguages: sanitizeSpellcheckLanguages(
+      prefsStore.get('spellcheckLanguages', defaults.spellcheckLanguages)
+    ),
+    spellcheckDictionaryUrl: sanitizeDictionaryUrl(
+      prefsStore.get('spellcheckDictionaryUrl', defaults.spellcheckDictionaryUrl)
+    ),
     windowBounds: prefsStore.get('windowBounds', defaults.windowBounds)
   }
 }
@@ -186,6 +216,16 @@ export function setPreference<K extends keyof AppPreferences>(
     prefsStore.set(key, clampFontSize(value as number) as AppPreferences[K])
   } else if (key === 'autosaveMinutes') {
     prefsStore.set(key, clampAutosave(value as number) as AppPreferences[K])
+  } else if (key === 'spellcheckLanguages') {
+    prefsStore.set(
+      key,
+      sanitizeSpellcheckLanguages(value) as AppPreferences[K]
+    )
+  } else if (key === 'spellcheckDictionaryUrl') {
+    prefsStore.set(
+      key,
+      sanitizeDictionaryUrl(value) as AppPreferences[K]
+    )
   } else {
     prefsStore.set(key, value)
   }
@@ -199,6 +239,10 @@ export function setPreferences(partial: Partial<AppPreferences>): AppPreferences
       prefsStore.set('editorFontSize', clampFontSize(v as number))
     } else if (k === 'autosaveMinutes') {
       prefsStore.set('autosaveMinutes', clampAutosave(v as number))
+    } else if (k === 'spellcheckLanguages') {
+      prefsStore.set('spellcheckLanguages', sanitizeSpellcheckLanguages(v))
+    } else if (k === 'spellcheckDictionaryUrl') {
+      prefsStore.set('spellcheckDictionaryUrl', sanitizeDictionaryUrl(v))
     } else {
       prefsStore.set(k as keyof AppPreferences, v as never)
     }

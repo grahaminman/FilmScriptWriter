@@ -50,6 +50,7 @@ export interface EditorHandle {
   getCursorLine: () => number
   setCursorLine: (line: number) => void
   onCursorLineChange: (cb: (line: number) => void) => () => void
+  setSpellcheck: (enabled: boolean, languages: string[]) => void
   destroy: () => void
 }
 
@@ -68,6 +69,8 @@ export interface CreateEditorOptions {
   onCursorLine?: (line: number) => void
   /** When false, skip Fountain language + line highlighter (markdown / notes). */
   fountainMode?: boolean
+  spellcheckEnabled?: boolean
+  spellcheckLanguages?: string[]
 }
 
 /**
@@ -79,6 +82,7 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
   const fontComp = new Compartment()
   const highlightComp = new Compartment()
   const typewriterComp = new Compartment()
+  const spellcheckComp = new Compartment()
 
   let locale: LocaleCode = options.locale ?? 'en_GB'
   let dark = options.dark ?? true
@@ -114,6 +118,12 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
       // Line decorations + CSS vars — reliable per-element colours
       highlightComp.of(syntaxOn && fountainMode ? fountainLineHighlighter() : []),
       typewriterComp.of(typewriterOn ? typewriterExtension() : []),
+      spellcheckComp.of(
+        spellcheckAttributes(
+          options.spellcheckEnabled !== false,
+          options.spellcheckLanguages ?? ['en-GB']
+        )
+      ),
       placeholderComp.of(
         placeholder(t(locale, 'editor.placeholder' as MessageKey))
       ),
@@ -213,8 +223,26 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
         cursorListeners.delete(cb)
       }
     },
+    setSpellcheck: (enabled, languages) => {
+      view.dispatch({
+        effects: spellcheckComp.reconfigure(
+          spellcheckAttributes(enabled, languages)
+        )
+      })
+    },
     destroy: () => view.destroy()
   }
+}
+
+function spellcheckAttributes(
+  enabled: boolean,
+  languages: string[]
+): Extension {
+  const lang = (languages[0] ?? 'en-GB').replace('_', '-')
+  return EditorView.contentAttributes.of({
+    spellcheck: enabled ? 'true' : 'false',
+    lang
+  })
 }
 
 function fontSizeTheme(px: number): Extension {

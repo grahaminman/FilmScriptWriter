@@ -66,6 +66,8 @@ export type MessageKey =
   | 'menu.help.guide'
   | 'menu.help.checkUpdates'
   | 'menu.settings.workspace'
+  | 'menu.settings.spellcheck'
+  | 'menu.edit.addToDictionary'
   | 'settings.title'
   | 'settings.baseFolder'
   | 'settings.changeFolder'
@@ -81,6 +83,22 @@ export type MessageKey =
   | 'settings.templateUnsaved'
   | 'settings.templateSaved'
   | 'settings.templateReverted'
+  | 'settings.spellcheck'
+  | 'settings.spellcheckEnabled'
+  | 'settings.spellcheckHint'
+  | 'settings.spellcheckEnGB'
+  | 'settings.spellcheckEnUS'
+  | 'settings.spellcheckEs'
+  | 'settings.spellcheckDownload'
+  | 'settings.spellcheckOpenFolder'
+  | 'settings.spellcheckUrl'
+  | 'settings.spellcheckUrlHint'
+  | 'settings.spellcheckReady'
+  | 'settings.spellcheckMissing'
+  | 'settings.spellcheckDownloading'
+  | 'settings.spellcheckDownloadDone'
+  | 'settings.spellcheckDownloadFailed'
+  | 'settings.spellcheckHunspellNote'
   | 'firstRun.title'
   | 'firstRun.body'
   | 'firstRun.chooseFolder'
@@ -197,6 +215,8 @@ const en_GB: Messages = {
   'menu.help.guide': 'Help and Instructions…',
   'menu.help.checkUpdates': 'Check for Updates…',
   'menu.settings.workspace': 'Projects, Autosave and Template…',
+  'menu.settings.spellcheck': 'Spell check',
+  'menu.edit.addToDictionary': 'Add to dictionary',
   'settings.title': 'Settings',
   'settings.baseFolder': 'Projects folder',
   'settings.changeFolder': 'Change…',
@@ -214,6 +234,26 @@ const en_GB: Messages = {
     'The template has unsaved edits. Close Settings and discard them?',
   'settings.templateSaved': 'Template saved. New projects will use this file.',
   'settings.templateReverted': 'Template restored to the original starter.',
+  'settings.spellcheck': 'Spell check',
+  'settings.spellcheckEnabled': 'Enable spell check',
+  'settings.spellcheckHint':
+    'Misspellings are underlined as you type. Dictionaries are stored on this computer so checking still works offline. Default is British English.',
+  'settings.spellcheckEnGB': 'English (UK)',
+  'settings.spellcheckEnUS': 'English (US)',
+  'settings.spellcheckEs': 'Spanish (Latin America / Paraguay)',
+  'settings.spellcheckDownload': 'Download dictionaries',
+  'settings.spellcheckOpenFolder': 'Open dictionaries folder',
+  'settings.spellcheckUrl': 'Dictionary download URL (optional)',
+  'settings.spellcheckUrlHint':
+    'Leave blank to use the built-in sources. For a self-hosted copy, use a folder URL so the app can fetch en-GB.bdic, en-US.bdic and es-419.bdic.',
+  'settings.spellcheckReady': 'Ready',
+  'settings.spellcheckMissing': 'Not downloaded',
+  'settings.spellcheckDownloading': 'Downloading dictionaries…',
+  'settings.spellcheckDownloadDone': 'Dictionaries saved on this computer.',
+  'settings.spellcheckDownloadFailed':
+    'Could not download one or more dictionaries. Copy .bdic files into the dictionaries folder, or set a self-hosted URL.',
+  'settings.spellcheckHunspellNote':
+    'Windows and Linux use these Hunspell files. macOS uses the system spell checker (macOS chooses the language).',
   'firstRun.title': 'Where should your projects live?',
   'firstRun.body':
     'Choose a base folder for every screenplay. Each project gets its own folder. You can change this later in Settings.',
@@ -336,6 +376,8 @@ const es_PY: Messages = {
   'menu.help.guide': 'Ayuda e instrucciones…',
   'menu.help.checkUpdates': 'Buscar actualizaciones…',
   'menu.settings.workspace': 'Proyectos, autoguardado y plantilla…',
+  'menu.settings.spellcheck': 'Corrector ortográfico',
+  'menu.edit.addToDictionary': 'Añadir al diccionario',
   'settings.title': 'Ajustes',
   'settings.baseFolder': 'Carpeta de proyectos',
   'settings.changeFolder': 'Cambiar…',
@@ -353,6 +395,26 @@ const es_PY: Messages = {
     'La plantilla tiene cambios sin guardar. ¿Cerrar Ajustes y descartarlos?',
   'settings.templateSaved': 'Plantilla guardada. Los proyectos nuevos la usarán.',
   'settings.templateReverted': 'Plantilla restaurada al modelo original.',
+  'settings.spellcheck': 'Corrector ortográfico',
+  'settings.spellcheckEnabled': 'Activar el corrector',
+  'settings.spellcheckHint':
+    'Las palabras mal escritas se subrayan al escribir. Los diccionarios se guardan en este equipo para funcionar sin conexión. El idioma predeterminado es el inglés británico.',
+  'settings.spellcheckEnGB': 'Inglés (Reino Unido)',
+  'settings.spellcheckEnUS': 'Inglés (Estados Unidos)',
+  'settings.spellcheckEs': 'Español (Latinoamérica / Paraguay)',
+  'settings.spellcheckDownload': 'Descargar diccionarios',
+  'settings.spellcheckOpenFolder': 'Abrir carpeta de diccionarios',
+  'settings.spellcheckUrl': 'URL de descarga de diccionarios (opcional)',
+  'settings.spellcheckUrlHint':
+    'Déjelo en blanco para usar las fuentes incluidas. Para una copia propia, use la URL de una carpeta de la que se puedan obtener en-GB.bdic, en-US.bdic y es-419.bdic.',
+  'settings.spellcheckReady': 'Listo',
+  'settings.spellcheckMissing': 'No descargado',
+  'settings.spellcheckDownloading': 'Descargando diccionarios…',
+  'settings.spellcheckDownloadDone': 'Diccionarios guardados en este equipo.',
+  'settings.spellcheckDownloadFailed':
+    'No se pudo descargar uno o más diccionarios. Copie archivos .bdic en la carpeta de diccionarios o indique una URL propia.',
+  'settings.spellcheckHunspellNote':
+    'Windows y Linux usan estos archivos Hunspell. En macOS se usa el corrector del sistema (macOS elige el idioma).',
   'firstRun.title': '¿Dónde deben guardarse los proyectos?',
   'firstRun.body':
     'Elija una carpeta base para todos los guiones. Cada proyecto tiene su propia carpeta. Puede cambiarla después en Ajustes.',
@@ -475,6 +537,8 @@ const fr_FR: Messages = {
   'menu.help.guide': 'Aide et instructions…',
   'menu.help.checkUpdates': 'Rechercher les mises à jour…',
   'menu.settings.workspace': 'Projets et enregistrement auto…',
+  'menu.settings.spellcheck': 'Correcteur orthographique',
+  'menu.edit.addToDictionary': 'Ajouter au dictionnaire',
   'settings.title': 'Réglages',
   'settings.baseFolder': 'Dossier des projets',
   'settings.changeFolder': 'Changer…',
@@ -492,6 +556,26 @@ const fr_FR: Messages = {
     'Le modèle a des modifications non enregistrées. Fermer Réglages et les abandonner ?',
   'settings.templateSaved': 'Modèle enregistré. Les nouveaux projets l’utiliseront.',
   'settings.templateReverted': 'Modèle restauré à partir de l’original.',
+  'settings.spellcheck': 'Correcteur orthographique',
+  'settings.spellcheckEnabled': 'Activer le correcteur',
+  'settings.spellcheckHint':
+    'Les fautes sont soulignées pendant la saisie. Les dictionnaires sont enregistrés sur cet ordinateur pour fonctionner hors ligne. L’anglais britannique est la langue par défaut.',
+  'settings.spellcheckEnGB': 'Anglais (Royaume-Uni)',
+  'settings.spellcheckEnUS': 'Anglais (États-Unis)',
+  'settings.spellcheckEs': 'Espagnol (Amérique latine / Paraguay)',
+  'settings.spellcheckDownload': 'Télécharger les dictionnaires',
+  'settings.spellcheckOpenFolder': 'Ouvrir le dossier des dictionnaires',
+  'settings.spellcheckUrl': 'URL de téléchargement des dictionnaires (facultatif)',
+  'settings.spellcheckUrlHint':
+    'Laissez vide pour utiliser les sources intégrées. Pour une copie auto-hébergée, indiquez l’URL d’un dossier d’où l’application peut récupérer en-GB.bdic, en-US.bdic et es-419.bdic.',
+  'settings.spellcheckReady': 'Prêt',
+  'settings.spellcheckMissing': 'Non téléchargé',
+  'settings.spellcheckDownloading': 'Téléchargement des dictionnaires…',
+  'settings.spellcheckDownloadDone': 'Dictionnaires enregistrés sur cet ordinateur.',
+  'settings.spellcheckDownloadFailed':
+    'Impossible de télécharger un ou plusieurs dictionnaires. Copiez des fichiers .bdic dans le dossier, ou indiquez une URL auto-hébergée.',
+  'settings.spellcheckHunspellNote':
+    'Windows et Linux utilisent ces fichiers Hunspell. macOS utilise le correcteur du système (macOS choisit la langue).',
   'firstRun.title': 'Où doivent vivre vos projets ?',
   'firstRun.body':
     'Choisissez un dossier de base pour chaque scénario. Chaque projet a son propre dossier. Vous pourrez le changer dans Réglages.',
