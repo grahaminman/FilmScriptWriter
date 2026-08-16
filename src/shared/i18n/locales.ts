@@ -76,6 +76,8 @@ export type MessageKey =
   | 'settings.templateChoose'
   | 'settings.templateSave'
   | 'settings.templateRevert'
+  | 'settings.templateSelectAll'
+  | 'settings.templateUnsaved'
   | 'settings.templateSaved'
   | 'settings.templateReverted'
   | 'firstRun.title'
@@ -204,6 +206,9 @@ const en_GB: Messages = {
   'settings.templateChoose': 'Use my file…',
   'settings.templateSave': 'Save template',
   'settings.templateRevert': 'Revert to original',
+  'settings.templateSelectAll': 'Select all',
+  'settings.templateUnsaved':
+    'The template has unsaved edits. Close Settings and discard them?',
   'settings.templateSaved': 'Template saved. New projects will use this file.',
   'settings.templateReverted': 'Template restored to the original starter.',
   'firstRun.title': 'Where should your projects live?',
@@ -337,6 +342,9 @@ const es_PY: Messages = {
   'settings.templateChoose': 'Usar mi archivo…',
   'settings.templateSave': 'Guardar plantilla',
   'settings.templateRevert': 'Revertir al original',
+  'settings.templateSelectAll': 'Seleccionar todo',
+  'settings.templateUnsaved':
+    'La plantilla tiene cambios sin guardar. ¿Cerrar Ajustes y descartarlos?',
   'settings.templateSaved': 'Plantilla guardada. Los proyectos nuevos la usarán.',
   'settings.templateReverted': 'Plantilla restaurada al modelo original.',
   'firstRun.title': '¿Dónde deben guardarse los proyectos?',
@@ -470,6 +478,9 @@ const fr_FR: Messages = {
   'settings.templateChoose': 'Utiliser mon fichier…',
   'settings.templateSave': 'Enregistrer le modèle',
   'settings.templateRevert': 'Rétablir l’original',
+  'settings.templateSelectAll': 'Tout sélectionner',
+  'settings.templateUnsaved':
+    'Le modèle a des modifications non enregistrées. Fermer Réglages et les abandonner ?',
   'settings.templateSaved': 'Modèle enregistré. Les nouveaux projets l’utiliseront.',
   'settings.templateReverted': 'Modèle restauré à partir de l’original.',
   'firstRun.title': 'Où doivent vivre vos projets ?',

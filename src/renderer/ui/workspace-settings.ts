@@ -58,6 +58,7 @@ export function createWorkspaceSettingsPanel(
         <p class="settings-path" id="ws-template-path"></p>
         <textarea id="ws-template-editor" class="settings-template-editor" spellcheck="false"></textarea>
         <div class="settings-actions settings-actions-wrap">
+          <button type="button" id="ws-template-select">Select all</button>
           <button type="button" id="ws-template-choose">Use my file…</button>
           <button type="button" id="ws-template-save">Save template</button>
           <button type="button" id="ws-template-revert">Revert to original</button>
@@ -79,10 +80,14 @@ export function createWorkspaceSettingsPanel(
   const tmplHint = backdrop.querySelector('#ws-template-hint') as HTMLElement
   const tmplPath = backdrop.querySelector('#ws-template-path') as HTMLElement
   const tmplEditor = backdrop.querySelector('#ws-template-editor') as HTMLTextAreaElement
+  const tmplSelect = backdrop.querySelector('#ws-template-select') as HTMLButtonElement
   const tmplChoose = backdrop.querySelector('#ws-template-choose') as HTMLButtonElement
   const tmplSave = backdrop.querySelector('#ws-template-save') as HTMLButtonElement
   const tmplRevert = backdrop.querySelector('#ws-template-revert') as HTMLButtonElement
   const tmplStatus = backdrop.querySelector('#ws-template-status') as HTMLElement
+  const panel = backdrop.querySelector('.settings-panel') as HTMLElement
+  let savedTemplate = ''
+  let pointerDownOnBackdrop = false
 
   const fillAutosave = (): void => {
     autosaveSel.innerHTML = ''
@@ -105,6 +110,7 @@ export function createWorkspaceSettingsPanel(
     autosaveLabel.textContent = t(locale, 'settings.autosave')
     tmplTitle.textContent = t(locale, 'settings.template')
     tmplHint.textContent = t(locale, 'settings.templateHint')
+    tmplSelect.textContent = t(locale, 'settings.templateSelectAll')
     tmplChoose.textContent = t(locale, 'settings.templateChoose')
     tmplSave.textContent = t(locale, 'settings.templateSave')
     tmplRevert.textContent = t(locale, 'settings.templateRevert')
@@ -126,6 +132,7 @@ export function createWorkspaceSettingsPanel(
   }): void => {
     tmplPath.textContent = info.userPath
     tmplEditor.value = info.content
+    savedTemplate = info.content
   }
 
   const loadTemplate = async (): Promise<void> => {
@@ -139,10 +146,35 @@ export function createWorkspaceSettingsPanel(
     void loadTemplate()
   }
 
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) close()
+  // Close only when the press both starts and ends on the dimmed backdrop.
+  // Dragging to select template text often ends outside the panel; that
+  // must not dismiss Settings.
+  backdrop.addEventListener('pointerdown', (e) => {
+    pointerDownOnBackdrop = e.target === backdrop
   })
-  backdrop.querySelector('.settings-panel')?.addEventListener('click', (e) => e.stopPropagation())
+  backdrop.addEventListener('pointerup', (e) => {
+    const dismiss = pointerDownOnBackdrop && e.target === backdrop
+    pointerDownOnBackdrop = false
+    if (dismiss) close()
+  })
+  panel.addEventListener('pointerdown', () => {
+    pointerDownOnBackdrop = false
+  })
+  tmplEditor.addEventListener('keydown', (e) => {
+    const accel = e.metaKey || e.ctrlKey
+    if (accel && e.key.toLowerCase() === 'a') {
+      e.preventDefault()
+      e.stopPropagation()
+      tmplEditor.focus()
+      tmplEditor.select()
+      return
+    }
+    if (accel && e.key.toLowerCase() === 's') {
+      e.preventDefault()
+      e.stopPropagation()
+      tmplSave.click()
+    }
+  })
   closeBtn.addEventListener('click', () => close())
   browseBtn.addEventListener('click', () => {
     void handlers.onChooseFolder().then((folder) => {
@@ -156,6 +188,10 @@ export function createWorkspaceSettingsPanel(
     const minutes = Number(autosaveSel.value)
     state.autosaveMinutes = minutes
     handlers.onChange({ autosaveMinutes: minutes })
+  })
+  tmplSelect.addEventListener('click', () => {
+    tmplEditor.focus()
+    tmplEditor.select()
   })
   tmplSave.addEventListener('click', () => {
     void window.api.saveTemplate(tmplEditor.value).then((result) => {
@@ -182,6 +218,10 @@ export function createWorkspaceSettingsPanel(
   })
 
   function close(): void {
+    if (tmplEditor.value !== savedTemplate) {
+      const discard = window.confirm(t(locale, 'settings.templateUnsaved'))
+      if (!discard) return
+    }
     backdrop.classList.add('hidden')
   }
 
@@ -191,6 +231,7 @@ export function createWorkspaceSettingsPanel(
       applyLocale()
       sync()
       backdrop.classList.remove('hidden')
+      queueMicrotask(() => tmplEditor.focus())
     },
     close,
     setLocale: (next) => {
