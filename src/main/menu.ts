@@ -20,6 +20,7 @@ import { getPreferences, setPreference } from './store'
 export type MenuAction =
   | 'file:new'
   | 'file:new-project'
+  | 'file:close-project'
   | 'file:open'
   | 'file:open-project'
   | 'file:import-draft'
@@ -109,6 +110,10 @@ export function buildApplicationMenu(
         label: tr('menu.file.newProject'),
         accelerator: 'CmdOrCtrl+N',
         click: () => send(win, 'file:new-project')
+      },
+      {
+        label: tr('menu.file.closeProject'),
+        click: () => send(win, 'file:close-project')
       },
       {
         label: tr('menu.file.new'),
