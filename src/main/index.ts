@@ -57,16 +57,39 @@ function clampBoundsToDisplay(b: {
   return { width, height, x, y }
 }
 
-function persistNormalBounds(): void {
-  if (!mainWindow || mainWindow.isDestroyed()) return
+let lastNormalBounds: {
+  width: number
+  height: number
+  x?: number
+  y?: number
+} | null = null
+
+function captureNormalBounds(): typeof lastNormalBounds {
+  if (!mainWindow || mainWindow.isDestroyed()) return lastNormalBounds
   if (mainWindow.isMinimized() || mainWindow.isMaximized() || mainWindow.isFullScreen()) {
-    return
+    return lastNormalBounds
   }
-  const next = clampBoundsToDisplay(mainWindow.getBounds())
+  lastNormalBounds = clampBoundsToDisplay(mainWindow.getBounds())
+  return lastNormalBounds
+}
+
+function persistNormalBounds(): void {
+  const next = captureNormalBounds()
+  if (!next) return
   if (persistTimer) clearTimeout(persistTimer)
   persistTimer = setTimeout(() => {
+    persistTimer = null
     setPreference('windowBounds', next)
   }, 300)
+}
+
+function persistBoundsNow(): void {
+  if (persistTimer) {
+    clearTimeout(persistTimer)
+    persistTimer = null
+  }
+  const next = captureNormalBounds() ?? lastNormalBounds
+  if (next) setPreference('windowBounds', next)
 }
 
 function createWindow(): void {
@@ -106,7 +129,7 @@ function createWindow(): void {
   mainWindow.on('unmaximize', persistNormalBounds)
 
   mainWindow.on('close', (e) => {
-    persistNormalBounds()
+    persistBoundsNow()
     if (skipClosePrompt) return
     const state = getDocumentState()
     if (!state.dirty) return
@@ -149,11 +172,21 @@ app.on('before-quit', () => {
   appIsQuitting = true
 })
 
+app.on('will-quit', () => {
+  persistBoundsNow()
+})
+
 app.whenReady().then(() => {
   registerIpcHandlers()
   ipcMain.handle(IPC.APP_QUIT, () => {
     skipClosePrompt = true
-    app.quit()
+    persistBoundsNow()
+    if (appIsQuitting) {
+      app.quit()
+    } else if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.destroy()
+      skipClosePrompt = false
+    }
   })
   ipcMain.handle(IPC.APP_ABORT_QUIT, () => {
     appIsQuitting = false
