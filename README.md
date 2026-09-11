@@ -1,7 +1,6 @@
 # FilmScriptWriter
 
-**v2 is the default branch.** It is a clean starting point for the simpler app.
-The new editor is specified in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and is **not built yet**.
+**v2 is the default branch.** The new editor is specified in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and is **not built yet**.
 
 Do **not** create a second GitHub repository. Keep `grahaminman/FilmScriptWriter`.
 
@@ -9,12 +8,14 @@ Do **not** create a second GitHub repository. Keep `grahaminman/FilmScriptWriter
 
 | Ref | What it is |
 |-----|------------|
-| **`v2`** (default) | Spec, brand, and empty workspace for the new build |
+| **`v2`** (default) | Spec + brand for the simpler app. Ready for a Stage 2 scaffold. |
 | `main` | Archived v1 experiment (projects, notes, index, FDX) |
 | tag `legacy-v1.0.1` | Freeze of the last full v1 app |
 | Releases `v1.0.1` / `v1.0.0.0` | Old beta installers — historical only |
 
 Branch map: [BRANCHES.md](./BRANCHES.md) · Stages: [docs/V2-BUILD-STAGES.md](./docs/V2-BUILD-STAGES.md)
+
+Package metadata and the v1 installer workflow have been removed from `v2`. Some leftover v1 folders (`src/`, `tests/`, `resources/`, `templates/`, `build/`) may still be on this branch until they are deleted in one local commit. Treat them as discarded reference only. The runnable v1 app is on `main`.
 
 ## Product (when Stage 2 is built)
 
