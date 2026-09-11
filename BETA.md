@@ -3,58 +3,26 @@
 **v1 is archived. Active development is branch `v2`.**
 
 - The v1 experiment (projects, notes, index, FDX) lives on `main` and freeze tag **`legacy-v1.0.1`**. Historical only.
-- **`v2`** is the primary branch for a simpler Fountain writer aimed at daily 2–5 page shorts. It is **specified** in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and **not implemented yet**.
-- GitHub Releases for `v1.0.1` / `v1.0.0.0` stay up; old beta installers do not need to keep updating.
+- **`v2`** is the primary branch for a simpler Fountain writer aimed at daily 2–5 page shorts. Specified in [docs/V2-SPEC.md](./docs/V2-SPEC.md). Application code for v2 is not on this branch yet.
+- GitHub Releases for `v1.0.1` / `v1.0.0.0` stay up; old beta installers do not receive updates.
 - See [BRANCHES.md](./BRANCHES.md). Do not create a second repository.
 
----
-
-**This software is a beta / early preview.**
-
-It is shared so testers can try Fountain editing, export, and packaging. It is **not** a finished product.
-
-## What “beta” means here
+## What “beta” means
 
 - Features may change or break between builds
-- Bugs are expected; please report them with steps to reproduce
+- Bugs are expected; report them with steps to reproduce
 - Installers may be **unsigned** (Windows SmartScreen / macOS Gatekeeper may warn)
 - Do not rely on it for critical production deadlines without your own backups
 
-## Releases
-
-Older tags stay on the Releases page if a newer build misbehaves.
+## Historical v1 releases
 
 | Tag | Status |
 |-----|--------|
-| **`v1.0.1`** | Current **beta** GitHub Release (Linux / macOS / Windows) — projects, tabs, notes, Fountain help, editable starter template |
-| **`v1.0.0.0`** | Previous beta — kept available |
+| **`v1.0.1`** | Last published v1 beta installers |
+| **`v1.0.0.0`** | Previous v1 beta — kept available |
 
-Latest: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.1  
-Previous: https://github.com/grahaminman/FilmScriptWriter/releases/tag/v1.0.0.0  
-All: https://github.com/grahaminman/FilmScriptWriter/releases
-
-## Branches
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Default branch (v1.0.1 line) |
-| **`v1.0.1`** | Active development (package version `1.0.1`) |
-| `next` | Optional sandbox for larger experiments |
+https://github.com/grahaminman/FilmScriptWriter/releases
 
 ## Reporting issues
 
-Open a GitHub Issue on this repository with:
-
-1. OS and app version (`Help → About`)
-2. What you did
-3. What you expected
-4. What happened instead
-
-## Building installers (CI)
-
-GitHub Actions workflow: `.github/workflows/build.yml`
-
-- **Tests** run on every pull request to `main`
-- **Installers** (Linux / Windows / macOS) build on tag `v*` or **Actions → Build installers (beta) → Run workflow**
-
-Download artifacts from the completed workflow run.
+Open a GitHub Issue with OS, app version if any, what you did, what you expected, and what happened.
