@@ -1,5 +1,14 @@
 # FilmScriptWriter — Beta notice
 
+**v1 is archived. Active development is branch `v2`.**
+
+- The v1 experiment (projects, notes, index, FDX) lives on `main` and freeze tag **`legacy-v1.0.1`**. Historical only.
+- **`v2`** is the primary branch for a simpler Fountain writer aimed at daily 2–5 page shorts. It is **specified** in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and **not implemented yet**.
+- GitHub Releases for `v1.0.1` / `v1.0.0.0` stay up; old beta installers do not need to keep updating.
+- See [BRANCHES.md](./BRANCHES.md). Do not create a second repository.
+
+---
+
 **This software is a beta / early preview.**
 
 It is shared so testers can try Fountain editing, export, and packaging. It is **not** a finished product.

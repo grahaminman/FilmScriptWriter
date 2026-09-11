@@ -1,5 +1,11 @@
 # FilmScriptWriter
 
+> **This branch (`v2`) is preparation for a simpler app.** The product is specified in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and is **not built yet**. Do not expect the v1 editor here to match that spec.
+>
+> The working **v1 beta** is on `main`, freeze tag [`legacy-v1.0.1`](https://github.com/grahaminman/FilmScriptWriter/releases) / Releases. Branch map: [BRANCHES.md](./BRANCHES.md).
+>
+> Same public repo **FilmScriptWriter** — do not create a second GitHub repository.
+
 > **⚠️ BETA SOFTWARE** — early preview for testing. Not a finished product.  
 > Features may change or break. See [BETA.md](./BETA.md).
 
