@@ -22,7 +22,7 @@ export const FOUNTAIN_SYNTAX_TOPICS: FountainSyntaxTopic[] = [
 
 You do not draw boxes or click “Character”. You type, and the shape of the line tells Fountain what it is.
 
-A .fountain file is just text. You can open it in any editor. FilmScriptWriter adds a live page preview, notes, and this reference.`
+A .fountain file is just text. You can open it in any editor. FilmScriptWriter adds a live page preview and this reference.`
   },
   {
     id: 'page',
@@ -136,7 +136,7 @@ We have to go.
 
 The next line is the spoken words. The name prints in the centre of the page.
 
-Same spelling every time — the Index sidebar collects these names.`
+Same spelling every time — the editor remembers names for autocomplete.`
   },
   {
     id: 'forced-character',
@@ -265,11 +265,7 @@ One ~ per line. Use it for songs, not ordinary speech.`
 
 [[ Check this against the outline. ]]
 
-Use them for reminders, questions, and research.
-
-In FilmScriptWriter, [[ Note 1]] also becomes an editable heading in the Notes sidebar so you can keep long notes off the script page.
-
-Close every note with ]].`
+Use them for reminders, questions, and research. Close every note with ]].`
   },
   {
     id: 'boneyard',
@@ -298,7 +294,7 @@ This is a drawer for leftover scenes, not a note to an actor. For a short remind
 ## The robbery
 ### Getaway
 
-They are for you while you write. They are not printed as scene headings. The left Index sidebar can jump to them.
+They are for you while you write. They are not printed as scene headings.
 
 # is the top level, ## is nested, and so on.`
   },

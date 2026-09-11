@@ -1,96 +1,69 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en-GB" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src 'self' blob: data:"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FilmScriptWriter (Beta)</title>
+    <title>FilmScriptWriter</title>
   </head>
   <body>
     <div id="app">
-      <header class="app-toolbar" role="banner">
-        <span class="doc-title" id="doc-title">Untitled</span>
-        <span class="project-label" id="project-label"></span>
-        <span class="spacer"></span>
-        <div class="toolbar-group" id="toolbar-split" title="Split">
-          <button type="button" id="btn-split-1" aria-label="One pane">1</button>
-          <button type="button" id="btn-split-2" aria-label="Two panes">2</button>
-          <button type="button" id="btn-split-3" aria-label="Three panes">3</button>
-        </div>
-        <button type="button" id="btn-toggle-index" title="Index">Index</button>
-        <button type="button" id="btn-toggle-notes" title="Notes">Notes</button>
-        <div class="toolbar-group" id="toolbar-font" title="Font size">
-          <button type="button" id="btn-font-dec" aria-label="Decrease font">A−</button>
-          <span class="font-size-label" id="font-size-label">14</span>
-          <button type="button" id="btn-font-inc" aria-label="Increase font">A+</button>
-        </div>
-        <button type="button" id="btn-find" title="Find">Find</button>
-        <button type="button" id="btn-replace" title="Find and Replace">Replace</button>
-        <button type="button" id="btn-toggle-preview" title="Toggle preview">Preview</button>
-        <button type="button" id="btn-toggle-syntax-help" title="Fountain syntax help">Syntax</button>
-        <button type="button" id="btn-syntax-colors" title="Syntax colours">Colours</button>
-        <button type="button" id="btn-settings" title="Settings">Settings</button>
-        <button type="button" id="btn-help" title="Help">Help</button>
-        <button type="button" id="btn-theme" title="Toggle theme">Theme</button>
+      <header class="toolbar" role="banner">
+        <img class="toolbar-mark" id="toolbar-mark" alt="" width="24" height="24" />
+        <span class="toolbar-brand">FilmScriptWriter</span>
+        <span class="toolbar-spacer"></span>
+        <button type="button" id="btn-new" data-i18n="toolbar.new">New</button>
+        <button type="button" id="btn-open" data-i18n="toolbar.open">Open</button>
+        <button type="button" id="btn-save" data-i18n="toolbar.save">Save</button>
+        <button type="button" id="btn-save-as" data-i18n="toolbar.saveAs">Save as</button>
+        <button type="button" id="btn-right-toggle" data-i18n="toolbar.preview">Preview</button>
+        <button type="button" id="btn-settings" data-i18n="toolbar.settings">Settings</button>
       </header>
-      <div class="syntax-coach" id="syntax-coach" aria-live="polite"></div>
 
       <main class="workspace" id="workspace">
-        <aside class="sidebar index-sidebar" id="index-sidebar" aria-label="Index"></aside>
-        <aside class="sidebar notes-sidebar" id="notes-sidebar" aria-label="Notes"></aside>
-        <section class="center-column" id="center-column">
-          <div class="tab-bar hidden" id="tab-bar" role="tablist"></div>
-          <div class="split-panes" id="split-panes"></div>
-        </section>
-        <div class="pane-resizer" id="pane-resizer" role="separator" aria-orientation="vertical"></div>
-        <aside class="preview-pane" id="preview-pane" aria-label="Preview">
+        <aside class="files-pane" id="files-pane" aria-label="Scripts">
+          <header class="files-head">
+            <strong id="files-title">Scripts</strong>
+            <button type="button" id="btn-collapse-files" title="Hide">‹</button>
+          </header>
+          <div class="files-body" id="files-body"></div>
+        </aside>
+        <button type="button" class="files-expand hidden" id="btn-expand-files" title="Show">›</button>
+        <div class="resizer" id="resizer-files" role="separator" aria-orientation="vertical"></div>
+        <section class="editor-pane" id="editor-pane"></section>
+        <div class="resizer" id="resizer-right" role="separator" aria-orientation="vertical"></div>
+        <aside class="right-pane" id="right-pane">
           <div class="preview-host" id="preview-host"></div>
           <div class="fountain-help hidden" id="fountain-help"></div>
         </aside>
-
-        <div class="welcome-overlay" id="welcome-overlay">
-          <div class="welcome-card welcome-card-wide">
-            <h1 id="welcome-title">Welcome</h1>
-            <p id="welcome-body">Create a new screenplay or open an existing file.</p>
-            <div class="first-run-fields" id="first-run-fields">
-              <label class="field-label" id="first-run-folder-label">Projects folder</label>
-              <div class="folder-row">
-                <input type="text" id="first-run-folder" readonly />
-                <button type="button" id="first-run-browse">Choose folder…</button>
-              </div>
-              <label class="field-label" for="first-run-name" id="first-run-name-label">Project name</label>
-              <input type="text" id="first-run-name" placeholder="MyScript" />
-            </div>
-            <div class="welcome-actions">
-              <button type="button" class="primary" id="welcome-new">New project</button>
-              <button type="button" id="welcome-open">Open project…</button>
-              <button type="button" id="welcome-open-file">Open file…</button>
-              <button type="button" id="welcome-dismiss">Close</button>
-            </div>
-          </div>
-        </div>
       </main>
 
       <footer class="status-bar" role="contentinfo">
-        <span class="status-item" id="status-words"><strong>0</strong> Words</span>
-        <span class="status-item" id="status-pages"><strong>1</strong> Pages</span>
-        <span class="status-item" id="status-state">Ready</span>
-        <span class="status-divider" aria-hidden="true">|</span>
-        <div class="status-group">
-          <button type="button" class="status-btn" id="status-font-dec" title="Decrease font">A−</button>
-          <span class="status-item" id="status-font"><span id="status-font-label">Font</span> <strong id="status-font-value">14</strong></span>
-          <button type="button" class="status-btn" id="status-font-inc" title="Increase font">A+</button>
-        </div>
-        <span class="status-divider" aria-hidden="true">|</span>
-        <button type="button" class="status-btn" id="status-find">Find</button>
-        <button type="button" class="status-btn" id="status-replace">Replace</button>
-        <span class="status-spacer"></span>
-        <span class="status-path" id="status-path"></span>
+        <span class="status-item" id="status-file">Untitled</span>
+        <span class="status-dot" aria-hidden="true">·</span>
+        <span class="status-item" id="status-pages">1 Pages</span>
+        <span class="status-dot" aria-hidden="true">·</span>
+        <span class="status-item" id="status-locale">English (UK)</span>
+        <span class="status-dot" aria-hidden="true">·</span>
+        <span class="status-item" id="status-dirty">Ready</span>
       </footer>
     </div>
+
+    <div class="modal hidden" id="settings-modal" role="dialog" aria-modal="true">
+      <div class="modal-card" id="settings-card"></div>
+    </div>
+
+    <div class="modal hidden" id="about-modal" role="dialog" aria-modal="true">
+      <div class="modal-card about-card" id="about-card"></div>
+    </div>
+
+    <div class="modal hidden" id="new-modal" role="dialog" aria-modal="true">
+      <div class="modal-card new-card" id="new-card"></div>
+    </div>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

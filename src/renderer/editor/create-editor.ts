@@ -1,17 +1,9 @@
-/**
- * Factory for the CodeMirror 6 screenplay editor instance.
- *
- * Supports dynamic font size, syntax highlighting toggle, typewriter mode
- * (caret stays vertically centred), and find / find-replace panels.
- */
-
 import {
   EditorView,
   keymap,
   lineNumbers,
   highlightActiveLine,
   placeholder,
-  ViewPlugin,
   type ViewUpdate
 } from '@codemirror/view'
 import { EditorState, Compartment, type Extension } from '@codemirror/state'
@@ -29,7 +21,7 @@ import {
 import { fountain } from './fountain-language'
 import { fountainLineHighlighter } from './fountain-line-highlighter'
 import { smartSearch } from './smart-search'
-import { t, type MessageKey } from '../../shared/i18n/locales'
+import { t } from '../../shared/i18n/locales'
 import {
   FONT_SIZE_DEFAULT,
   type LocaleCode
@@ -44,17 +36,13 @@ export interface EditorHandle {
   setLocale: (locale: LocaleCode) => void
   setFontSize: (px: number) => void
   setSyntaxHighlighting: (enabled: boolean) => void
-  setTypewriterMode: (enabled: boolean) => void
   openFind: () => void
   openFindReplace: () => void
   getCursorLine: () => number
-  setCursorLine: (line: number) => void
   onCursorLineChange: (cb: (line: number) => void) => () => void
   setSpellcheck: (enabled: boolean, languages: string[]) => void
   destroy: () => void
 }
-
-// highlightComp reuses compartment for line highlighter on/off
 
 export interface CreateEditorOptions {
   parent: HTMLElement
@@ -63,33 +51,22 @@ export interface CreateEditorOptions {
   locale?: LocaleCode
   fontSize?: number
   syntaxHighlighting?: boolean
-  typewriterMode?: boolean
   onChange?: (text: string) => void
   onDirty?: (dirty: boolean) => void
   onCursorLine?: (line: number) => void
-  /** When false, skip Fountain language + line highlighter (markdown / notes). */
-  fountainMode?: boolean
   spellcheckEnabled?: boolean
   spellcheckLanguages?: string[]
 }
 
-/**
- * Create a fully configured Fountain editor.
- */
 export function createEditor(options: CreateEditorOptions): EditorHandle {
-  const themeComp = new Compartment()
   const placeholderComp = new Compartment()
   const fontComp = new Compartment()
   const highlightComp = new Compartment()
-  const typewriterComp = new Compartment()
   const spellcheckComp = new Compartment()
 
   let locale: LocaleCode = options.locale ?? 'en_GB'
-  let dark = options.dark ?? true
-  let fontSize = options.fontSize ?? FONT_SIZE_DEFAULT
+  let dark = options.dark ?? false
   let syntaxOn = options.syntaxHighlighting !== false
-  let typewriterOn = options.typewriterMode === true
-  const fountainMode = options.fountainMode !== false
 
   const cursorListeners = new Set<(line: number) => void>()
 
@@ -104,7 +81,8 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
       lineNumbers(),
       highlightActiveLine(),
       history(),
-      ...(fountainMode ? [fountain(), smartSearch()] : []),
+      fountain(),
+      smartSearch(),
       highlightSelectionMatches(),
       keymap.of([
         ...defaultKeymap,
@@ -113,21 +91,16 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
         indentWithTab
       ]),
       EditorView.lineWrapping,
-      themeComp.of([]),
-      fontComp.of(fontSizeTheme(fontSize)),
-      // Line decorations + CSS vars — reliable per-element colours
-      highlightComp.of(syntaxOn && fountainMode ? fountainLineHighlighter() : []),
-      typewriterComp.of(typewriterOn ? typewriterExtension() : []),
+      fontComp.of(fontSizeTheme(options.fontSize ?? FONT_SIZE_DEFAULT)),
+      highlightComp.of(syntaxOn ? fountainLineHighlighter() : []),
       spellcheckComp.of(
         spellcheckAttributes(
           options.spellcheckEnabled !== false,
           options.spellcheckLanguages ?? ['en-GB']
         )
       ),
-      placeholderComp.of(
-        placeholder(t(locale, 'editor.placeholder' as MessageKey))
-      ),
-      EditorView.updateListener.of((update) => {
+      placeholderComp.of(placeholder(t(locale, 'editor.placeholder'))),
+      EditorView.updateListener.of((update: ViewUpdate) => {
         if (update.docChanged) {
           notifyChange(update.state.doc.toString())
         }
@@ -161,18 +134,16 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
     setTheme: (isDark: boolean) => {
       dark = isDark
       options.parent.dataset.editorTheme = isDark ? 'dark' : 'light'
-      // Palette is CSS-variable based (shared light/dark); no reconfigure needed
     },
     setLocale: (next: LocaleCode) => {
       locale = next
       view.dispatch({
         effects: placeholderComp.reconfigure(
-          placeholder(t(locale, 'editor.placeholder' as MessageKey))
+          placeholder(t(locale, 'editor.placeholder'))
         )
       })
     },
     setFontSize: (px: number) => {
-      fontSize = px
       view.dispatch({
         effects: fontComp.reconfigure(fontSizeTheme(px))
       })
@@ -180,42 +151,17 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
     setSyntaxHighlighting: (enabled: boolean) => {
       syntaxOn = enabled
       view.dispatch({
-        effects: highlightComp.reconfigure(
-          enabled && fountainMode ? fountainLineHighlighter() : []
-        )
+        effects: highlightComp.reconfigure(enabled ? fountainLineHighlighter() : [])
       })
-    },
-    setTypewriterMode: (enabled: boolean) => {
-      typewriterOn = enabled
-      view.dispatch({
-        effects: typewriterComp.reconfigure(
-          enabled ? typewriterExtension() : []
-        )
-      })
-      // Apply immediately so the caret centres on toggle
-      if (enabled) {
-        centerCursor(view)
-      }
     },
     openFind: () => {
       openSearchPanel(view)
     },
     openFindReplace: () => {
-      // CodeMirror search panel includes a replace field when opened
       openSearchPanel(view)
     },
     getCursorLine: () => {
       return view.state.doc.lineAt(view.state.selection.main.head).number
-    },
-    setCursorLine: (line: number) => {
-      const max = view.state.doc.lines
-      const n = Math.min(max, Math.max(1, Math.round(line)))
-      const l = view.state.doc.line(n)
-      view.dispatch({
-        selection: { anchor: l.from },
-        scrollIntoView: true
-      })
-      view.focus()
     },
     onCursorLineChange: (cb) => {
       cursorListeners.add(cb)
@@ -225,19 +171,14 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
     },
     setSpellcheck: (enabled, languages) => {
       view.dispatch({
-        effects: spellcheckComp.reconfigure(
-          spellcheckAttributes(enabled, languages)
-        )
+        effects: spellcheckComp.reconfigure(spellcheckAttributes(enabled, languages))
       })
     },
     destroy: () => view.destroy()
   }
 }
 
-function spellcheckAttributes(
-  enabled: boolean,
-  languages: string[]
-): Extension {
+function spellcheckAttributes(enabled: boolean, languages: string[]): Extension {
   const lang = (languages[0] ?? 'en-GB').replace('_', '-')
   return EditorView.contentAttributes.of({
     spellcheck: enabled ? 'true' : 'false',
@@ -247,24 +188,15 @@ function spellcheckAttributes(
 
 function fontSizeTheme(px: number): Extension {
   return EditorView.theme({
-    '&': {
-      fontSize: `${px}px`
-    },
-    '.cm-scroller': {
-      fontSize: `${px}px`,
-      lineHeight: '1.45'
-    },
-    '.cm-content': {
-      fontSize: `${px}px`
-    }
+    '&': { fontSize: `${px}px` },
+    '.cm-scroller': { fontSize: `${px}px`, lineHeight: '1.45' },
+    '.cm-content': { fontSize: `${px}px` }
   })
 }
 
 function baseEditorChrome(): Extension {
   return EditorView.theme({
-    '&': {
-      height: '100%'
-    },
+    '&': { height: '100%' },
     '.cm-scroller': {
       fontFamily:
         '"Courier New", Courier, "Nimbus Mono L", "Liberation Mono", monospace',
@@ -280,34 +212,18 @@ function baseEditorChrome(): Extension {
       backgroundColor: 'var(--cm-gutter-bg)',
       color: 'var(--cm-gutter-fg)',
       border: 'none',
-      borderRight: '1px solid var(--border)'
+      borderRight: '1px solid var(--line)'
     },
-    '.cm-activeLine': {
-      backgroundColor: 'var(--cm-active-line)'
-    },
-    '.cm-activeLineGutter': {
-      backgroundColor: 'var(--cm-active-line)'
-    },
-    '&.cm-focused .cm-cursor': {
-      borderLeftColor: 'var(--cm-caret)'
-    },
+    '.cm-activeLine': { backgroundColor: 'var(--cm-active-line)' },
+    '.cm-activeLineGutter': { backgroundColor: 'var(--cm-active-line)' },
+    '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--cm-caret)' },
     '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
       backgroundColor: 'var(--cm-selection) !important'
     },
-    '.cm-tooltip-autocomplete': {
-      backgroundColor: 'var(--surface)',
-      color: 'var(--text)',
-      border: '1px solid var(--border)'
-    },
-    '.cm-tooltip-autocomplete ul li[aria-selected]': {
-      backgroundColor: 'var(--accent-muted)',
-      color: 'var(--text)'
-    },
-    /* Search / replace panel */
     '.cm-panel.cm-search': {
-      backgroundColor: 'var(--surface)',
-      color: 'var(--text)',
-      borderBottom: '1px solid var(--border)',
+      backgroundColor: 'var(--panel)',
+      color: 'var(--ink)',
+      borderBottom: '1px solid var(--line)',
       padding: '6px 8px',
       fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -315,61 +231,23 @@ function baseEditorChrome(): Extension {
     },
     '.cm-panel.cm-search input, .cm-panel.cm-search button, .cm-panel.cm-search label':
       {
-        color: 'var(--text)',
+        color: 'var(--ink)',
         fontSize: '13px'
       },
     '.cm-panel.cm-search input': {
-      backgroundColor: 'var(--surface-2)',
-      border: '1px solid var(--border)',
+      backgroundColor: 'var(--paper)',
+      border: '1px solid var(--line)',
       borderRadius: '4px',
       padding: '3px 6px'
     },
     '.cm-panel.cm-search button': {
-      backgroundColor: 'var(--surface-2)',
-      border: '1px solid var(--border)',
+      backgroundColor: 'var(--paper)',
+      border: '1px solid var(--line)',
       borderRadius: '4px',
       padding: '3px 8px',
       cursor: 'pointer'
     },
-    '.cm-searchMatch': {
-      backgroundColor: 'rgba(255, 213, 0, 0.35)'
-    },
-    '.cm-searchMatch-selected': {
-      backgroundColor: 'rgba(255, 150, 0, 0.5)'
-    }
+    '.cm-searchMatch': { backgroundColor: 'rgba(58, 124, 165, 0.28)' },
+    '.cm-searchMatch-selected': { backgroundColor: 'rgba(58, 124, 165, 0.5)' }
   })
-}
-
-/**
- * Typewriter mode: keep the active line near the vertical centre of the
- * editor viewport while typing or moving the caret.
- */
-function typewriterExtension(): Extension {
-  return ViewPlugin.fromClass(
-    class {
-      constructor(readonly view: EditorView) {
-        // Defer so layout is ready
-        queueMicrotask(() => centerCursor(this.view))
-      }
-      update(update: ViewUpdate): void {
-        if (update.selectionSet || update.docChanged || update.geometryChanged) {
-          centerCursor(this.view)
-        }
-      }
-    }
-  )
-}
-
-function centerCursor(view: EditorView): void {
-  const head = view.state.selection.main.head
-  const coords = view.coordsAtPos(head)
-  if (!coords) return
-  const scroller = view.scrollDOM
-  const rect = scroller.getBoundingClientRect()
-  const caretMid = (coords.top + coords.bottom) / 2
-  const viewMid = (rect.top + rect.bottom) / 2
-  const delta = caretMid - viewMid
-  if (Math.abs(delta) > 2) {
-    scroller.scrollTop += delta
-  }
 }

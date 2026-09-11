@@ -1,9 +1,3 @@
-/**
- * Chromium Hunspell spellchecker: local dictionaries, language prefs,
- * context-menu suggestions. Windows/Linux use .bdic files; macOS uses
- * the system checker (language is chosen by macOS).
- */
-
 import {
   app,
   BrowserWindow,
@@ -17,7 +11,6 @@ import {
 import * as fs from 'fs'
 import * as fsp from 'fs/promises'
 import * as path from 'path'
-import { pathToFileURL } from 'url'
 import { t } from '../shared/i18n/locales'
 import {
   DEFAULT_DICTIONARY_MIRRORS,
@@ -77,9 +70,6 @@ function usesHunspell(): boolean {
   return process.platform !== 'darwin'
 }
 
-/**
- * Point Chromium at the local Hunspell folder. Must run before app.ready.
- */
 export function registerHunspellPath(): void {
   const dir = getUserDictionaryDir()
   fs.mkdirSync(dir, { recursive: true })
@@ -257,11 +247,14 @@ function activeSession(): Session {
 
 export function applySpellcheckToSession(ses: Session): void {
   const prefs = getPreferences()
-  if (typeof ses.setSpellCheckerEnabled === 'function') {
-    ses.setSpellCheckerEnabled(prefs.spellcheckEnabled)
+  try {
+    if (typeof ses.setSpellCheckerEnabled === 'function') {
+      ses.setSpellCheckerEnabled(prefs.spellcheckEnabled)
+    }
+  } catch {
+    /* optional Chromium API */
   }
-  const url =
-    prefs.spellcheckDictionaryUrl || DEFAULT_DICTIONARY_MIRRORS[0]
+  const url = prefs.spellcheckDictionaryUrl || DEFAULT_DICTIONARY_MIRRORS[0]
   try {
     ses.setSpellCheckerDictionaryDownloadURL(url)
   } catch (err) {
@@ -344,7 +337,7 @@ export function getSpellcheckStatus(): SpellcheckStatus {
 
 export function installSpellcheckContextMenu(win: BrowserWindow): void {
   win.webContents.on('context-menu', (_event, params) => {
-    const locale = getPreferences().locale
+    const loc = getPreferences().locale
     const template: MenuItemConstructorOptions[] = []
 
     if (params.misspelledWord) {
@@ -358,7 +351,7 @@ export function installSpellcheckContextMenu(win: BrowserWindow): void {
         template.push({ type: 'separator' })
       }
       template.push({
-        label: t(locale, 'menu.edit.addToDictionary'),
+        label: t(loc, 'menu.edit.addToDictionary'),
         click: () => {
           win.webContents.session.addWordToSpellCheckerDictionary(
             params.misspelledWord
@@ -372,22 +365,22 @@ export function installSpellcheckContextMenu(win: BrowserWindow): void {
     template.push(
       {
         role: 'cut',
-        label: t(locale, 'menu.edit.cut'),
+        label: t(loc, 'menu.edit.cut'),
         enabled: flags.canCut
       },
       {
         role: 'copy',
-        label: t(locale, 'menu.edit.copy'),
+        label: t(loc, 'menu.edit.copy'),
         enabled: flags.canCopy
       },
       {
         role: 'paste',
-        label: t(locale, 'menu.edit.paste'),
+        label: t(loc, 'menu.edit.paste'),
         enabled: flags.canPaste
       },
       {
         role: 'selectAll',
-        label: t(locale, 'menu.edit.selectAll'),
+        label: t(loc, 'menu.edit.selectAll'),
         enabled: flags.canSelectAll
       }
     )
@@ -396,14 +389,8 @@ export function installSpellcheckContextMenu(win: BrowserWindow): void {
   })
 }
 
-/** Local file URLs — used only for diagnostics / copying into userData. */
-export function dictionaryFileUrl(filePath: string): string {
-  return pathToFileURL(filePath).href
-}
-
 export async function initSpellcheck(): Promise<void> {
   await ensureDictionaryDir()
   applySpellcheckToAllSessions()
-  // Refresh languages after Chromium notices newly seeded files.
   setTimeout(() => applySpellcheckToAllSessions(), 750)
 }

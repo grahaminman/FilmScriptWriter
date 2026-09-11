@@ -1,47 +1,45 @@
-/**
- * Electron main process entry point.
- *
- * Creates the browser window, installs the native menu, registers IPC,
- * and wires basic auto-update checks for packaged builds.
- */
-
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
+import {
+  DEFAULT_WINDOW_BOUNDS,
+  IPC,
+  MIN_WINDOW_HEIGHT,
+  MIN_WINDOW_WIDTH
+} from '../shared/constants/screenplay'
+import { confirmDiscard, getDocumentState } from './file-service'
 import { registerIpcHandlers } from './ipc'
 import { buildApplicationMenu } from './menu'
-import { getPreferences, setPreference } from './store'
-import { initAutoUpdater } from './auto-updater'
-import { confirmDiscard, getDocumentState } from './file-service'
-import { ensureUserTemplateAvailable } from './template-service'
 import {
   applySpellcheckToSession,
   initSpellcheck,
   installSpellcheckContextMenu,
   registerHunspellPath
 } from './spellcheck'
-import { IPC } from '../shared/constants/screenplay'
+import { getPreferences, setPreference } from './store'
 
-// Disable GPU sandbox issues on some Linux hosts during development
 if (process.platform === 'linux') {
   app.disableHardwareAcceleration()
+  app.commandLine.appendSwitch('disable-gpu')
+  app.commandLine.appendSwitch('disable-gpu-sandbox')
 }
 
 let mainWindow: BrowserWindow | null = null
+let quitting = false
 
 function createWindow(): void {
   const prefs = getPreferences()
   const bounds = prefs.windowBounds
 
   mainWindow = new BrowserWindow({
-    width: bounds.width,
-    height: bounds.height,
+    width: bounds.width || DEFAULT_WINDOW_BOUNDS.width,
+    height: bounds.height || DEFAULT_WINDOW_BOUNDS.height,
     x: bounds.x,
     y: bounds.y,
-    minWidth: 900,
-    minHeight: 600,
+    minWidth: MIN_WINDOW_WIDTH,
+    minHeight: MIN_WINDOW_HEIGHT,
     show: false,
-    title: 'FilmScriptWriter (Beta)',
-    backgroundColor: '#1a1a1a',
+    title: 'FilmScriptWriter',
+    backgroundColor: '#F4F2EE',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -60,17 +58,16 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // Persist window size/position
   const persistBounds = (): void => {
-    if (!mainWindow) return
+    if (!mainWindow || mainWindow.isDestroyed()) return
     const b = mainWindow.getBounds()
     setPreference('windowBounds', b)
   }
   mainWindow.on('resize', persistBounds)
   mainWindow.on('move', persistBounds)
 
-  // Intercept close to confirm unsaved changes
   mainWindow.on('close', (e) => {
+    if (quitting) return
     const state = getDocumentState()
     if (!state.dirty) return
     e.preventDefault()
@@ -79,13 +76,11 @@ function createWindow(): void {
       const choice = await confirmDiscard(mainWindow)
       if (choice === 'cancel') return
       if (choice === 'save') {
-        // Ask renderer to save, then quit
         mainWindow.webContents.send(IPC.MENU_ACTION, 'file:save-then-quit')
         return
       }
-      // discard
-      mainWindow.removeAllListeners('close')
-      mainWindow.close()
+      quitting = true
+      mainWindow.destroy()
     })()
   })
 
@@ -93,7 +88,6 @@ function createWindow(): void {
   applySpellcheckToSession(mainWindow.webContents.session)
   installSpellcheckContextMenu(mainWindow)
 
-  // Load renderer
   if (process.env.ELECTRON_RENDERER_URL) {
     void mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
@@ -101,20 +95,14 @@ function createWindow(): void {
   }
 }
 
-// Hunspell path must be set before Chromium starts.
 registerHunspellPath()
 
 app.whenReady().then(() => {
   registerIpcHandlers()
-  // Install starter template into Documents/FilmScriptWriter/templates (idempotent)
-  void ensureUserTemplateAvailable().catch((err) => {
-    console.warn('[template] ensure failed:', err)
-  })
   void initSpellcheck().catch((err) => {
     console.warn('[spellcheck] init failed:', err)
   })
   createWindow()
-  initAutoUpdater(() => mainWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -125,13 +113,15 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
 
-// Security: deny new-window navigations to unexpected protocols
 app.on('web-contents-created', (_event, contents) => {
   contents.on('will-navigate', (event, url) => {
     const allowed =
       url.startsWith('http://localhost') ||
       url.startsWith('file://') ||
-      Boolean(process.env.ELECTRON_RENDERER_URL && url.startsWith(process.env.ELECTRON_RENDERER_URL))
+      Boolean(
+        process.env.ELECTRON_RENDERER_URL &&
+          url.startsWith(process.env.ELECTRON_RENDERER_URL)
+      )
     if (!allowed) event.preventDefault()
   })
 })

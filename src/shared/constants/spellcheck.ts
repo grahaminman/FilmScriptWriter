@@ -1,19 +1,17 @@
-/**
- * Spell-check language ids and Hunspell/.bdic helpers.
- *
- * UI locale (en_GB / es_PY / fr_FR) is independent. These codes are the
- * Chromium Hunspell language tags used by session.setSpellCheckerLanguages.
- */
-
 export const SPELLCHECK_LANG_EN_GB = 'en-GB'
 export const SPELLCHECK_LANG_EN_US = 'en-US'
-/** Latin American Spanish (Paraguay). Falls back to es / es-ES if needed. */
 export const SPELLCHECK_LANG_ES = 'es-419'
+export const SPELLCHECK_LANG_DE = 'de-DE'
+export const SPELLCHECK_LANG_FR = 'fr-FR'
+export const SPELLCHECK_LANG_IT = 'it-IT'
 
 export const SPELLCHECK_LANGUAGE_IDS = [
   SPELLCHECK_LANG_EN_GB,
   SPELLCHECK_LANG_EN_US,
-  SPELLCHECK_LANG_ES
+  SPELLCHECK_LANG_ES,
+  SPELLCHECK_LANG_DE,
+  SPELLCHECK_LANG_FR,
+  SPELLCHECK_LANG_IT
 ] as const
 
 export type SpellcheckLanguageId = (typeof SPELLCHECK_LANGUAGE_IDS)[number]
@@ -24,9 +22,7 @@ export const DEFAULT_SPELLCHECK_LANGUAGES: SpellcheckLanguageId[] = [
 
 export interface SpellcheckLanguageOption {
   id: SpellcheckLanguageId
-  /** Hunspell / Chromium codes to try, preferred first. */
   hunspellCodes: string[]
-  /** Bundled .bdic basenames (without extension), preferred first. */
   dictionaryFiles: string[]
 }
 
@@ -45,10 +41,24 @@ export const SPELLCHECK_LANGUAGE_OPTIONS: SpellcheckLanguageOption[] = [
     id: SPELLCHECK_LANG_ES,
     hunspellCodes: ['es-419', 'es', 'es-ES', 'es-MX'],
     dictionaryFiles: ['es-419', 'es', 'es-ES']
+  },
+  {
+    id: SPELLCHECK_LANG_DE,
+    hunspellCodes: ['de-DE', 'de'],
+    dictionaryFiles: ['de-DE', 'de']
+  },
+  {
+    id: SPELLCHECK_LANG_FR,
+    hunspellCodes: ['fr-FR', 'fr'],
+    dictionaryFiles: ['fr-FR', 'fr']
+  },
+  {
+    id: SPELLCHECK_LANG_IT,
+    hunspellCodes: ['it-IT', 'it'],
+    dictionaryFiles: ['it-IT', 'it']
   }
 ]
 
-/** Chromium requests `${url}${lang}.bdic` (and some builds use a version suffix). */
 export const DEFAULT_DICTIONARY_MIRRORS = [
   'https://redirector.gvt1.com/edgedl/chrome/dict/',
   'https://dl.google.com/edgedl/chrome/dict/',
@@ -70,17 +80,13 @@ export function isSpellcheckLanguageId(value: string): value is SpellcheckLangua
   return KNOWN.has(value)
 }
 
-/**
- * Keep only supported language ids. Always returns at least British English.
- */
 export function sanitizeSpellcheckLanguages(raw: unknown): SpellcheckLanguageId[] {
   const input = Array.isArray(raw) ? raw : []
   const seen = new Set<SpellcheckLanguageId>()
   const out: SpellcheckLanguageId[] = []
   for (const item of input) {
     if (typeof item !== 'string') continue
-    const normalised = item.trim().replace('_', '-')
-    const mapped = mapLooseLanguage(normalised)
+    const mapped = mapLooseLanguage(item.trim())
     if (mapped && !seen.has(mapped)) {
       seen.add(mapped)
       out.push(mapped)
@@ -90,28 +96,26 @@ export function sanitizeSpellcheckLanguages(raw: unknown): SpellcheckLanguageId[
 }
 
 function mapLooseLanguage(code: string): SpellcheckLanguageId | null {
-  const lower = code.toLowerCase()
-  if (lower === 'en-gb' || lower === 'en_gb' || lower === 'en-uk') return SPELLCHECK_LANG_EN_GB
-  if (lower === 'en-us' || lower === 'en_us') return SPELLCHECK_LANG_EN_US
+  const lower = code.toLowerCase().replace('_', '-')
+  if (lower === 'en-gb' || lower === 'en-uk') return SPELLCHECK_LANG_EN_GB
+  if (lower === 'en-us') return SPELLCHECK_LANG_EN_US
   if (
     lower === 'es-419' ||
     lower === 'es' ||
     lower === 'es-es' ||
     lower === 'es-py' ||
-    lower === 'es_py' ||
     lower === 'es-mx' ||
     lower === 'es-la'
   ) {
     return SPELLCHECK_LANG_ES
   }
+  if (lower === 'de' || lower === 'de-de') return SPELLCHECK_LANG_DE
+  if (lower === 'fr' || lower === 'fr-fr') return SPELLCHECK_LANG_FR
+  if (lower === 'it' || lower === 'it-it') return SPELLCHECK_LANG_IT
   if (isSpellcheckLanguageId(code)) return code
   return null
 }
 
-/**
- * Optional self-hosted dictionary base URL. Must be http(s) and will gain a
- * trailing slash so Chromium can append `en-GB.bdic`.
- */
 export function sanitizeDictionaryUrl(raw: unknown): string {
   if (typeof raw !== 'string') return ''
   const trimmed = raw.trim()
@@ -140,10 +144,6 @@ export function hunspellCodesFor(ids: readonly string[]): string[] {
   return codes
 }
 
-/**
- * Pick Chromium language codes that the session actually supports.
- * If the available list is empty (Linux before dicts load), keep the preferred codes.
- */
 export function resolveSpellcheckLanguages(
   requested: readonly string[],
   available: readonly string[]

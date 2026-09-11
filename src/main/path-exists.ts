@@ -1,12 +1,8 @@
-/**
- * Async path existence check without throwing (Node fs.promises).
- */
-
 import * as fs from 'fs/promises'
 
-export async function pathExists(p: string): Promise<boolean> {
+export async function pathExists(filePath: string): Promise<boolean> {
   try {
-    await fs.access(p)
+    await fs.access(filePath)
     return true
   } catch {
     return false

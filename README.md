@@ -1,49 +1,51 @@
 # FilmScriptWriter
 
-**v2 is the default branch.** The new editor is specified in [docs/V2-SPEC.md](./docs/V2-SPEC.md) and is **not built yet**.
+**v2 is the app.** A simpler Fountain writer for daily 2–5 page shorts.
 
 Do **not** create a second GitHub repository. Keep `grahaminman/FilmScriptWriter`.
-
-## What lives where
-
-| Ref | What it is |
-|-----|------------|
-| **`v2`** (default) | Spec + brand for the simpler app. Ready for a Stage 2 scaffold. |
-| `main` | Archived v1 experiment (projects, notes, index, FDX) |
-| tag `legacy-v1.0.1` | Freeze of the last full v1 app |
-| Releases `v1.0.1` / `v1.0.0.0` | Old beta installers — historical only |
-
-Branch map: [BRANCHES.md](./BRANCHES.md) · Stages: [docs/V2-BUILD-STAGES.md](./docs/V2-BUILD-STAGES.md)
-
-Package metadata and the v1 installer workflow have been removed from `v2`. Some leftover v1 folders (`src/`, `tests/`, `resources/`, `templates/`, `build/`) may still be on this branch until they are deleted in one local commit. Treat them as discarded reference only. The runnable v1 app is on `main`.
-
-## Product (when Stage 2 is built)
 
 **FilmScriptWriter** — UNLOCK YOUR STORY  
 Daily screenwriting practice. A complete short film, 2–5 pages a day.
 
-Free Fountain desktop editor for beginners and the Skool community `filmscriptwriter-3192`. Write on the left, paginated preview on the right, Fountain help when you need it. One scripts folder. No project wizard, notes sidebar, index cards, or FDX.
+Free desktop editor for beginners and the Skool community `filmscriptwriter-3192`. One Scripts folder, one editor, paginated preview or Fountain help. No project wizard, notes sidebar, index cards, or FDX.
 
-Brand assets for the next build:
+Spec: [docs/V2-SPEC.md](./docs/V2-SPEC.md) · Stages: [docs/V2-BUILD-STAGES.md](./docs/V2-BUILD-STAGES.md) · Branches: [BRANCHES.md](./BRANCHES.md)
 
-- [docs/brand/FSW-LOGO.jpg](./docs/brand/FSW-LOGO.jpg) — app icon
-- [docs/brand/header-1.jpg](./docs/brand/header-1.jpg) — About / splash only
-
-## Run the old v1 beta (reference only)
+## Run v2
 
 ```bash
 git clone https://github.com/grahaminman/FilmScriptWriter.git
 cd FilmScriptWriter
-git checkout main   # or: git checkout legacy-v1.0.1
+git checkout v2
 npm install
 npm run dev
 ```
 
-Installers: https://github.com/grahaminman/FilmScriptWriter/releases
+## Scripts
 
-## Next step
+| Command | What it does |
+|---------|----------------|
+| `npm install` | Install dependencies |
+| `npm run dev` | Launch the Electron app in development |
+| `npm test` | Parser, pagination, PDF, and template tests |
+| `npm run typecheck` | TypeScript check |
+| `npm run build` | Compile main / preload / renderer |
+| `npm run dist` | Build installers for the host OS |
+| `npm run dist:linux` | Linux AppImage + `.deb` |
+| `npm run dist:win` | Windows NSIS |
+| `npm run dist:mac` | macOS x64 + arm64 DMG |
 
-Implement [docs/V2-SPEC.md](./docs/V2-SPEC.md) on this branch. Do not port v1 projects, notes, index, FDX, or the auto-updater. Read v1 on `main` if you need behaviour for the parser, preview, or PDF.
+Version: **2.0.0-beta.1**. There is no auto-updater.
+
+## v1 testers
+
+The archived v1 experiment (projects, notes, index, FDX) lives on **`main`** and freeze tag **`legacy-v1.0.1`**. Historical installers stay on [GitHub Releases](https://github.com/grahaminman/FilmScriptWriter/releases).
+
+```bash
+git checkout main   # or: git checkout legacy-v1.0.1
+npm install
+npm run dev
+```
 
 ## Licence
 

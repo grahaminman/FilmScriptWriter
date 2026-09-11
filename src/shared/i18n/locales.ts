@@ -1,15 +1,11 @@
-/**
- * Application strings for en_GB, es_PY and fr_FR.
- *
- * Keys are stable identifiers used by menus, dialogs and the status bar.
- * The renderer and main process both import from here so menus stay in sync.
- */
-
 import type { LocaleCode } from '../constants/screenplay'
 
 export type MessageKey =
   | 'app.name'
   | 'app.tagline'
+  | 'app.community'
+  | 'app.freeNote'
+  | 'app.licence'
   | 'menu.file'
   | 'menu.edit'
   | 'menu.view'
@@ -19,12 +15,9 @@ export type MessageKey =
   | 'menu.settings'
   | 'menu.help'
   | 'menu.file.new'
-  | 'menu.file.newProject'
-  | 'menu.file.closeProject'
+  | 'menu.file.newShort'
+  | 'menu.file.newFeature'
   | 'menu.file.open'
-  | 'menu.file.openProject'
-  | 'menu.file.importDraft'
-  | 'menu.file.importNotes'
   | 'menu.file.save'
   | 'menu.file.saveAs'
   | 'menu.file.quit'
@@ -36,16 +29,10 @@ export type MessageKey =
   | 'menu.edit.selectAll'
   | 'menu.edit.find'
   | 'menu.edit.findReplace'
+  | 'menu.edit.addToDictionary'
+  | 'menu.view.files'
   | 'menu.view.preview'
-  | 'menu.view.syntaxHelp'
-  | 'menu.view.index'
-  | 'menu.view.notes'
-  | 'menu.view.syntaxCoach'
-  | 'menu.view.split1'
-  | 'menu.view.split2'
-  | 'menu.view.split3'
-  | 'menu.view.previewFollow'
-  | 'menu.view.typewriter'
+  | 'menu.view.help'
   | 'menu.view.syntax'
   | 'menu.view.syntaxColors'
   | 'menu.view.fontIncrease'
@@ -54,41 +41,45 @@ export type MessageKey =
   | 'menu.view.toggleDevTools'
   | 'menu.view.reload'
   | 'menu.export.fountain'
-  | 'menu.export.fdx'
   | 'menu.export.pdf'
   | 'menu.theme.light'
   | 'menu.theme.dark'
   | 'menu.theme.system'
   | 'menu.language.en_GB'
-  | 'menu.language.es_PY'
+  | 'menu.language.en_US'
+  | 'menu.language.es_419'
+  | 'menu.language.de_DE'
   | 'menu.language.fr_FR'
+  | 'menu.language.it_IT'
   | 'menu.help.about'
-  | 'menu.help.guide'
-  | 'menu.help.checkUpdates'
-  | 'menu.settings.workspace'
-  | 'menu.settings.spellcheck'
-  | 'menu.edit.addToDictionary'
+  | 'menu.help.fountain'
+  | 'menu.settings.open'
+  | 'toolbar.new'
+  | 'toolbar.open'
+  | 'toolbar.save'
+  | 'toolbar.saveAs'
+  | 'toolbar.preview'
+  | 'toolbar.help'
+  | 'toolbar.settings'
+  | 'files.title'
+  | 'files.empty'
+  | 'files.choose'
+  | 'files.useDefault'
+  | 'files.collapse'
+  | 'files.expand'
+  | 'files.missingFolder'
   | 'settings.title'
-  | 'settings.baseFolder'
+  | 'settings.scriptsFolder'
   | 'settings.changeFolder'
+  | 'settings.useDefault'
   | 'settings.autosave'
   | 'settings.autosaveOff'
   | 'settings.autosaveEvery'
-  | 'settings.template'
-  | 'settings.templateHint'
-  | 'settings.templateChoose'
-  | 'settings.templateSave'
-  | 'settings.templateRevert'
-  | 'settings.templateSelectAll'
-  | 'settings.templateUnsaved'
-  | 'settings.templateSaved'
-  | 'settings.templateReverted'
+  | 'settings.theme'
+  | 'settings.uiLanguage'
   | 'settings.spellcheck'
   | 'settings.spellcheckEnabled'
   | 'settings.spellcheckHint'
-  | 'settings.spellcheckEnGB'
-  | 'settings.spellcheckEnUS'
-  | 'settings.spellcheckEs'
   | 'settings.spellcheckDownload'
   | 'settings.spellcheckOpenFolder'
   | 'settings.spellcheckUrl'
@@ -99,27 +90,18 @@ export type MessageKey =
   | 'settings.spellcheckDownloadDone'
   | 'settings.spellcheckDownloadFailed'
   | 'settings.spellcheckHunspellNote'
-  | 'firstRun.title'
-  | 'firstRun.body'
-  | 'firstRun.chooseFolder'
-  | 'firstRun.projectName'
-  | 'firstRun.create'
-  | 'dialog.newProject.hint'
-  | 'notes.title'
-  | 'notes.empty'
-  | 'notes.add'
-  | 'index.title'
-  | 'index.search'
-  | 'index.scenes'
-  | 'index.characters'
-  | 'index.notes'
-  | 'index.files'
-  | 'index.empty'
-  | 'help.title'
-  | 'help.search'
-  | 'help.empty'
-  | 'status.autosaved'
-  | 'welcome.firstRun'
+  | 'settings.syntaxColors'
+  | 'settings.syntaxHint'
+  | 'settings.syntaxEnabled'
+  | 'settings.preset'
+  | 'settings.resetColors'
+  | 'settings.editorFont'
+  | 'spell.en-GB'
+  | 'spell.en-US'
+  | 'spell.es-419'
+  | 'spell.de-DE'
+  | 'spell.fr-FR'
+  | 'spell.it-IT'
   | 'dialog.unsaved.title'
   | 'dialog.unsaved.message'
   | 'dialog.unsaved.save'
@@ -127,38 +109,31 @@ export type MessageKey =
   | 'dialog.unsaved.cancel'
   | 'dialog.error.title'
   | 'dialog.about.title'
-  | 'dialog.about.message'
-  | 'status.words'
   | 'status.pages'
   | 'status.ready'
   | 'status.modified'
   | 'status.saved'
   | 'status.untitled'
-  | 'status.font'
-  | 'status.find'
-  | 'status.replace'
+  | 'status.autosaved'
   | 'preview.title'
   | 'preview.empty'
+  | 'help.title'
+  | 'help.intro'
   | 'editor.placeholder'
-  | 'welcome.title'
-  | 'welcome.body'
   | 'common.ok'
   | 'common.cancel'
   | 'common.close'
-  | 'update.checking'
-  | 'update.available'
-  | 'update.none'
-  | 'update.error'
-  | 'settings.syntaxColors'
-  | 'settings.syntaxHint'
-  | 'settings.preset'
-  | 'settings.resetColors'
+  | 'common.choose'
 
 export type Messages = Record<MessageKey, string>
 
 const en_GB: Messages = {
-  'app.name': 'FilmScriptWriter (Beta)',
-  'app.tagline': 'Beta preview — Fountain screenplay editing',
+  'app.name': 'FilmScriptWriter',
+  'app.tagline':
+    'UNLOCK YOUR STORY — Daily screenwriting practice. A complete short film, 2–5 pages a day.',
+  'app.community': 'Community: filmscriptwriter-3192',
+  'app.freeNote': 'Free with or without membership.',
+  'app.licence': 'MIT Licence',
   'menu.file': 'File',
   'menu.edit': 'Edit',
   'menu.view': 'View',
@@ -167,13 +142,10 @@ const en_GB: Messages = {
   'menu.language': 'Language',
   'menu.settings': 'Settings',
   'menu.help': 'Help',
-  'menu.file.new': 'New Untitled',
-  'menu.file.newProject': 'New Project…',
-  'menu.file.closeProject': 'Close Project',
-  'menu.file.open': 'Open File…',
-  'menu.file.openProject': 'Open Project…',
-  'menu.file.importDraft': 'Import as Current Draft…',
-  'menu.file.importNotes': 'Import as Notes…',
+  'menu.file.new': 'New',
+  'menu.file.newShort': 'New Short (Daily)…',
+  'menu.file.newFeature': 'New Feature…',
+  'menu.file.open': 'Open…',
   'menu.file.save': 'Save',
   'menu.file.saveAs': 'Save As…',
   'menu.file.quit': 'Quit',
@@ -185,17 +157,11 @@ const en_GB: Messages = {
   'menu.edit.selectAll': 'Select All',
   'menu.edit.find': 'Find',
   'menu.edit.findReplace': 'Find and Replace…',
-  'menu.view.preview': 'Toggle Preview',
-  'menu.view.syntaxHelp': 'Fountain Syntax Help',
-  'menu.view.index': 'Index Sidebar',
-  'menu.view.notes': 'Notes Sidebar',
-  'menu.view.syntaxCoach': 'Fountain Help Bar',
-  'menu.view.split1': 'One Pane',
-  'menu.view.split2': 'Two Panes',
-  'menu.view.split3': 'Three Panes',
-  'menu.view.previewFollow': 'Preview Follows Editor',
-  'menu.view.typewriter': 'Typewriter Mode',
-  'menu.view.syntax': 'Syntax Highlighting',
+  'menu.edit.addToDictionary': 'Add to dictionary',
+  'menu.view.files': 'Scripts Folder',
+  'menu.view.preview': 'Preview',
+  'menu.view.help': 'Fountain Help',
+  'menu.view.syntax': 'Syntax Colours',
   'menu.view.syntaxColors': 'Syntax Colours…',
   'menu.view.fontIncrease': 'Increase Font Size',
   'menu.view.fontDecrease': 'Decrease Font Size',
@@ -203,49 +169,51 @@ const en_GB: Messages = {
   'menu.view.toggleDevTools': 'Toggle Developer Tools',
   'menu.view.reload': 'Reload',
   'menu.export.fountain': 'Export as Fountain…',
-  'menu.export.fdx': 'Export as Final Draft (.fdx)…',
   'menu.export.pdf': 'Export as PDF…',
   'menu.theme.light': 'Light',
   'menu.theme.dark': 'Dark',
   'menu.theme.system': 'System',
   'menu.language.en_GB': 'English (UK)',
-  'menu.language.es_PY': 'Español (Paraguay)',
-  'menu.language.fr_FR': 'Français (France)',
-  'menu.help.about': 'About',
-  'menu.help.guide': 'Help and Instructions…',
-  'menu.help.checkUpdates': 'Check for Updates…',
-  'menu.settings.workspace': 'Projects, Autosave and Template…',
-  'menu.settings.spellcheck': 'Spell check',
-  'menu.edit.addToDictionary': 'Add to dictionary',
+  'menu.language.en_US': 'English (US)',
+  'menu.language.es_419': 'Español (Latinoamérica)',
+  'menu.language.de_DE': 'Deutsch',
+  'menu.language.fr_FR': 'Français',
+  'menu.language.it_IT': 'Italiano',
+  'menu.help.about': 'About FilmScriptWriter',
+  'menu.help.fountain': 'Fountain Syntax',
+  'menu.settings.open': 'Settings…',
+  'toolbar.new': 'New',
+  'toolbar.open': 'Open',
+  'toolbar.save': 'Save',
+  'toolbar.saveAs': 'Save as',
+  'toolbar.preview': 'Preview',
+  'toolbar.help': 'Help',
+  'toolbar.settings': 'Settings',
+  'files.title': 'Scripts',
+  'files.empty': 'No .fountain or .txt files in this folder.',
+  'files.choose': 'Choose a Scripts folder in Settings.',
+  'files.useDefault': 'Use default folder',
+  'files.collapse': 'Hide scripts list',
+  'files.expand': 'Show scripts list',
+  'files.missingFolder': 'That folder is missing. Choose another in Settings.',
   'settings.title': 'Settings',
-  'settings.baseFolder': 'Projects folder',
-  'settings.changeFolder': 'Change…',
+  'settings.scriptsFolder': 'Scripts folder',
+  'settings.changeFolder': 'Choose…',
+  'settings.useDefault': 'Use default',
   'settings.autosave': 'Autosave',
   'settings.autosaveOff': 'Off',
   'settings.autosaveEvery': 'Every {n} minutes',
-  'settings.template': 'New project template',
-  'settings.templateHint':
-    'This Fountain file is copied into every new project. Edit it here, or choose one of your own. A factory copy is kept so you can revert.',
-  'settings.templateChoose': 'Use my file…',
-  'settings.templateSave': 'Save template',
-  'settings.templateRevert': 'Revert to original',
-  'settings.templateSelectAll': 'Select all',
-  'settings.templateUnsaved':
-    'The template has unsaved edits. Close Settings and discard them?',
-  'settings.templateSaved': 'Template saved. New projects will use this file.',
-  'settings.templateReverted': 'Template restored to the original starter.',
+  'settings.theme': 'Theme',
+  'settings.uiLanguage': 'Interface language',
   'settings.spellcheck': 'Spell check',
   'settings.spellcheckEnabled': 'Enable spell check',
   'settings.spellcheckHint':
-    'Misspellings are underlined as you type. Dictionaries are stored on this computer so checking still works offline. Default is British English.',
-  'settings.spellcheckEnGB': 'English (UK)',
-  'settings.spellcheckEnUS': 'English (US)',
-  'settings.spellcheckEs': 'Spanish (Latin America / Paraguay)',
+    'Misspellings are underlined as you type. Dictionaries stay on this computer so checking still works offline. Default is British English. Spell-check language is independent of the interface language.',
   'settings.spellcheckDownload': 'Download dictionaries',
   'settings.spellcheckOpenFolder': 'Open dictionaries folder',
   'settings.spellcheckUrl': 'Dictionary download URL (optional)',
   'settings.spellcheckUrlHint':
-    'Leave blank to use the built-in sources. For a self-hosted copy, use a folder URL so the app can fetch en-GB.bdic, en-US.bdic and es-419.bdic.',
+    'Leave blank to use the built-in sources. For a self-hosted copy, use a folder URL so the app can fetch en-GB.bdic and the other language files.',
   'settings.spellcheckReady': 'Ready',
   'settings.spellcheckMissing': 'Not downloaded',
   'settings.spellcheckDownloading': 'Downloading dictionaries…',
@@ -254,29 +222,19 @@ const en_GB: Messages = {
     'Could not download one or more dictionaries. Copy .bdic files into the dictionaries folder, or set a self-hosted URL.',
   'settings.spellcheckHunspellNote':
     'Windows and Linux use these Hunspell files. macOS uses the system spell checker (macOS chooses the language).',
-  'firstRun.title': 'Where should your projects live?',
-  'firstRun.body':
-    'Choose a base folder for every screenplay. Each project gets its own folder. You can change this later in Settings.',
-  'firstRun.chooseFolder': 'Choose folder…',
-  'firstRun.projectName': 'Project name',
-  'firstRun.create': 'Create project',
-  'dialog.newProject.hint':
-    'This closes the current project and creates a new folder with a dated draft.',
-  'notes.title': 'Notes',
-  'notes.empty': 'No notes yet. Type [[ Note 1]] in the script or add a note here.',
-  'notes.add': 'Add note',
-  'index.title': 'Index',
-  'index.search': 'Search index…',
-  'index.scenes': 'Scenes',
-  'index.characters': 'Characters',
-  'index.notes': 'Notes',
-  'index.files': 'Files',
-  'index.empty': 'Nothing matches.',
-  'help.title': 'Help',
-  'help.search': 'Search help…',
-  'help.empty': 'No articles match that search.',
-  'status.autosaved': 'Autosaved',
-  'welcome.firstRun': 'Set up your projects folder, then name the first screenplay.',
+  'settings.syntaxColors': 'Syntax colours',
+  'settings.syntaxHint':
+    'Colours apply to the editor only. Preview stays black-and-white for print fidelity.',
+  'settings.syntaxEnabled': 'Colour Fountain syntax in the editor',
+  'settings.preset': 'Preset',
+  'settings.resetColors': 'Reset to default',
+  'settings.editorFont': 'Editor font size',
+  'spell.en-GB': 'English (UK)',
+  'spell.en-US': 'English (US)',
+  'spell.es-419': 'Spanish (Latin America)',
+  'spell.de-DE': 'German',
+  'spell.fr-FR': 'French',
+  'spell.it-IT': 'Italian',
   'dialog.unsaved.title': 'Unsaved Changes',
   'dialog.unsaved.message':
     'You have unsaved changes. Do you want to save them before continuing?',
@@ -284,42 +242,50 @@ const en_GB: Messages = {
   'dialog.unsaved.discard': 'Discard',
   'dialog.unsaved.cancel': 'Cancel',
   'dialog.error.title': 'Error',
-  'dialog.about.title': 'About FilmScriptWriter (Beta)',
-  'dialog.about.message':
-    'FilmScriptWriter is a BETA preview of a Fountain screenplay editor (Hollywood pagination, PDF/FDX export, live preview). Features may change; not yet a finished product.',
-  'status.words': 'Words',
+  'dialog.about.title': 'About FilmScriptWriter',
   'status.pages': 'Pages',
   'status.ready': 'Ready',
   'status.modified': 'Modified',
   'status.saved': 'Saved',
   'status.untitled': 'Untitled',
-  'status.font': 'Font',
-  'status.find': 'Find',
-  'status.replace': 'Replace',
+  'status.autosaved': 'Autosaved',
   'preview.title': 'Preview',
   'preview.empty': 'Your paginated screenplay preview will appear here.',
+  'help.title': 'Fountain syntax',
+  'help.intro':
+    'A complete reference. Click an item in the list to jump. Switch back to Preview any time.',
   'editor.placeholder':
     'Start writing your screenplay in Fountain format…\n\nINT. COFFEE SHOP - DAY\n\nA quiet morning. SUNLIGHT streams through the windows.\n\nALICE\n(smiling)\nHello, world.',
-  'welcome.title': 'Welcome',
-  'welcome.body':
-    'Create a new project, or open a project folder / .fountain file to begin.',
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
   'common.close': 'Close',
-  'update.checking': 'Checking for updates…',
-  'update.available': 'An update is available.',
-  'update.none': 'You are on the latest version.',
-  'update.error': 'Could not check for updates.',
-  'settings.syntaxColors': 'Syntax colours',
-  'settings.syntaxHint':
-    'Colours apply to the editor only. Preview stays black-and-white for print fidelity.',
-  'settings.preset': 'Preset',
-  'settings.resetColors': 'Reset to default'
+  'common.choose': 'Choose…'
 }
 
-const es_PY: Messages = {
-  'app.name': 'FilmScriptWriter (Beta)',
-  'app.tagline': 'Vista previa beta — guiones Fountain',
+const en_US: Messages = {
+  ...en_GB,
+  'app.tagline':
+    'UNLOCK YOUR STORY — Daily screenwriting practice. A complete short film, 2–5 pages a day.',
+  'app.licence': 'MIT License',
+  'settings.syntaxColors': 'Syntax colors',
+  'settings.syntaxHint':
+    'Colors apply to the editor only. Preview stays black-and-white for print fidelity.',
+  'settings.syntaxEnabled': 'Color Fountain syntax in the editor',
+  'menu.view.syntax': 'Syntax Colors',
+  'menu.view.syntaxColors': 'Syntax Colors…',
+  'menu.file.saveAs': 'Save As…',
+  'toolbar.saveAs': 'Save as',
+  'settings.spellcheckHint':
+    'Misspellings are underlined as you type. Dictionaries stay on this computer so checking still works offline. Default is British English. Spell-check language is independent of the interface language.'
+}
+
+const es_419: Messages = {
+  'app.name': 'FilmScriptWriter',
+  'app.tagline':
+    'UNLOCK YOUR STORY — Práctica diaria de guion. Un cortometraje completo, 2–5 páginas al día.',
+  'app.community': 'Comunidad: filmscriptwriter-3192',
+  'app.freeNote': 'Gratis con o sin membresía.',
+  'app.licence': 'Licencia MIT',
   'menu.file': 'Archivo',
   'menu.edit': 'Editar',
   'menu.view': 'Ver',
@@ -328,13 +294,10 @@ const es_PY: Messages = {
   'menu.language': 'Idioma',
   'menu.settings': 'Ajustes',
   'menu.help': 'Ayuda',
-  'menu.file.new': 'Nuevo sin título',
-  'menu.file.newProject': 'Proyecto nuevo…',
-  'menu.file.closeProject': 'Cerrar proyecto',
-  'menu.file.open': 'Abrir archivo…',
-  'menu.file.openProject': 'Abrir proyecto…',
-  'menu.file.importDraft': 'Importar como borrador actual…',
-  'menu.file.importNotes': 'Importar como notas…',
+  'menu.file.new': 'Nuevo',
+  'menu.file.newShort': 'Nuevo corto (diario)…',
+  'menu.file.newFeature': 'Nuevo largometraje…',
+  'menu.file.open': 'Abrir…',
   'menu.file.save': 'Guardar',
   'menu.file.saveAs': 'Guardar como…',
   'menu.file.quit': 'Salir',
@@ -346,17 +309,11 @@ const es_PY: Messages = {
   'menu.edit.selectAll': 'Seleccionar todo',
   'menu.edit.find': 'Buscar',
   'menu.edit.findReplace': 'Buscar y reemplazar…',
-  'menu.view.preview': 'Alternar vista previa',
-  'menu.view.syntaxHelp': 'Ayuda de sintaxis Fountain',
-  'menu.view.index': 'Índice',
-  'menu.view.notes': 'Notas',
-  'menu.view.syntaxCoach': 'Barra de ayuda Fountain',
-  'menu.view.split1': 'Un panel',
-  'menu.view.split2': 'Dos paneles',
-  'menu.view.split3': 'Tres paneles',
-  'menu.view.previewFollow': 'Vista previa sigue al editor',
-  'menu.view.typewriter': 'Modo máquina de escribir',
-  'menu.view.syntax': 'Resaltado de sintaxis',
+  'menu.edit.addToDictionary': 'Añadir al diccionario',
+  'menu.view.files': 'Carpeta de guiones',
+  'menu.view.preview': 'Vista previa',
+  'menu.view.help': 'Ayuda Fountain',
+  'menu.view.syntax': 'Colores de sintaxis',
   'menu.view.syntaxColors': 'Colores de sintaxis…',
   'menu.view.fontIncrease': 'Aumentar tamaño de fuente',
   'menu.view.fontDecrease': 'Reducir tamaño de fuente',
@@ -364,80 +321,72 @@ const es_PY: Messages = {
   'menu.view.toggleDevTools': 'Herramientas de desarrollo',
   'menu.view.reload': 'Recargar',
   'menu.export.fountain': 'Exportar como Fountain…',
-  'menu.export.fdx': 'Exportar como Final Draft (.fdx)…',
   'menu.export.pdf': 'Exportar como PDF…',
   'menu.theme.light': 'Claro',
   'menu.theme.dark': 'Oscuro',
   'menu.theme.system': 'Sistema',
   'menu.language.en_GB': 'English (UK)',
-  'menu.language.es_PY': 'Español (Paraguay)',
-  'menu.language.fr_FR': 'Français (France)',
-  'menu.help.about': 'Acerca de',
-  'menu.help.guide': 'Ayuda e instrucciones…',
-  'menu.help.checkUpdates': 'Buscar actualizaciones…',
-  'menu.settings.workspace': 'Proyectos, autoguardado y plantilla…',
-  'menu.settings.spellcheck': 'Corrector ortográfico',
-  'menu.edit.addToDictionary': 'Añadir al diccionario',
+  'menu.language.en_US': 'English (US)',
+  'menu.language.es_419': 'Español (Latinoamérica)',
+  'menu.language.de_DE': 'Deutsch',
+  'menu.language.fr_FR': 'Français',
+  'menu.language.it_IT': 'Italiano',
+  'menu.help.about': 'Acerca de FilmScriptWriter',
+  'menu.help.fountain': 'Sintaxis Fountain',
+  'menu.settings.open': 'Ajustes…',
+  'toolbar.new': 'Nuevo',
+  'toolbar.open': 'Abrir',
+  'toolbar.save': 'Guardar',
+  'toolbar.saveAs': 'Guardar como',
+  'toolbar.preview': 'Vista previa',
+  'toolbar.help': 'Ayuda',
+  'toolbar.settings': 'Ajustes',
+  'files.title': 'Guiones',
+  'files.empty': 'No hay archivos .fountain o .txt en esta carpeta.',
+  'files.choose': 'Elija una carpeta de guiones en Ajustes.',
+  'files.useDefault': 'Usar carpeta predeterminada',
+  'files.collapse': 'Ocultar lista de guiones',
+  'files.expand': 'Mostrar lista de guiones',
+  'files.missingFolder': 'Falta esa carpeta. Elija otra en Ajustes.',
   'settings.title': 'Ajustes',
-  'settings.baseFolder': 'Carpeta de proyectos',
-  'settings.changeFolder': 'Cambiar…',
+  'settings.scriptsFolder': 'Carpeta de guiones',
+  'settings.changeFolder': 'Elegir…',
+  'settings.useDefault': 'Usar predeterminada',
   'settings.autosave': 'Autoguardado',
   'settings.autosaveOff': 'Desactivado',
   'settings.autosaveEvery': 'Cada {n} minutos',
-  'settings.template': 'Plantilla de proyecto nuevo',
-  'settings.templateHint':
-    'Este archivo Fountain se copia en cada proyecto nuevo. Edítelo aquí o elija el suyo. Se guarda una copia de fábrica para revertir.',
-  'settings.templateChoose': 'Usar mi archivo…',
-  'settings.templateSave': 'Guardar plantilla',
-  'settings.templateRevert': 'Revertir al original',
-  'settings.templateSelectAll': 'Seleccionar todo',
-  'settings.templateUnsaved':
-    'La plantilla tiene cambios sin guardar. ¿Cerrar Ajustes y descartarlos?',
-  'settings.templateSaved': 'Plantilla guardada. Los proyectos nuevos la usarán.',
-  'settings.templateReverted': 'Plantilla restaurada al modelo original.',
+  'settings.theme': 'Tema',
+  'settings.uiLanguage': 'Idioma de la interfaz',
   'settings.spellcheck': 'Corrector ortográfico',
   'settings.spellcheckEnabled': 'Activar el corrector',
   'settings.spellcheckHint':
-    'Las palabras mal escritas se subrayan al escribir. Los diccionarios se guardan en este equipo para funcionar sin conexión. El idioma predeterminado es el inglés británico.',
-  'settings.spellcheckEnGB': 'Inglés (Reino Unido)',
-  'settings.spellcheckEnUS': 'Inglés (Estados Unidos)',
-  'settings.spellcheckEs': 'Español (Latinoamérica / Paraguay)',
+    'Las palabras mal escritas se subrayan al escribir. Los diccionarios quedan en esta computadora para funcionar sin conexión. El predeterminado es el inglés británico. El idioma del corrector es independiente del idioma de la interfaz.',
   'settings.spellcheckDownload': 'Descargar diccionarios',
   'settings.spellcheckOpenFolder': 'Abrir carpeta de diccionarios',
   'settings.spellcheckUrl': 'URL de descarga de diccionarios (opcional)',
   'settings.spellcheckUrlHint':
-    'Déjelo en blanco para usar las fuentes incluidas. Para una copia propia, use la URL de una carpeta de la que se puedan obtener en-GB.bdic, en-US.bdic y es-419.bdic.',
+    'Déjela en blanco para usar las fuentes incluidas. Para una copia propia, use la URL de una carpeta de la que se puedan obtener en-GB.bdic y los demás idiomas.',
   'settings.spellcheckReady': 'Listo',
   'settings.spellcheckMissing': 'No descargado',
   'settings.spellcheckDownloading': 'Descargando diccionarios…',
-  'settings.spellcheckDownloadDone': 'Diccionarios guardados en este equipo.',
+  'settings.spellcheckDownloadDone': 'Diccionarios guardados en esta computadora.',
   'settings.spellcheckDownloadFailed':
-    'No se pudo descargar uno o más diccionarios. Copie archivos .bdic en la carpeta de diccionarios o indique una URL propia.',
+    'No se pudo descargar uno o más diccionarios. Copie archivos .bdic en la carpeta o indique una URL propia.',
   'settings.spellcheckHunspellNote':
     'Windows y Linux usan estos archivos Hunspell. En macOS se usa el corrector del sistema (macOS elige el idioma).',
-  'firstRun.title': '¿Dónde deben guardarse los proyectos?',
-  'firstRun.body':
-    'Elija una carpeta base para todos los guiones. Cada proyecto tiene su propia carpeta. Puede cambiarla después en Ajustes.',
-  'firstRun.chooseFolder': 'Elegir carpeta…',
-  'firstRun.projectName': 'Nombre del proyecto',
-  'firstRun.create': 'Crear proyecto',
-  'dialog.newProject.hint':
-    'Se cierra el proyecto actual y se crea una carpeta nueva con un borrador fechado.',
-  'notes.title': 'Notas',
-  'notes.empty': 'Aún no hay notas. Escriba [[ Note 1]] en el guion o añada una aquí.',
-  'notes.add': 'Añadir nota',
-  'index.title': 'Índice',
-  'index.search': 'Buscar en el índice…',
-  'index.scenes': 'Escenas',
-  'index.characters': 'Personajes',
-  'index.notes': 'Notas',
-  'index.files': 'Archivos',
-  'index.empty': 'Nada coincide.',
-  'help.title': 'Ayuda',
-  'help.search': 'Buscar en la ayuda…',
-  'help.empty': 'Ningún artículo coincide.',
-  'status.autosaved': 'Autoguardado',
-  'welcome.firstRun': 'Elija la carpeta de proyectos y el nombre del primer guion.',
+  'settings.syntaxColors': 'Colores de sintaxis',
+  'settings.syntaxHint':
+    'Los colores solo se aplican al editor. La vista previa permanece en blanco y negro.',
+  'settings.syntaxEnabled': 'Colorear la sintaxis Fountain en el editor',
+  'settings.preset': 'Preajuste',
+  'settings.resetColors': 'Restablecer valores',
+  'settings.editorFont': 'Tamaño de fuente del editor',
+  'spell.en-GB': 'Inglés (Reino Unido)',
+  'spell.en-US': 'Inglés (Estados Unidos)',
+  'spell.es-419': 'Español (Latinoamérica)',
+  'spell.de-DE': 'Alemán',
+  'spell.fr-FR': 'Francés',
+  'spell.it-IT': 'Italiano',
   'dialog.unsaved.title': 'Cambios sin guardar',
   'dialog.unsaved.message':
     'Hay cambios sin guardar. ¿Desea guardarlos antes de continuar?',
@@ -445,42 +394,168 @@ const es_PY: Messages = {
   'dialog.unsaved.discard': 'Descartar',
   'dialog.unsaved.cancel': 'Cancelar',
   'dialog.error.title': 'Error',
-  'dialog.about.title': 'Acerca de FilmScriptWriter (Beta)',
-  'dialog.about.message':
-    'FilmScriptWriter es una vista previa BETA de un editor de guiones Fountain (paginación Hollywood, exportación PDF/FDX, vista previa). Puede cambiar; aún no es un producto final.',
-  'status.words': 'Palabras',
+  'dialog.about.title': 'Acerca de FilmScriptWriter',
   'status.pages': 'Páginas',
   'status.ready': 'Listo',
   'status.modified': 'Modificado',
   'status.saved': 'Guardado',
   'status.untitled': 'Sin título',
-  'status.font': 'Fuente',
-  'status.find': 'Buscar',
-  'status.replace': 'Reemplazar',
+  'status.autosaved': 'Autoguardado',
   'preview.title': 'Vista previa',
   'preview.empty': 'La vista previa paginada del guion aparecerá aquí.',
+  'help.title': 'Sintaxis Fountain',
+  'help.intro':
+    'Referencia completa. Pulse un elemento de la lista para saltar. Vuelva a la vista previa cuando quiera.',
   'editor.placeholder':
     'Empiece a escribir su guion en formato Fountain…\n\nINT. CAFETERÍA - DÍA\n\nUna mañana tranquila. La LUZ DEL SOL entra por las ventanas.\n\nALICIA\n(sonriendo)\nHola, mundo.',
-  'welcome.title': 'Bienvenido',
-  'welcome.body':
-    'Cree un proyecto nuevo o abra una carpeta / archivo .fountain para comenzar.',
   'common.ok': 'Aceptar',
   'common.cancel': 'Cancelar',
   'common.close': 'Cerrar',
-  'update.checking': 'Buscando actualizaciones…',
-  'update.available': 'Hay una actualización disponible.',
-  'update.none': 'Ya tiene la última versión.',
-  'update.error': 'No se pudieron buscar actualizaciones.',
-  'settings.syntaxColors': 'Colores de sintaxis',
+  'common.choose': 'Elegir…'
+}
+
+const de_DE: Messages = {
+  'app.name': 'FilmScriptWriter',
+  'app.tagline':
+    'UNLOCK YOUR STORY — Tägliches Drehbuchüben. Ein kompletter Kurzfilm, 2–5 Seiten am Tag.',
+  'app.community': 'Community: filmscriptwriter-3192',
+  'app.freeNote': 'Kostenlos mit oder ohne Mitgliedschaft.',
+  'app.licence': 'MIT-Lizenz',
+  'menu.file': 'Datei',
+  'menu.edit': 'Bearbeiten',
+  'menu.view': 'Ansicht',
+  'menu.export': 'Exportieren',
+  'menu.theme': 'Design',
+  'menu.language': 'Sprache',
+  'menu.settings': 'Einstellungen',
+  'menu.help': 'Hilfe',
+  'menu.file.new': 'Neu',
+  'menu.file.newShort': 'Neuer Kurzfilm (täglich)…',
+  'menu.file.newFeature': 'Neuer Langfilm…',
+  'menu.file.open': 'Öffnen…',
+  'menu.file.save': 'Speichern',
+  'menu.file.saveAs': 'Speichern unter…',
+  'menu.file.quit': 'Beenden',
+  'menu.edit.undo': 'Rückgängig',
+  'menu.edit.redo': 'Wiederholen',
+  'menu.edit.cut': 'Ausschneiden',
+  'menu.edit.copy': 'Kopieren',
+  'menu.edit.paste': 'Einfügen',
+  'menu.edit.selectAll': 'Alles auswählen',
+  'menu.edit.find': 'Suchen',
+  'menu.edit.findReplace': 'Suchen und ersetzen…',
+  'menu.edit.addToDictionary': 'Zum Wörterbuch hinzufügen',
+  'menu.view.files': 'Drehbuchordner',
+  'menu.view.preview': 'Vorschau',
+  'menu.view.help': 'Fountain-Hilfe',
+  'menu.view.syntax': 'Syntaxfarben',
+  'menu.view.syntaxColors': 'Syntaxfarben…',
+  'menu.view.fontIncrease': 'Schrift vergrößern',
+  'menu.view.fontDecrease': 'Schrift verkleinern',
+  'menu.view.fontReset': 'Schriftgröße zurücksetzen',
+  'menu.view.toggleDevTools': 'Entwicklertools',
+  'menu.view.reload': 'Neu laden',
+  'menu.export.fountain': 'Als Fountain exportieren…',
+  'menu.export.pdf': 'Als PDF exportieren…',
+  'menu.theme.light': 'Hell',
+  'menu.theme.dark': 'Dunkel',
+  'menu.theme.system': 'System',
+  'menu.language.en_GB': 'English (UK)',
+  'menu.language.en_US': 'English (US)',
+  'menu.language.es_419': 'Español (Latinoamérica)',
+  'menu.language.de_DE': 'Deutsch',
+  'menu.language.fr_FR': 'Français',
+  'menu.language.it_IT': 'Italiano',
+  'menu.help.about': 'Über FilmScriptWriter',
+  'menu.help.fountain': 'Fountain-Syntax',
+  'menu.settings.open': 'Einstellungen…',
+  'toolbar.new': 'Neu',
+  'toolbar.open': 'Öffnen',
+  'toolbar.save': 'Speichern',
+  'toolbar.saveAs': 'Speichern unter',
+  'toolbar.preview': 'Vorschau',
+  'toolbar.help': 'Hilfe',
+  'toolbar.settings': 'Einstellungen',
+  'files.title': 'Drehbücher',
+  'files.empty': 'Keine .fountain- oder .txt-Dateien in diesem Ordner.',
+  'files.choose': 'Wählen Sie in den Einstellungen einen Drehbuchordner.',
+  'files.useDefault': 'Standardordner verwenden',
+  'files.collapse': 'Liste ausblenden',
+  'files.expand': 'Liste einblenden',
+  'files.missingFolder': 'Dieser Ordner fehlt. Wählen Sie einen anderen in den Einstellungen.',
+  'settings.title': 'Einstellungen',
+  'settings.scriptsFolder': 'Drehbuchordner',
+  'settings.changeFolder': 'Wählen…',
+  'settings.useDefault': 'Standard verwenden',
+  'settings.autosave': 'Automatisch speichern',
+  'settings.autosaveOff': 'Aus',
+  'settings.autosaveEvery': 'Alle {n} Minuten',
+  'settings.theme': 'Design',
+  'settings.uiLanguage': 'Oberflächensprache',
+  'settings.spellcheck': 'Rechtschreibung',
+  'settings.spellcheckEnabled': 'Rechtschreibprüfung aktivieren',
+  'settings.spellcheckHint':
+    'Falsch geschriebene Wörter werden beim Tippen unterstrichen. Wörterbücher bleiben auf diesem Rechner, damit die Prüfung offline funktioniert. Standard ist britisches Englisch. Die Prüfsprache ist unabhängig von der Oberflächensprache.',
+  'settings.spellcheckDownload': 'Wörterbücher herunterladen',
+  'settings.spellcheckOpenFolder': 'Wörterbuchordner öffnen',
+  'settings.spellcheckUrl': 'Download-URL für Wörterbücher (optional)',
+  'settings.spellcheckUrlHint':
+    'Leer lassen, um die eingebauten Quellen zu nutzen. Für eine eigene Kopie geben Sie eine Ordner-URL an, aus der en-GB.bdic und die anderen Sprachen geladen werden.',
+  'settings.spellcheckReady': 'Bereit',
+  'settings.spellcheckMissing': 'Nicht heruntergeladen',
+  'settings.spellcheckDownloading': 'Wörterbücher werden heruntergeladen…',
+  'settings.spellcheckDownloadDone': 'Wörterbücher auf diesem Rechner gespeichert.',
+  'settings.spellcheckDownloadFailed':
+    'Ein oder mehrere Wörterbücher konnten nicht geladen werden. Kopieren Sie .bdic-Dateien in den Ordner oder setzen Sie eine eigene URL.',
+  'settings.spellcheckHunspellNote':
+    'Windows und Linux nutzen diese Hunspell-Dateien. macOS nutzt die Systemprüfung (macOS wählt die Sprache).',
+  'settings.syntaxColors': 'Syntaxfarben',
   'settings.syntaxHint':
-    'Los colores solo se aplican al editor. La vista previa permanece en blanco y negro.',
-  'settings.preset': 'Preajuste',
-  'settings.resetColors': 'Restablecer valores'
+    'Farben gelten nur für den Editor. Die Vorschau bleibt schwarz-weiß.',
+  'settings.syntaxEnabled': 'Fountain-Syntax im Editor einfärben',
+  'settings.preset': 'Voreinstellung',
+  'settings.resetColors': 'Zurücksetzen',
+  'settings.editorFont': 'Editor-Schriftgröße',
+  'spell.en-GB': 'Englisch (UK)',
+  'spell.en-US': 'Englisch (US)',
+  'spell.es-419': 'Spanisch (Lateinamerika)',
+  'spell.de-DE': 'Deutsch',
+  'spell.fr-FR': 'Französisch',
+  'spell.it-IT': 'Italienisch',
+  'dialog.unsaved.title': 'Ungespeicherte Änderungen',
+  'dialog.unsaved.message':
+    'Es gibt ungespeicherte Änderungen. Möchten Sie sie speichern, bevor Sie fortfahren?',
+  'dialog.unsaved.save': 'Speichern',
+  'dialog.unsaved.discard': 'Verwerfen',
+  'dialog.unsaved.cancel': 'Abbrechen',
+  'dialog.error.title': 'Fehler',
+  'dialog.about.title': 'Über FilmScriptWriter',
+  'status.pages': 'Seiten',
+  'status.ready': 'Bereit',
+  'status.modified': 'Geändert',
+  'status.saved': 'Gespeichert',
+  'status.untitled': 'Unbenannt',
+  'status.autosaved': 'Automatisch gespeichert',
+  'preview.title': 'Vorschau',
+  'preview.empty': 'Die paginierte Drehbuchvorschau erscheint hier.',
+  'help.title': 'Fountain-Syntax',
+  'help.intro':
+    'Eine vollständige Referenz. Klicken Sie einen Eintrag in der Liste an. Wechseln Sie jederzeit zurück zur Vorschau.',
+  'editor.placeholder':
+    'Beginnen Sie Ihr Drehbuch im Fountain-Format…\n\nINT. CAFÉ - TAG\n\nEin ruhiger Morgen. SONNENLICHT fällt durch die Fenster.\n\nALICE\n(lächelnd)\nHallo, Welt.',
+  'common.ok': 'OK',
+  'common.cancel': 'Abbrechen',
+  'common.close': 'Schließen',
+  'common.choose': 'Wählen…'
 }
 
 const fr_FR: Messages = {
-  'app.name': 'FilmScriptWriter (Beta)',
-  'app.tagline': 'Aperçu bêta — scénarios Fountain',
+  'app.name': 'FilmScriptWriter',
+  'app.tagline':
+    'UNLOCK YOUR STORY — Pratique quotidienne du scénario. Un court métrage complet, 2–5 pages par jour.',
+  'app.community': 'Communauté : filmscriptwriter-3192',
+  'app.freeNote': 'Gratuit avec ou sans adhésion.',
+  'app.licence': 'Licence MIT',
   'menu.file': 'Fichier',
   'menu.edit': 'Édition',
   'menu.view': 'Affichage',
@@ -489,13 +564,10 @@ const fr_FR: Messages = {
   'menu.language': 'Langue',
   'menu.settings': 'Réglages',
   'menu.help': 'Aide',
-  'menu.file.new': 'Nouveau sans titre',
-  'menu.file.newProject': 'Nouveau projet…',
-  'menu.file.closeProject': 'Fermer le projet',
-  'menu.file.open': 'Ouvrir un fichier…',
-  'menu.file.openProject': 'Ouvrir un projet…',
-  'menu.file.importDraft': 'Importer comme brouillon actuel…',
-  'menu.file.importNotes': 'Importer comme notes…',
+  'menu.file.new': 'Nouveau',
+  'menu.file.newShort': 'Nouveau court (quotidien)…',
+  'menu.file.newFeature': 'Nouveau long métrage…',
+  'menu.file.open': 'Ouvrir…',
   'menu.file.save': 'Enregistrer',
   'menu.file.saveAs': 'Enregistrer sous…',
   'menu.file.quit': 'Quitter',
@@ -507,17 +579,11 @@ const fr_FR: Messages = {
   'menu.edit.selectAll': 'Tout sélectionner',
   'menu.edit.find': 'Rechercher',
   'menu.edit.findReplace': 'Rechercher et remplacer…',
-  'menu.view.preview': 'Basculer l’aperçu',
-  'menu.view.syntaxHelp': 'Aide syntaxe Fountain',
-  'menu.view.index': 'Index',
-  'menu.view.notes': 'Notes',
-  'menu.view.syntaxCoach': 'Barre d’aide Fountain',
-  'menu.view.split1': 'Un volet',
-  'menu.view.split2': 'Deux volets',
-  'menu.view.split3': 'Trois volets',
-  'menu.view.previewFollow': 'L’aperçu suit l’éditeur',
-  'menu.view.typewriter': 'Mode machine à écrire',
-  'menu.view.syntax': 'Coloration syntaxique',
+  'menu.edit.addToDictionary': 'Ajouter au dictionnaire',
+  'menu.view.files': 'Dossier des scénarios',
+  'menu.view.preview': 'Aperçu',
+  'menu.view.help': 'Aide Fountain',
+  'menu.view.syntax': 'Couleurs de syntaxe',
   'menu.view.syntaxColors': 'Couleurs de syntaxe…',
   'menu.view.fontIncrease': 'Augmenter la taille de police',
   'menu.view.fontDecrease': 'Diminuer la taille de police',
@@ -525,49 +591,51 @@ const fr_FR: Messages = {
   'menu.view.toggleDevTools': 'Outils de développement',
   'menu.view.reload': 'Recharger',
   'menu.export.fountain': 'Exporter en Fountain…',
-  'menu.export.fdx': 'Exporter en Final Draft (.fdx)…',
   'menu.export.pdf': 'Exporter en PDF…',
   'menu.theme.light': 'Clair',
   'menu.theme.dark': 'Sombre',
   'menu.theme.system': 'Système',
   'menu.language.en_GB': 'English (UK)',
-  'menu.language.es_PY': 'Español (Paraguay)',
-  'menu.language.fr_FR': 'Français (France)',
-  'menu.help.about': 'À propos',
-  'menu.help.guide': 'Aide et instructions…',
-  'menu.help.checkUpdates': 'Rechercher les mises à jour…',
-  'menu.settings.workspace': 'Projets et enregistrement auto…',
-  'menu.settings.spellcheck': 'Correcteur orthographique',
-  'menu.edit.addToDictionary': 'Ajouter au dictionnaire',
+  'menu.language.en_US': 'English (US)',
+  'menu.language.es_419': 'Español (Latinoamérica)',
+  'menu.language.de_DE': 'Deutsch',
+  'menu.language.fr_FR': 'Français',
+  'menu.language.it_IT': 'Italiano',
+  'menu.help.about': 'À propos de FilmScriptWriter',
+  'menu.help.fountain': 'Syntaxe Fountain',
+  'menu.settings.open': 'Réglages…',
+  'toolbar.new': 'Nouveau',
+  'toolbar.open': 'Ouvrir',
+  'toolbar.save': 'Enregistrer',
+  'toolbar.saveAs': 'Enregistrer sous',
+  'toolbar.preview': 'Aperçu',
+  'toolbar.help': 'Aide',
+  'toolbar.settings': 'Réglages',
+  'files.title': 'Scénarios',
+  'files.empty': 'Aucun fichier .fountain ou .txt dans ce dossier.',
+  'files.choose': 'Choisissez un dossier de scénarios dans Réglages.',
+  'files.useDefault': 'Utiliser le dossier par défaut',
+  'files.collapse': 'Masquer la liste',
+  'files.expand': 'Afficher la liste',
+  'files.missingFolder': 'Ce dossier est introuvable. Choisissez-en un autre dans Réglages.',
   'settings.title': 'Réglages',
-  'settings.baseFolder': 'Dossier des projets',
-  'settings.changeFolder': 'Changer…',
+  'settings.scriptsFolder': 'Dossier des scénarios',
+  'settings.changeFolder': 'Choisir…',
+  'settings.useDefault': 'Utiliser le défaut',
   'settings.autosave': 'Enregistrement automatique',
   'settings.autosaveOff': 'Désactivé',
   'settings.autosaveEvery': 'Toutes les {n} minutes',
-  'settings.template': 'Modèle de nouveau projet',
-  'settings.templateHint':
-    'Ce fichier Fountain est copié dans chaque nouveau projet. Modifiez-le ici ou choisissez le vôtre. Une copie d’usine permet de rétablir l’original.',
-  'settings.templateChoose': 'Utiliser mon fichier…',
-  'settings.templateSave': 'Enregistrer le modèle',
-  'settings.templateRevert': 'Rétablir l’original',
-  'settings.templateSelectAll': 'Tout sélectionner',
-  'settings.templateUnsaved':
-    'Le modèle a des modifications non enregistrées. Fermer Réglages et les abandonner ?',
-  'settings.templateSaved': 'Modèle enregistré. Les nouveaux projets l’utiliseront.',
-  'settings.templateReverted': 'Modèle restauré à partir de l’original.',
+  'settings.theme': 'Thème',
+  'settings.uiLanguage': 'Langue de l’interface',
   'settings.spellcheck': 'Correcteur orthographique',
   'settings.spellcheckEnabled': 'Activer le correcteur',
   'settings.spellcheckHint':
-    'Les fautes sont soulignées pendant la saisie. Les dictionnaires sont enregistrés sur cet ordinateur pour fonctionner hors ligne. L’anglais britannique est la langue par défaut.',
-  'settings.spellcheckEnGB': 'Anglais (Royaume-Uni)',
-  'settings.spellcheckEnUS': 'Anglais (États-Unis)',
-  'settings.spellcheckEs': 'Espagnol (Amérique latine / Paraguay)',
+    'Les fautes sont soulignées pendant la saisie. Les dictionnaires restent sur cet ordinateur pour fonctionner hors ligne. L’anglais britannique est la langue par défaut. La langue du correcteur est indépendante de celle de l’interface.',
   'settings.spellcheckDownload': 'Télécharger les dictionnaires',
   'settings.spellcheckOpenFolder': 'Ouvrir le dossier des dictionnaires',
   'settings.spellcheckUrl': 'URL de téléchargement des dictionnaires (facultatif)',
   'settings.spellcheckUrlHint':
-    'Laissez vide pour utiliser les sources intégrées. Pour une copie auto-hébergée, indiquez l’URL d’un dossier d’où l’application peut récupérer en-GB.bdic, en-US.bdic et es-419.bdic.',
+    'Laissez vide pour utiliser les sources intégrées. Pour une copie auto-hébergée, indiquez l’URL d’un dossier d’où l’application peut récupérer en-GB.bdic et les autres langues.',
   'settings.spellcheckReady': 'Prêt',
   'settings.spellcheckMissing': 'Non téléchargé',
   'settings.spellcheckDownloading': 'Téléchargement des dictionnaires…',
@@ -576,29 +644,19 @@ const fr_FR: Messages = {
     'Impossible de télécharger un ou plusieurs dictionnaires. Copiez des fichiers .bdic dans le dossier, ou indiquez une URL auto-hébergée.',
   'settings.spellcheckHunspellNote':
     'Windows et Linux utilisent ces fichiers Hunspell. macOS utilise le correcteur du système (macOS choisit la langue).',
-  'firstRun.title': 'Où doivent vivre vos projets ?',
-  'firstRun.body':
-    'Choisissez un dossier de base pour chaque scénario. Chaque projet a son propre dossier. Vous pourrez le changer dans Réglages.',
-  'firstRun.chooseFolder': 'Choisir un dossier…',
-  'firstRun.projectName': 'Nom du projet',
-  'firstRun.create': 'Créer le projet',
-  'dialog.newProject.hint':
-    'Ferme le projet actuel et crée un dossier avec un brouillon daté.',
-  'notes.title': 'Notes',
-  'notes.empty': 'Pas encore de notes. Tapez [[ Note 1]] dans le script ou ajoutez-en ici.',
-  'notes.add': 'Ajouter une note',
-  'index.title': 'Index',
-  'index.search': 'Rechercher dans l’index…',
-  'index.scenes': 'Scènes',
-  'index.characters': 'Personnages',
-  'index.notes': 'Notes',
-  'index.files': 'Fichiers',
-  'index.empty': 'Aucun résultat.',
-  'help.title': 'Aide',
-  'help.search': 'Rechercher dans l’aide…',
-  'help.empty': 'Aucun article ne correspond.',
-  'status.autosaved': 'Enregistré automatiquement',
-  'welcome.firstRun': 'Choisissez le dossier des projets, puis le nom du premier scénario.',
+  'settings.syntaxColors': 'Couleurs de syntaxe',
+  'settings.syntaxHint':
+    'Les couleurs s’appliquent uniquement à l’éditeur. L’aperçu reste en noir et blanc.',
+  'settings.syntaxEnabled': 'Colorer la syntaxe Fountain dans l’éditeur',
+  'settings.preset': 'Préréglage',
+  'settings.resetColors': 'Réinitialiser',
+  'settings.editorFont': 'Taille de police de l’éditeur',
+  'spell.en-GB': 'Anglais (Royaume-Uni)',
+  'spell.en-US': 'Anglais (États-Unis)',
+  'spell.es-419': 'Espagnol (Amérique latine)',
+  'spell.de-DE': 'Allemand',
+  'spell.fr-FR': 'Français',
+  'spell.it-IT': 'Italien',
   'dialog.unsaved.title': 'Modifications non enregistrées',
   'dialog.unsaved.message':
     'Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant de continuer ?',
@@ -606,48 +664,193 @@ const fr_FR: Messages = {
   'dialog.unsaved.discard': 'Abandonner',
   'dialog.unsaved.cancel': 'Annuler',
   'dialog.error.title': 'Erreur',
-  'dialog.about.title': 'À propos de FilmScriptWriter (Beta)',
-  'dialog.about.message':
-    'FilmScriptWriter est un aperçu BÊTA d’un éditeur de scénarios Fountain (pagination Hollywood, export PDF/FDX, aperçu). Fonctions susceptibles de changer ; pas encore un produit fini.',
-  'status.words': 'Mots',
+  'dialog.about.title': 'À propos de FilmScriptWriter',
   'status.pages': 'Pages',
   'status.ready': 'Prêt',
   'status.modified': 'Modifié',
   'status.saved': 'Enregistré',
   'status.untitled': 'Sans titre',
-  'status.font': 'Police',
-  'status.find': 'Rechercher',
-  'status.replace': 'Remplacer',
+  'status.autosaved': 'Enregistré automatiquement',
   'preview.title': 'Aperçu',
   'preview.empty': 'L’aperçu paginé de votre scénario apparaîtra ici.',
+  'help.title': 'Syntaxe Fountain',
+  'help.intro':
+    'Une référence complète. Cliquez un élément de la liste pour y aller. Revenez à l’aperçu à tout moment.',
   'editor.placeholder':
     'Commencez à écrire votre scénario au format Fountain…\n\nINT. CAFÉ - JOUR\n\nUn matin calme. La LUMIÈRE DU SOLEIL entre par les fenêtres.\n\nALICE\n(souriante)\nBonjour le monde.',
-  'welcome.title': 'Bienvenue',
-  'welcome.body':
-    'Créez un nouveau projet, ou ouvrez un dossier / fichier .fountain pour commencer.',
   'common.ok': 'OK',
   'common.cancel': 'Annuler',
   'common.close': 'Fermer',
-  'update.checking': 'Recherche de mises à jour…',
-  'update.available': 'Une mise à jour est disponible.',
-  'update.none': 'Vous utilisez la dernière version.',
-  'update.error': 'Impossible de rechercher les mises à jour.',
-  'settings.syntaxColors': 'Couleurs de syntaxe',
+  'common.choose': 'Choisir…'
+}
+
+const it_IT: Messages = {
+  'app.name': 'FilmScriptWriter',
+  'app.tagline':
+    'UNLOCK YOUR STORY — Pratica quotidiana di sceneggiatura. Un cortometraggio completo, 2–5 pagine al giorno.',
+  'app.community': 'Community: filmscriptwriter-3192',
+  'app.freeNote': 'Gratuito con o senza iscrizione.',
+  'app.licence': 'Licenza MIT',
+  'menu.file': 'File',
+  'menu.edit': 'Modifica',
+  'menu.view': 'Visualizza',
+  'menu.export': 'Esporta',
+  'menu.theme': 'Tema',
+  'menu.language': 'Lingua',
+  'menu.settings': 'Impostazioni',
+  'menu.help': 'Aiuto',
+  'menu.file.new': 'Nuovo',
+  'menu.file.newShort': 'Nuovo corto (quotidiano)…',
+  'menu.file.newFeature': 'Nuovo lungometraggio…',
+  'menu.file.open': 'Apri…',
+  'menu.file.save': 'Salva',
+  'menu.file.saveAs': 'Salva come…',
+  'menu.file.quit': 'Esci',
+  'menu.edit.undo': 'Annulla',
+  'menu.edit.redo': 'Ripeti',
+  'menu.edit.cut': 'Taglia',
+  'menu.edit.copy': 'Copia',
+  'menu.edit.paste': 'Incolla',
+  'menu.edit.selectAll': 'Seleziona tutto',
+  'menu.edit.find': 'Trova',
+  'menu.edit.findReplace': 'Trova e sostituisci…',
+  'menu.edit.addToDictionary': 'Aggiungi al dizionario',
+  'menu.view.files': 'Cartella sceneggiature',
+  'menu.view.preview': 'Anteprima',
+  'menu.view.help': 'Guida Fountain',
+  'menu.view.syntax': 'Colori della sintassi',
+  'menu.view.syntaxColors': 'Colori della sintassi…',
+  'menu.view.fontIncrease': 'Aumenta dimensione carattere',
+  'menu.view.fontDecrease': 'Riduci dimensione carattere',
+  'menu.view.fontReset': 'Reimposta dimensione carattere',
+  'menu.view.toggleDevTools': 'Strumenti di sviluppo',
+  'menu.view.reload': 'Ricarica',
+  'menu.export.fountain': 'Esporta come Fountain…',
+  'menu.export.pdf': 'Esporta come PDF…',
+  'menu.theme.light': 'Chiaro',
+  'menu.theme.dark': 'Scuro',
+  'menu.theme.system': 'Sistema',
+  'menu.language.en_GB': 'English (UK)',
+  'menu.language.en_US': 'English (US)',
+  'menu.language.es_419': 'Español (Latinoamérica)',
+  'menu.language.de_DE': 'Deutsch',
+  'menu.language.fr_FR': 'Français',
+  'menu.language.it_IT': 'Italiano',
+  'menu.help.about': 'Informazioni su FilmScriptWriter',
+  'menu.help.fountain': 'Sintassi Fountain',
+  'menu.settings.open': 'Impostazioni…',
+  'toolbar.new': 'Nuovo',
+  'toolbar.open': 'Apri',
+  'toolbar.save': 'Salva',
+  'toolbar.saveAs': 'Salva come',
+  'toolbar.preview': 'Anteprima',
+  'toolbar.help': 'Aiuto',
+  'toolbar.settings': 'Impostazioni',
+  'files.title': 'Sceneggiature',
+  'files.empty': 'Nessun file .fountain o .txt in questa cartella.',
+  'files.choose': 'Scegli una cartella delle sceneggiature in Impostazioni.',
+  'files.useDefault': 'Usa cartella predefinita',
+  'files.collapse': 'Nascondi elenco',
+  'files.expand': 'Mostra elenco',
+  'files.missingFolder': 'Cartella mancante. Scegline un’altra in Impostazioni.',
+  'settings.title': 'Impostazioni',
+  'settings.scriptsFolder': 'Cartella delle sceneggiature',
+  'settings.changeFolder': 'Scegli…',
+  'settings.useDefault': 'Usa predefinita',
+  'settings.autosave': 'Salvataggio automatico',
+  'settings.autosaveOff': 'Disattivato',
+  'settings.autosaveEvery': 'Ogni {n} minuti',
+  'settings.theme': 'Tema',
+  'settings.uiLanguage': 'Lingua dell’interfaccia',
+  'settings.spellcheck': 'Controllo ortografico',
+  'settings.spellcheckEnabled': 'Attiva il controllo ortografico',
+  'settings.spellcheckHint':
+    'Gli errori sono sottolineati mentre scrivi. I dizionari restano su questo computer per funzionare offline. L’inglese britannico è la lingua predefinita. La lingua del correttore è indipendente da quella dell’interfaccia.',
+  'settings.spellcheckDownload': 'Scarica dizionari',
+  'settings.spellcheckOpenFolder': 'Apri cartella dizionari',
+  'settings.spellcheckUrl': 'URL di download dei dizionari (facoltativo)',
+  'settings.spellcheckUrlHint':
+    'Lascia vuoto per usare le fonti integrate. Per una copia propria, indica l’URL di una cartella da cui l’app può recuperare en-GB.bdic e le altre lingue.',
+  'settings.spellcheckReady': 'Pronto',
+  'settings.spellcheckMissing': 'Non scaricato',
+  'settings.spellcheckDownloading': 'Download dei dizionari…',
+  'settings.spellcheckDownloadDone': 'Dizionari salvati su questo computer.',
+  'settings.spellcheckDownloadFailed':
+    'Impossibile scaricare uno o più dizionari. Copia i file .bdic nella cartella oppure imposta un URL proprio.',
+  'settings.spellcheckHunspellNote':
+    'Windows e Linux usano questi file Hunspell. macOS usa il correttore di sistema (macOS sceglie la lingua).',
+  'settings.syntaxColors': 'Colori della sintassi',
   'settings.syntaxHint':
-    'Les couleurs s’appliquent uniquement à l’éditeur. L’aperçu reste en noir et blanc.',
-  'settings.preset': 'Préréglage',
-  'settings.resetColors': 'Réinitialiser'
+    'I colori si applicano solo all’editor. L’anteprima resta in bianco e nero.',
+  'settings.syntaxEnabled': 'Colora la sintassi Fountain nell’editor',
+  'settings.preset': 'Preimpostazione',
+  'settings.resetColors': 'Ripristina',
+  'settings.editorFont': 'Dimensione carattere dell’editor',
+  'spell.en-GB': 'Inglese (Regno Unito)',
+  'spell.en-US': 'Inglese (Stati Uniti)',
+  'spell.es-419': 'Spagnolo (America Latina)',
+  'spell.de-DE': 'Tedesco',
+  'spell.fr-FR': 'Francese',
+  'spell.it-IT': 'Italiano',
+  'dialog.unsaved.title': 'Modifiche non salvate',
+  'dialog.unsaved.message':
+    'Ci sono modifiche non salvate. Vuoi salvarle prima di continuare?',
+  'dialog.unsaved.save': 'Salva',
+  'dialog.unsaved.discard': 'Scarta',
+  'dialog.unsaved.cancel': 'Annulla',
+  'dialog.error.title': 'Errore',
+  'dialog.about.title': 'Informazioni su FilmScriptWriter',
+  'status.pages': 'Pagine',
+  'status.ready': 'Pronto',
+  'status.modified': 'Modificato',
+  'status.saved': 'Salvato',
+  'status.untitled': 'Senza titolo',
+  'status.autosaved': 'Salvato automaticamente',
+  'preview.title': 'Anteprima',
+  'preview.empty': 'L’anteprima impaginata della sceneggiatura apparirà qui.',
+  'help.title': 'Sintassi Fountain',
+  'help.intro':
+    'Un riferimento completo. Fai clic su una voce dell’elenco per saltare. Torna all’anteprima quando vuoi.',
+  'editor.placeholder':
+    'Inizia a scrivere la sceneggiatura in formato Fountain…\n\nINT. CAFFÈ - GIORNO\n\nUna mattina tranquilla. La LUCE DEL SOLE entra dalle finestre.\n\nALICE\n(sorridendo)\nCiao, mondo.',
+  'common.ok': 'OK',
+  'common.cancel': 'Annulla',
+  'common.close': 'Chiudi',
+  'common.choose': 'Scegli…'
 }
 
 export const LOCALES: Record<LocaleCode, Messages> = {
   en_GB,
-  es_PY,
-  fr_FR
+  en_US,
+  es_419,
+  de_DE,
+  fr_FR,
+  it_IT
 }
 
-/**
- * Translate a key for the given locale, falling back to en_GB then the key.
- */
-export function t(locale: LocaleCode, key: MessageKey): string {
-  return LOCALES[locale]?.[key] ?? LOCALES.en_GB[key] ?? key
+export const LOCALE_LABEL_KEYS: Record<LocaleCode, MessageKey> = {
+  en_GB: 'menu.language.en_GB',
+  en_US: 'menu.language.en_US',
+  es_419: 'menu.language.es_419',
+  de_DE: 'menu.language.de_DE',
+  fr_FR: 'menu.language.fr_FR',
+  it_IT: 'menu.language.it_IT'
+}
+
+export function isLocaleCode(value: string): value is LocaleCode {
+  return value in LOCALES
+}
+
+export function t(
+  locale: LocaleCode,
+  key: MessageKey,
+  vars?: Record<string, string | number>
+): string {
+  let s = LOCALES[locale]?.[key] ?? LOCALES.en_GB[key] ?? key
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.replaceAll(`{${k}}`, String(v))
+    }
+  }
+  return s
 }

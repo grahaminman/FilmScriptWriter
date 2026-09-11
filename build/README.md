@@ -1,9 +1,4 @@
-# Build resources
+App icons generated from `docs/brand/FSW-LOGO.jpg`.
 
-Place application icons here for electron-builder:
-
-- `icon.png` — 512×512 or larger (Linux / fallback)
-- `icon.ico` — Windows
-- `icon.icns` — macOS
-
-If icons are omitted, electron-builder uses its default Electron icon.
+- `icon.png` — 1024×1024, used by electron-builder (Linux / source for macOS)
+- `icon.ico` — Windows multi-size icon

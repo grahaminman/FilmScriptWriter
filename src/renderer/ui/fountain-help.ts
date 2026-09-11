@@ -1,23 +1,17 @@
-/**
- * Full Fountain syntax help — sits in the right pane in place of preview.
- * Retractable index on the right lists every option and its syntax.
- */
-
 import {
   FOUNTAIN_SYNTAX_TOPICS,
   SYNTAX_GROUPS,
   type FountainSyntaxTopic
 } from '../../shared/fountain/syntax-reference'
+import { t, type MessageKey } from '../../shared/i18n/locales'
+import type { LocaleCode } from '../../shared/constants/screenplay'
 
-export { COACH_TO_TOPIC } from '../../shared/fountain/syntax-reference'
-
-export interface FountainHelpPaneHandle {
+export interface FountainHelpHandle {
   show: () => void
   hide: () => void
+  setLocale: (locale: LocaleCode) => void
   setCollapsed: (collapsed: boolean) => void
   isCollapsed: () => boolean
-  select: (id: string) => void
-  highlight: (id: string) => void
   destroy: () => void
 }
 
@@ -31,17 +25,18 @@ function escapeHtml(s: string): string {
 export function createFountainHelpPane(
   root: HTMLElement,
   onToggleIndex: (collapsed: boolean) => void
-): FountainHelpPaneHandle {
+): FountainHelpHandle {
   let collapsed = false
   let selected = FOUNTAIN_SYNTAX_TOPICS[0]?.id ?? 'what'
+  let locale: LocaleCode = 'en_GB'
 
   root.classList.add('fountain-help')
   root.innerHTML = `
     <div class="fountain-help-doc" id="fh-doc"></div>
-    <aside class="fountain-help-index" id="fh-index" aria-label="Fountain syntax index">
+    <aside class="fountain-help-index" id="fh-index">
       <header class="fountain-help-index-head">
-        <strong>Syntax</strong>
-        <button type="button" class="sidebar-collapse" id="fh-collapse" title="Hide syntax list">›</button>
+        <strong data-i18n="help.title"></strong>
+        <button type="button" class="sidebar-collapse" id="fh-collapse">›</button>
       </header>
       <nav class="fountain-help-index-list" id="fh-list"></nav>
     </aside>
@@ -54,10 +49,10 @@ export function createFountainHelpPane(
 
   const renderDoc = (): void => {
     const parts: string[] = [
-      '<header class="fountain-help-intro"><h2>Fountain syntax</h2><p>A complete reference. Click an item in the list on the right to jump. You can leave this open while you write — switch back to Preview any time.</p></header>'
+      `<header class="fountain-help-intro"><h2>${escapeHtml(t(locale, 'help.title'))}</h2><p>${escapeHtml(t(locale, 'help.intro'))}</p></header>`
     ]
     for (const group of SYNTAX_GROUPS) {
-      const topics = FOUNTAIN_SYNTAX_TOPICS.filter((t) => t.group === group.id)
+      const topics = FOUNTAIN_SYNTAX_TOPICS.filter((topic) => topic.group === group.id)
       if (topics.length === 0) continue
       parts.push(`<h3 class="fountain-help-group">${escapeHtml(group.label)}</h3>`)
       for (const topic of topics) {
@@ -86,7 +81,7 @@ export function createFountainHelpPane(
   const renderIndex = (): void => {
     listEl.innerHTML = ''
     for (const group of SYNTAX_GROUPS) {
-      const topics = FOUNTAIN_SYNTAX_TOPICS.filter((t) => t.group === group.id)
+      const topics = FOUNTAIN_SYNTAX_TOPICS.filter((topic) => topic.group === group.id)
       if (topics.length === 0) continue
       const h = document.createElement('h3')
       h.textContent = group.label
@@ -121,7 +116,6 @@ export function createFountainHelpPane(
   const applyCollapsed = (): void => {
     indexEl.classList.toggle('collapsed', collapsed)
     collapseBtn.textContent = collapsed ? '‹' : '›'
-    collapseBtn.title = collapsed ? 'Show syntax list' : 'Hide syntax list'
   }
 
   collapseBtn.addEventListener('click', () => {
@@ -135,30 +129,21 @@ export function createFountainHelpPane(
   applyCollapsed()
 
   return {
-    show: () => {
-      root.classList.remove('hidden')
-    },
-    hide: () => {
-      root.classList.add('hidden')
+    show: () => root.classList.remove('hidden'),
+    hide: () => root.classList.add('hidden'),
+    setLocale: (next) => {
+      locale = next
+      const title = root.querySelector('[data-i18n="help.title"]')
+      if (title) title.textContent = t(locale, 'help.title' as MessageKey)
+      renderDoc()
     },
     setCollapsed: (next) => {
       collapsed = next
       applyCollapsed()
     },
     isCollapsed: () => collapsed,
-    select,
-    highlight: (id: string) => {
-      if (!FOUNTAIN_SYNTAX_TOPICS.some((t) => t.id === id)) return
-      selected = id
-      renderIndex()
-      docEl.querySelectorAll('.fountain-help-topic').forEach((n) => {
-        n.classList.toggle('active', (n as HTMLElement).dataset.id === id)
-      })
-    },
     destroy: () => {
       root.innerHTML = ''
     }
   }
 }
-
-

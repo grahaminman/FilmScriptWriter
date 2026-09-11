@@ -1,14 +1,3 @@
-/**
- * Hollywood-standard screenplay layout constants.
- *
- * These values mirror industry norms used by Final Draft and similar apps:
- * US Letter paper, Courier 12 pt, fixed margins, and conventional
- * horizontal positions for character / parenthetical / dialogue.
- *
- * All linear measurements are in inches unless noted. Convert to points
- * with `inchesToPoints()` (1 in = 72 pt) for PDFKit and CSS print layout.
- */
-
 /** US Letter width in inches. */
 export const PAGE_WIDTH_IN = 8.5
 
@@ -39,61 +28,16 @@ export const MARGIN_TOP_IN = 1.0
 /** Bottom margin. */
 export const MARGIN_BOTTOM_IN = 1.0
 
-/**
- * Character cue left indent from the page edge (inches).
- * ~3.7" is the Final Draft default.
- */
 export const CHARACTER_LEFT_IN = 3.7
-
-/**
- * Parenthetical left indent from the page edge (inches).
- * ~3.1" is the Final Draft default.
- */
 export const PARENTHETICAL_LEFT_IN = 3.1
-
-/**
- * Dialogue left indent from the page edge (inches).
- * ~2.5" is the Final Draft default.
- */
 export const DIALOGUE_LEFT_IN = 2.5
-
-/**
- * Dialogue right edge from the page edge (inches).
- * Leaves roughly 1.5" on the right of dialogue blocks.
- */
 export const DIALOGUE_RIGHT_IN = 1.5
-
-/**
- * Parenthetical right edge from the page edge (inches).
- */
 export const PARENTHETICAL_RIGHT_IN = 2.0
-
-/**
- * Transition blocks are right-aligned near the right margin.
- */
 export const TRANSITION_RIGHT_IN = 1.0
 
-/**
- * Approximate characters per line for action/description at Courier 12
- * with 1.5" left + 1.0" right on US Letter (usable ~6").
- * Courier is monospaced at 10 cpi → 60 characters.
- */
 export const ACTION_CHARS_PER_LINE = 60
-
-/**
- * Approximate characters per dialogue line (from 2.5" to ~7.0").
- * Usable ~4.5" → 45 characters.
- */
 export const DIALOGUE_CHARS_PER_LINE = 35
-
-/**
- * Approximate characters per parenthetical line.
- */
 export const PARENTHETICAL_CHARS_PER_LINE = 25
-
-/**
- * Approximate characters per character-name line.
- */
 export const CHARACTER_CHARS_PER_LINE = 30
 
 /**
@@ -102,47 +46,40 @@ export const CHARACTER_CHARS_PER_LINE = 30
  */
 export const LINES_PER_PAGE = 54
 
-/** Page-number vertical offset from the top edge (inches). */
 export const PAGE_NUMBER_TOP_IN = 0.5
-
-/** Page-number horizontal position (right-aligned area). */
 export const PAGE_NUMBER_RIGHT_IN = 1.0
 
-/** Convert inches to PDF points. */
 export function inchesToPoints(inches: number): number {
   return inches * POINTS_PER_INCH
 }
 
-/** Convert points to inches. */
 export function pointsToInches(points: number): number {
   return points / POINTS_PER_INCH
 }
 
-/** Supported application theme modes. */
 export type ThemeMode = 'light' | 'dark' | 'system'
 
-/** Supported UI locales. */
-export type LocaleCode = 'en_GB' | 'es_PY' | 'fr_FR'
+export type LocaleCode = 'en_GB' | 'en_US' | 'es_419' | 'de_DE' | 'fr_FR' | 'it_IT'
 
 export const SUPPORTED_LOCALES: readonly LocaleCode[] = [
   'en_GB',
-  'es_PY',
-  'fr_FR'
+  'en_US',
+  'es_419',
+  'de_DE',
+  'fr_FR',
+  'it_IT'
 ] as const
 
 export const DEFAULT_LOCALE: LocaleCode = 'en_GB'
-export const DEFAULT_THEME: ThemeMode = 'system'
+export const DEFAULT_THEME: ThemeMode = 'light'
 
-/** Editor / UI font size bounds (CSS pixels for editor; UI scales from base). */
 export const FONT_SIZE_MIN = 11
 export const FONT_SIZE_MAX = 28
 export const FONT_SIZE_DEFAULT = 14
 export const FONT_SIZE_STEP = 1
 
-/** File extensions the editor opens/saves natively. */
 export const FOUNTAIN_EXTENSION = '.fountain'
 export const TXT_EXTENSION = '.txt'
-export const FDX_EXTENSION = '.fdx'
 export const PDF_EXTENSION = '.pdf'
 
 export const OPEN_FILTERS = [
@@ -151,16 +88,11 @@ export const OPEN_FILTERS = [
     extensions: ['fountain', 'txt']
   },
   {
-    name: 'Project files',
-    extensions: ['fountain', 'txt', 'md', 'pdf']
-  },
-  {
     name: 'All Files',
     extensions: ['*']
   }
 ]
 
-/** Allowed autosave intervals in minutes (0 = off). */
 export const AUTOSAVE_MINUTES_OPTIONS = [0, 1, 2, 5, 10, 15, 30] as const
 export const AUTOSAVE_MINUTES_DEFAULT = 5
 
@@ -175,13 +107,6 @@ export const SAVE_FOUNTAIN_FILTERS = [
   }
 ]
 
-export const SAVE_FDX_FILTERS = [
-  {
-    name: 'Final Draft',
-    extensions: ['fdx']
-  }
-]
-
 export const SAVE_PDF_FILTERS = [
   {
     name: 'PDF',
@@ -189,62 +114,45 @@ export const SAVE_PDF_FILTERS = [
   }
 ]
 
-/** IPC channel names — single source of truth for main ↔ renderer. */
+export const DEFAULT_WINDOW_BOUNDS = {
+  width: 1280,
+  height: 800
+} as const
+
+export const MIN_WINDOW_WIDTH = 1024
+export const MIN_WINDOW_HEIGHT = 700
+
+export const SCRIPTS_FOLDER_NAME = 'FilmScriptWriter/scripts'
+
 export const IPC = {
-  // File
   FILE_NEW: 'file:new',
   FILE_OPEN: 'file:open',
+  FILE_OPEN_PATH: 'file:open-path',
   FILE_SAVE: 'file:save',
   FILE_SAVE_AS: 'file:save-as',
   FILE_EXPORT_FOUNTAIN: 'file:export-fountain',
-  FILE_EXPORT_FDX: 'file:export-fdx',
   FILE_EXPORT_PDF: 'file:export-pdf',
   FILE_GET_STATE: 'file:get-state',
   FILE_SET_DIRTY: 'file:set-dirty',
-  FILE_CONTENT_CHANGED: 'file:content-changed',
-  FILE_LOADED: 'file:loaded',
-  /** Startup document: last file if available, otherwise starter template. */
   FILE_GET_STARTUP: 'file:get-startup',
-  /** Starter template content (always untitled; never overwrites template file). */
   FILE_GET_TEMPLATE: 'file:get-template',
+  FILE_LIST_SCRIPTS: 'file:list-scripts',
 
-  // Dialogs
   DIALOG_CONFIRM_DISCARD: 'dialog:confirm-discard',
-  DIALOG_SHOW_MESSAGE: 'dialog:show-message',
   DIALOG_SHOW_ERROR: 'dialog:show-error',
+  DIALOG_SHOW_ABOUT: 'dialog:show-about',
 
-  // App preferences
   PREFS_GET: 'prefs:get',
   PREFS_SET: 'prefs:set',
   PREFS_CHANGED: 'prefs:changed',
 
-  // Menu actions pushed main → renderer
   MENU_ACTION: 'menu:action',
 
-  // Window / app
   APP_GET_VERSION: 'app:get-version',
-  APP_QUIT: 'app:quit',
-  APP_CHECK_UPDATES: 'app:check-updates',
+  APP_GET_DEFAULT_SCRIPTS: 'app:get-default-scripts',
 
-  // Export helpers (renderer may ask main to write binary)
-  EXPORT_WRITE_BUFFER: 'export:write-buffer',
-
-  // Projects / workspace
-  PROJECT_GET: 'project:get',
-  PROJECT_CREATE: 'project:create',
-  PROJECT_OPEN: 'project:open',
-  PROJECT_LIST_RECENT: 'project:list-recent',
-  PROJECT_CHOOSE_BASE: 'project:choose-base',
-  PROJECT_IMPORT: 'project:import',
-  PROJECT_READ_FILE: 'project:read-file',
-  PROJECT_WRITE_FILE: 'project:write-file',
-  PROJECT_OPEN_FILE: 'project:open-file',
-  PROJECT_RESTORE: 'project:restore',
-
-  TEMPLATE_GET: 'template:get',
-  TEMPLATE_SAVE: 'template:save',
-  TEMPLATE_REVERT: 'template:revert',
-  TEMPLATE_CHOOSE: 'template:choose',
+  SCRIPTS_CHOOSE_FOLDER: 'scripts:choose-folder',
+  SCRIPTS_USE_DEFAULT: 'scripts:use-default',
 
   SPELLCHECK_STATUS: 'spellcheck:status',
   SPELLCHECK_DOWNLOAD: 'spellcheck:download',
