@@ -5,6 +5,8 @@ import {
   fillTemplatePlaceholders,
   getTemplateSource
 } from '../src/shared/templates/text'
+import { paginateSource } from '../src/shared/fountain/page-counter'
+import { fountainToPdf } from '../src/shared/export/pdf'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -42,5 +44,20 @@ describe('templates', () => {
     const src = getTemplateSource('short-daily')
     expect(src).toContain('[[ DAILY PROMPT')
     expect(src).toContain('FADE IN:')
+  })
+
+  it('omits the DAILY PROMPT note from pagination and PDF', async () => {
+    const result = paginateSource(SHORT_DAILY_TEMPLATE)
+    const text = result.pages
+      .flatMap((page) => page.lines.map((line) => line.text))
+      .join('\n')
+    expect(text).toContain('FADE IN')
+    expect(text).not.toContain('DAILY PROMPT')
+    expect(text).not.toContain('filmscriptwriter-3192')
+
+    const buffer = await fountainToPdf(SHORT_DAILY_TEMPLATE)
+    const pdf = buffer.toString('latin1')
+    expect(pdf).not.toContain('DAILY PROMPT')
+    expect(pdf).not.toContain('filmscriptwriter-3192')
   })
 })

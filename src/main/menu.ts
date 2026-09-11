@@ -104,8 +104,16 @@ export function buildApplicationMenu(win: BrowserWindow): void {
     {
       label: t(loc, 'menu.edit'),
       submenu: [
-        { role: 'undo', label: t(loc, 'menu.edit.undo') },
-        { role: 'redo', label: t(loc, 'menu.edit.redo') },
+        {
+          label: t(loc, 'menu.edit.undo'),
+          accelerator: 'CmdOrCtrl+Z',
+          click: () => send(win, 'edit:undo')
+        },
+        {
+          label: t(loc, 'menu.edit.redo'),
+          accelerator: isMac ? 'Cmd+Shift+Z' : 'Ctrl+Y',
+          click: () => send(win, 'edit:redo')
+        },
         { type: 'separator' },
         { role: 'cut', label: t(loc, 'menu.edit.cut') },
         { role: 'copy', label: t(loc, 'menu.edit.copy') },
@@ -119,7 +127,7 @@ export function buildApplicationMenu(win: BrowserWindow): void {
         },
         {
           label: t(loc, 'menu.edit.findReplace'),
-          accelerator: 'CmdOrCtrl+H',
+          accelerator: isMac ? 'Cmd+Alt+F' : 'Ctrl+H',
           click: () => send(win, 'edit:find-replace')
         }
       ]

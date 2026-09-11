@@ -67,6 +67,7 @@ export type MessageKey =
   | 'files.useDefault'
   | 'files.collapse'
   | 'files.expand'
+  | 'files.refresh'
   | 'files.missingFolder'
   | 'settings.title'
   | 'settings.scriptsFolder'
@@ -94,6 +95,23 @@ export type MessageKey =
   | 'settings.syntaxHint'
   | 'settings.syntaxEnabled'
   | 'settings.preset'
+  | 'settings.preset.default'
+  | 'settings.preset.highContrast'
+  | 'settings.preset.soft'
+  | 'settings.preset.custom'
+  | 'settings.syntax.scene'
+  | 'settings.syntax.action'
+  | 'settings.syntax.character'
+  | 'settings.syntax.parenthetical'
+  | 'settings.syntax.dialogue'
+  | 'settings.syntax.transition'
+  | 'settings.syntax.lyrics'
+  | 'settings.syntax.centered'
+  | 'settings.syntax.section'
+  | 'settings.syntax.note'
+  | 'settings.syntax.boneyard'
+  | 'settings.syntax.meta'
+  | 'settings.syntax.pagebreak'
   | 'settings.resetColors'
   | 'settings.editorFont'
   | 'spell.en-GB'
@@ -109,6 +127,7 @@ export type MessageKey =
   | 'dialog.unsaved.cancel'
   | 'dialog.error.title'
   | 'dialog.about.title'
+  | 'status.page'
   | 'status.pages'
   | 'status.ready'
   | 'status.modified'
@@ -195,6 +214,7 @@ const en_GB: Messages = {
   'files.useDefault': 'Use default folder',
   'files.collapse': 'Hide scripts list',
   'files.expand': 'Show scripts list',
+  'files.refresh': 'Refresh list',
   'files.missingFolder': 'That folder is missing. Choose another in Settings.',
   'settings.title': 'Settings',
   'settings.scriptsFolder': 'Scripts folder',
@@ -227,6 +247,23 @@ const en_GB: Messages = {
     'Colours apply to the editor only. Preview stays black-and-white for print fidelity.',
   'settings.syntaxEnabled': 'Colour Fountain syntax in the editor',
   'settings.preset': 'Preset',
+  'settings.preset.default': 'Default',
+  'settings.preset.highContrast': 'High contrast',
+  'settings.preset.soft': 'Soft',
+  'settings.preset.custom': 'Custom',
+  'settings.syntax.scene': 'Scene heading',
+  'settings.syntax.action': 'Action',
+  'settings.syntax.character': 'Character',
+  'settings.syntax.parenthetical': 'Parenthetical',
+  'settings.syntax.dialogue': 'Dialogue',
+  'settings.syntax.transition': 'Transition',
+  'settings.syntax.lyrics': 'Lyrics',
+  'settings.syntax.centered': 'Centered',
+  'settings.syntax.section': 'Section / synopsis',
+  'settings.syntax.note': 'Note',
+  'settings.syntax.boneyard': 'Boneyard',
+  'settings.syntax.meta': 'Title page',
+  'settings.syntax.pagebreak': 'Page break',
   'settings.resetColors': 'Reset to default',
   'settings.editorFont': 'Editor font size',
   'spell.en-GB': 'English (UK)',
@@ -243,7 +280,8 @@ const en_GB: Messages = {
   'dialog.unsaved.cancel': 'Cancel',
   'dialog.error.title': 'Error',
   'dialog.about.title': 'About FilmScriptWriter',
-  'status.pages': 'Pages',
+  'status.page': 'page',
+  'status.pages': 'pages',
   'status.ready': 'Ready',
   'status.modified': 'Modified',
   'status.saved': 'Saved',
@@ -347,6 +385,7 @@ const es_419: Messages = {
   'files.useDefault': 'Usar carpeta predeterminada',
   'files.collapse': 'Ocultar lista de guiones',
   'files.expand': 'Mostrar lista de guiones',
+  'files.refresh': 'Actualizar lista',
   'files.missingFolder': 'Falta esa carpeta. Elija otra en Ajustes.',
   'settings.title': 'Ajustes',
   'settings.scriptsFolder': 'Carpeta de guiones',
@@ -379,6 +418,23 @@ const es_419: Messages = {
     'Los colores solo se aplican al editor. La vista previa permanece en blanco y negro.',
   'settings.syntaxEnabled': 'Colorear la sintaxis Fountain en el editor',
   'settings.preset': 'Preajuste',
+  'settings.preset.default': 'Predeterminado',
+  'settings.preset.highContrast': 'Alto contraste',
+  'settings.preset.soft': 'Suave',
+  'settings.preset.custom': 'Personalizado',
+  'settings.syntax.scene': 'Encabezado de escena',
+  'settings.syntax.action': 'Acción',
+  'settings.syntax.character': 'Personaje',
+  'settings.syntax.parenthetical': 'Acotación',
+  'settings.syntax.dialogue': 'Diálogo',
+  'settings.syntax.transition': 'Transición',
+  'settings.syntax.lyrics': 'Letra',
+  'settings.syntax.centered': 'Centrado',
+  'settings.syntax.section': 'Sección / sinopsis',
+  'settings.syntax.note': 'Nota',
+  'settings.syntax.boneyard': 'Boneyard',
+  'settings.syntax.meta': 'Portada',
+  'settings.syntax.pagebreak': 'Salto de página',
   'settings.resetColors': 'Restablecer valores',
   'settings.editorFont': 'Tamaño de fuente del editor',
   'spell.en-GB': 'Inglés (Reino Unido)',
@@ -395,7 +451,8 @@ const es_419: Messages = {
   'dialog.unsaved.cancel': 'Cancelar',
   'dialog.error.title': 'Error',
   'dialog.about.title': 'Acerca de FilmScriptWriter',
-  'status.pages': 'Páginas',
+  'status.page': 'página',
+  'status.pages': 'páginas',
   'status.ready': 'Listo',
   'status.modified': 'Modificado',
   'status.saved': 'Guardado',
@@ -482,6 +539,7 @@ const de_DE: Messages = {
   'files.useDefault': 'Standardordner verwenden',
   'files.collapse': 'Liste ausblenden',
   'files.expand': 'Liste einblenden',
+  'files.refresh': 'Liste aktualisieren',
   'files.missingFolder': 'Dieser Ordner fehlt. Wählen Sie einen anderen in den Einstellungen.',
   'settings.title': 'Einstellungen',
   'settings.scriptsFolder': 'Drehbuchordner',
@@ -514,6 +572,23 @@ const de_DE: Messages = {
     'Farben gelten nur für den Editor. Die Vorschau bleibt schwarz-weiß.',
   'settings.syntaxEnabled': 'Fountain-Syntax im Editor einfärben',
   'settings.preset': 'Voreinstellung',
+  'settings.preset.default': 'Standard',
+  'settings.preset.highContrast': 'Hoher Kontrast',
+  'settings.preset.soft': 'Sanft',
+  'settings.preset.custom': 'Benutzerdefiniert',
+  'settings.syntax.scene': 'Szenenüberschrift',
+  'settings.syntax.action': 'Handlung',
+  'settings.syntax.character': 'Figur',
+  'settings.syntax.parenthetical': 'Parenthese',
+  'settings.syntax.dialogue': 'Dialog',
+  'settings.syntax.transition': 'Übergang',
+  'settings.syntax.lyrics': 'Liedtext',
+  'settings.syntax.centered': 'Zentriert',
+  'settings.syntax.section': 'Abschnitt / Synopsis',
+  'settings.syntax.note': 'Notiz',
+  'settings.syntax.boneyard': 'Boneyard',
+  'settings.syntax.meta': 'Titelseite',
+  'settings.syntax.pagebreak': 'Seitenumbruch',
   'settings.resetColors': 'Zurücksetzen',
   'settings.editorFont': 'Editor-Schriftgröße',
   'spell.en-GB': 'Englisch (UK)',
@@ -530,6 +605,7 @@ const de_DE: Messages = {
   'dialog.unsaved.cancel': 'Abbrechen',
   'dialog.error.title': 'Fehler',
   'dialog.about.title': 'Über FilmScriptWriter',
+  'status.page': 'Seite',
   'status.pages': 'Seiten',
   'status.ready': 'Bereit',
   'status.modified': 'Geändert',
@@ -617,6 +693,7 @@ const fr_FR: Messages = {
   'files.useDefault': 'Utiliser le dossier par défaut',
   'files.collapse': 'Masquer la liste',
   'files.expand': 'Afficher la liste',
+  'files.refresh': 'Actualiser la liste',
   'files.missingFolder': 'Ce dossier est introuvable. Choisissez-en un autre dans Réglages.',
   'settings.title': 'Réglages',
   'settings.scriptsFolder': 'Dossier des scénarios',
@@ -649,6 +726,23 @@ const fr_FR: Messages = {
     'Les couleurs s’appliquent uniquement à l’éditeur. L’aperçu reste en noir et blanc.',
   'settings.syntaxEnabled': 'Colorer la syntaxe Fountain dans l’éditeur',
   'settings.preset': 'Préréglage',
+  'settings.preset.default': 'Par défaut',
+  'settings.preset.highContrast': 'Contraste élevé',
+  'settings.preset.soft': 'Doux',
+  'settings.preset.custom': 'Personnalisé',
+  'settings.syntax.scene': 'Intitulé de scène',
+  'settings.syntax.action': 'Action',
+  'settings.syntax.character': 'Personnage',
+  'settings.syntax.parenthetical': 'Incise',
+  'settings.syntax.dialogue': 'Dialogue',
+  'settings.syntax.transition': 'Transition',
+  'settings.syntax.lyrics': 'Paroles',
+  'settings.syntax.centered': 'Centré',
+  'settings.syntax.section': 'Section / synopsis',
+  'settings.syntax.note': 'Note',
+  'settings.syntax.boneyard': 'Boneyard',
+  'settings.syntax.meta': 'Page de titre',
+  'settings.syntax.pagebreak': 'Saut de page',
   'settings.resetColors': 'Réinitialiser',
   'settings.editorFont': 'Taille de police de l’éditeur',
   'spell.en-GB': 'Anglais (Royaume-Uni)',
@@ -665,7 +759,8 @@ const fr_FR: Messages = {
   'dialog.unsaved.cancel': 'Annuler',
   'dialog.error.title': 'Erreur',
   'dialog.about.title': 'À propos de FilmScriptWriter',
-  'status.pages': 'Pages',
+  'status.page': 'page',
+  'status.pages': 'pages',
   'status.ready': 'Prêt',
   'status.modified': 'Modifié',
   'status.saved': 'Enregistré',
@@ -752,6 +847,7 @@ const it_IT: Messages = {
   'files.useDefault': 'Usa cartella predefinita',
   'files.collapse': 'Nascondi elenco',
   'files.expand': 'Mostra elenco',
+  'files.refresh': 'Aggiorna elenco',
   'files.missingFolder': 'Cartella mancante. Scegline un’altra in Impostazioni.',
   'settings.title': 'Impostazioni',
   'settings.scriptsFolder': 'Cartella delle sceneggiature',
@@ -784,6 +880,23 @@ const it_IT: Messages = {
     'I colori si applicano solo all’editor. L’anteprima resta in bianco e nero.',
   'settings.syntaxEnabled': 'Colora la sintassi Fountain nell’editor',
   'settings.preset': 'Preimpostazione',
+  'settings.preset.default': 'Predefinito',
+  'settings.preset.highContrast': 'Alto contrasto',
+  'settings.preset.soft': 'Morbido',
+  'settings.preset.custom': 'Personalizzato',
+  'settings.syntax.scene': 'Intestazione di scena',
+  'settings.syntax.action': 'Azione',
+  'settings.syntax.character': 'Personaggio',
+  'settings.syntax.parenthetical': 'Inciso',
+  'settings.syntax.dialogue': 'Dialogo',
+  'settings.syntax.transition': 'Transizione',
+  'settings.syntax.lyrics': 'Testo cantato',
+  'settings.syntax.centered': 'Centrato',
+  'settings.syntax.section': 'Sezione / sinossi',
+  'settings.syntax.note': 'Nota',
+  'settings.syntax.boneyard': 'Boneyard',
+  'settings.syntax.meta': 'Frontespizio',
+  'settings.syntax.pagebreak': 'Interruzione di pagina',
   'settings.resetColors': 'Ripristina',
   'settings.editorFont': 'Dimensione carattere dell’editor',
   'spell.en-GB': 'Inglese (Regno Unito)',
@@ -800,7 +913,8 @@ const it_IT: Messages = {
   'dialog.unsaved.cancel': 'Annulla',
   'dialog.error.title': 'Errore',
   'dialog.about.title': 'Informazioni su FilmScriptWriter',
-  'status.pages': 'Pagine',
+  'status.page': 'pagina',
+  'status.pages': 'pagine',
   'status.ready': 'Pronto',
   'status.modified': 'Modificato',
   'status.saved': 'Salvato',

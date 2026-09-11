@@ -17,14 +17,7 @@ import {
   type CompletionContext,
   type CompletionResult
 } from '@codemirror/autocomplete'
-import {
-  EditorView,
-  ViewPlugin,
-  type ViewUpdate,
-  Decoration,
-  type DecorationSet
-} from '@codemirror/view'
-import { EditorState, Transaction, type Extension, RangeSetBuilder } from '@codemirror/state'
+import { EditorState, Transaction, type Extension } from '@codemirror/state'
 import {
   collectCharactersFromSource,
   enforceCharacterUppercase,
@@ -46,6 +39,7 @@ interface FountainStreamState {
   inDialogue: boolean
   prevBlank: boolean
   inBoneyard: boolean
+  inNote: boolean
   inTitlePage: boolean
   titlePageChecked: boolean
 }
@@ -57,15 +51,12 @@ const fountainLanguage = StreamLanguage.define<FountainStreamState>({
       inDialogue: false,
       prevBlank: true,
       inBoneyard: false,
+      inNote: false,
       inTitlePage: false,
       titlePageChecked: false
     }
   },
   token(stream: StringStream, state: FountainStreamState): string | null {
-    if (stream.sol()) {
-      // Beginning of line classification
-    }
-
     // Boneyard
     if (state.inBoneyard) {
       if (stream.match(/^.*?\*\//)) {
@@ -81,6 +72,15 @@ const fountainLanguage = StreamLanguage.define<FountainStreamState>({
         state.inBoneyard = true
       }
       stream.skipToEnd()
+      return 'comment'
+    }
+
+    if (state.inNote) {
+      if (stream.match(/.*?\]\]/)) {
+        state.inNote = false
+      }
+      stream.skipToEnd()
+      state.prevBlank = false
       return 'comment'
     }
 
@@ -118,8 +118,12 @@ const fountainLanguage = StreamLanguage.define<FountainStreamState>({
       return 'processingInstruction'
     }
 
-    // Notes
-    if (stream.match(/^\[\[.*\]\]\s*$/)) {
+    // Notes — [[ … ]] may span lines
+    if (stream.match(/^\[\[/)) {
+      if (!stream.match(/.*?\]\]/)) {
+        state.inNote = true
+      }
+      stream.skipToEnd()
       state.prevBlank = false
       return 'comment'
     }
@@ -392,27 +396,3 @@ export function fountain(): Extension {
     uppercaseEnforcer()
   ]
 }
-
-/**
- * Optional decorative plugin — reserved for future line-gutter scene markers.
- * Currently returns empty decorations; kept modular for extension.
- */
-export function sceneGutterPlugin(): Extension {
-  return ViewPlugin.fromClass(
-    class {
-      decorations: DecorationSet
-      constructor(_view: EditorView) {
-        this.decorations = Decoration.none
-      }
-      update(_update: ViewUpdate): void {
-        this.decorations = Decoration.none
-      }
-    },
-    {
-      decorations: (v) => v.decorations
-    }
-  )
-}
-
-// Silence unused import if RangeSetBuilder not used yet
-void RangeSetBuilder

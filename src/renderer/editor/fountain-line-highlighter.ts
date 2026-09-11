@@ -39,7 +39,6 @@ const CENTERED_RE = /^>\s*.+\s*<\s*$/
 const SECTION_RE = /^#{1,6}\s+/
 const SYNOPSIS_RE = /^=(?!=)\s*/
 const PAGE_BREAK_RE = /^={3,}\s*$/
-const NOTE_LINE_RE = /^\[\[.*\]\]\s*$/
 const TITLE_KEY_RE = /^[A-Za-z][A-Za-z0-9\s]*:\s*/
 
 /**
@@ -51,6 +50,7 @@ export function classifyDocumentLines(doc: {
 }): FountainLineKind[] {
   const kinds: FountainLineKind[] = new Array(doc.lines + 1)
   let inBoneyard = false
+  let inNote = false
   let inTitlePage = false
   let titleChecked = false
   let inDialogue = false
@@ -75,6 +75,13 @@ export function classifyDocumentLines(doc: {
       }
       prevBlank = false
       inDialogue = false
+      continue
+    }
+
+    if (inNote) {
+      kinds[n] = 'note'
+      if (raw.includes(']]')) inNote = false
+      prevBlank = false
       continue
     }
 
@@ -106,8 +113,9 @@ export function classifyDocumentLines(doc: {
       continue
     }
 
-    if (NOTE_LINE_RE.test(trimmed)) {
+    if (trimmed.startsWith('[[')) {
       kinds[n] = 'note'
+      if (!trimmed.includes(']]')) inNote = true
       prevBlank = false
       continue
     }

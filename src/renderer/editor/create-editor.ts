@@ -11,7 +11,9 @@ import {
   defaultKeymap,
   history,
   historyKeymap,
-  indentWithTab
+  indentWithTab,
+  undo as cmUndo,
+  redo as cmRedo
 } from '@codemirror/commands'
 import {
   searchKeymap,
@@ -38,6 +40,8 @@ export interface EditorHandle {
   setSyntaxHighlighting: (enabled: boolean) => void
   openFind: () => void
   openFindReplace: () => void
+  undo: () => void
+  redo: () => void
   getCursorLine: () => number
   onCursorLineChange: (cb: (line: number) => void) => () => void
   setSpellcheck: (enabled: boolean, languages: string[]) => void
@@ -159,6 +163,12 @@ export function createEditor(options: CreateEditorOptions): EditorHandle {
     },
     openFindReplace: () => {
       openSearchPanel(view)
+    },
+    undo: () => {
+      cmUndo(view)
+    },
+    redo: () => {
+      cmRedo(view)
     },
     getCursorLine: () => {
       return view.state.doc.lineAt(view.state.selection.main.head).number

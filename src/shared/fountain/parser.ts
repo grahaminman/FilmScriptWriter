@@ -41,9 +41,6 @@ const SYNOPSIS_RE = /^=(?!=)\s*(.*)$/
 /** Forced page break. */
 const PAGE_BREAK_RE = /^={3,}\s*$/
 
-/** Note: [[note text]] */
-const NOTE_RE = /^\[\[(.*)\]\]\s*$/
-
 /** Boneyard start / end. */
 const BONEYARD_START_RE = /^\/\*/
 const BONEYARD_END_RE = /\*\/\s*$/
@@ -229,6 +226,7 @@ export function parseFountain(source: string): FountainDocument {
   const elements: FountainElement[] = []
 
   let inBoneyard = false
+  let inNote = false
   let inDialogueBlock = false
   let previousWasBlank = true // start of body acts like a blank line
 
@@ -260,6 +258,18 @@ export function parseFountain(source: string): FountainDocument {
       continue
     }
 
+    if (inNote) {
+      const close = line.indexOf(']]')
+      elements.push({
+        type: 'note',
+        text: close >= 0 ? line.slice(0, close) : line,
+        lineIndex: i
+      })
+      if (close >= 0) inNote = false
+      previousWasBlank = false
+      continue
+    }
+
     // Empty line
     if (trimmed === '') {
       elements.push({ type: 'empty', text: '', lineIndex: i })
@@ -276,13 +286,23 @@ export function parseFountain(source: string): FountainDocument {
       continue
     }
 
-    // Notes
-    if (NOTE_RE.test(trimmed)) {
-      elements.push({
-        type: 'note',
-        text: trimmed.replace(NOTE_RE, '$1'),
-        lineIndex: i
-      })
+    // Notes — [[ … ]] may span lines, including blanks
+    if (trimmed.startsWith('[[')) {
+      const close = trimmed.indexOf(']]')
+      if (close >= 0) {
+        elements.push({
+          type: 'note',
+          text: trimmed.slice(2, close),
+          lineIndex: i
+        })
+      } else {
+        inNote = true
+        elements.push({
+          type: 'note',
+          text: trimmed.slice(2),
+          lineIndex: i
+        })
+      }
       previousWasBlank = false
       continue
     }

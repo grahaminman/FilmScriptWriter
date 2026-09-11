@@ -51,6 +51,7 @@ const els = {
   filesPane: document.getElementById('files-pane') as HTMLElement,
   filesTitle: document.getElementById('files-title') as HTMLElement,
   filesBody: document.getElementById('files-body') as HTMLElement,
+  btnRefreshFiles: document.getElementById('btn-refresh-files') as HTMLButtonElement,
   btnCollapseFiles: document.getElementById('btn-collapse-files') as HTMLButtonElement,
   btnExpandFiles: document.getElementById('btn-expand-files') as HTMLButtonElement,
   editorPane: document.getElementById('editor-pane') as HTMLElement,
@@ -100,6 +101,7 @@ function applyI18n(): void {
   els.btnRight.textContent =
     prefs.rightPaneMode === 'help' ? t(L, 'toolbar.preview') : t(L, 'toolbar.help')
   els.btnCollapseFiles.title = t(L, 'files.collapse')
+  els.btnRefreshFiles.title = t(L, 'files.refresh')
   els.btnExpandFiles.title = t(L, 'files.expand')
   editor?.setLocale(L)
   preview?.setLocale(L)
@@ -117,7 +119,7 @@ function updateStatus(): void {
   const L = loc()
   els.statusFile.textContent = fileName() + (dirty ? ' •' : '')
   const pages = preview?.getPageCount() ?? countPages(editor?.getValue() ?? '')
-  els.statusPages.textContent = `${pages} ${t(L, 'status.pages')}`
+  els.statusPages.textContent = `${pages} ${t(L, pages === 1 ? 'status.page' : 'status.pages')}`
   els.statusLocale.textContent = t(L, `menu.language.${L}` as MessageKey)
   els.statusDirty.textContent = dirty ? t(L, 'status.modified') : t(L, 'status.ready')
   document.title = `${fileName()}${dirty ? '*' : ''} — FilmScriptWriter`
@@ -348,10 +350,10 @@ async function showSettings(): Promise<void> {
     .join('')
   const preset = prefs.syntaxColorPreset
   const palette = resolvePalette(preset, prefs.syntaxColorsCustom)
-  const colors = SYNTAX_COLOR_KEYS.map(
-    (key) =>
-      `<label>${key}<input type="color" data-syn="${key}" value="${palette[key]}" /></label>`
-  ).join('')
+  const colors = SYNTAX_COLOR_KEYS.map((key) => {
+    const label = t(L, `settings.syntax.${key}` as MessageKey)
+    return `<label>${label}<input type="color" data-syn="${key}" value="${palette[key]}" /></label>`
+  }).join('')
 
   els.settingsCard.innerHTML = `
     <h2>${t(L, 'settings.title')}</h2>
@@ -404,10 +406,10 @@ async function showSettings(): Promise<void> {
     <div class="field-row">
       <label>${t(L, 'settings.preset')}</label>
       <select id="set-preset">
-        <option value="default" ${preset === 'default' ? 'selected' : ''}>default</option>
-        <option value="highContrast" ${preset === 'highContrast' ? 'selected' : ''}>highContrast</option>
-        <option value="soft" ${preset === 'soft' ? 'selected' : ''}>soft</option>
-        <option value="custom" ${preset === 'custom' ? 'selected' : ''}>custom</option>
+        <option value="default" ${preset === 'default' ? 'selected' : ''}>${t(L, 'settings.preset.default')}</option>
+        <option value="highContrast" ${preset === 'highContrast' ? 'selected' : ''}>${t(L, 'settings.preset.highContrast')}</option>
+        <option value="soft" ${preset === 'soft' ? 'selected' : ''}>${t(L, 'settings.preset.soft')}</option>
+        <option value="custom" ${preset === 'custom' ? 'selected' : ''}>${t(L, 'settings.preset.custom')}</option>
       </select>
       <button type="button" id="set-reset-colors">${t(L, 'settings.resetColors')}</button>
     </div>
@@ -558,7 +560,14 @@ async function handleMenu(action: string): Promise<void> {
       await persist(true)
       break
     case 'file:save-then-quit':
-      if (await persist(false)) window.close()
+      if (await persist(false)) await api.quit()
+      else await api.abortQuit()
+      break
+    case 'edit:undo':
+      editor.undo()
+      break
+    case 'edit:redo':
+      editor.redo()
       break
     case 'file:export-fountain': {
       const result = await api.exportFountain(editor.getValue())
@@ -671,6 +680,9 @@ async function boot(): Promise<void> {
     })
   })
   els.btnSettings.addEventListener('click', () => void showSettings())
+  els.btnRefreshFiles.addEventListener('click', () => {
+    void refreshFileList()
+  })
   els.btnCollapseFiles.addEventListener('click', () => {
     void api.setPreferences({ filesSidebarVisible: false }).then((p) => {
       prefs = p
@@ -693,6 +705,9 @@ async function boot(): Promise<void> {
 
   api.onMenuAction((action) => {
     void handleMenu(action)
+  })
+  api.onScriptsChanged(() => {
+    void refreshFileList()
   })
   api.onPreferencesChanged((next) => {
     prefs = next

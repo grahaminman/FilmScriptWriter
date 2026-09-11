@@ -60,14 +60,6 @@ export function collectCharacters(doc: FountainDocument): CharacterEntry[] {
 
   const entries: CharacterEntry[] = []
   for (const [name, count] of counts) {
-    // Skip bare placeholders that never appeared as full cues with count 0
-    // unless they are pure bare names from real cues
-    if (count === 0) {
-      // Keep bare names only if no extended form is the sole entry —
-      // actually we want bare names for autocomplete even if only "JOHN (V.O.)" exists
-      entries.push({ name, count: 0 })
-      continue
-    }
     entries.push({ name, count })
   }
 

@@ -4,8 +4,7 @@
   "description": "FilmScriptWriter — Fountain screenplay editor for daily 2–5 page shorts.",
   "main": "./out/main/index.js",
   "author": {
-    "name": "Graham Inman",
-    "email": "support@grokcode.example"
+    "name": "Graham Inman"
   },
   "license": "MIT",
   "homepage": "https://github.com/grahaminman/FilmScriptWriter",
@@ -137,7 +136,7 @@
         }
       ],
       "category": "Office",
-      "maintainer": "GrokCodeTest <support@grokcode.example>",
+      "maintainer": "Graham Inman",
       "artifactName": "${productName}-${version}.${ext}",
       "desktop": {
         "Name": "FilmScriptWriter",

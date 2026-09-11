@@ -7,6 +7,8 @@ import {
   FONT_SIZE_DEFAULT,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
+  MIN_WINDOW_HEIGHT,
+  MIN_WINDOW_WIDTH,
   type LocaleCode,
   type ThemeMode
 } from '../shared/constants/screenplay'
@@ -103,6 +105,28 @@ function sanitizeTheme(raw: unknown): ThemeMode {
   return DEFAULT_THEME
 }
 
+function sanitizeStoredBounds(
+  raw: AppPreferences['windowBounds'] | undefined
+): AppPreferences['windowBounds'] {
+  const width = Math.max(
+    MIN_WINDOW_WIDTH,
+    Math.round(Number(raw?.width)) || DEFAULT_WINDOW_BOUNDS.width
+  )
+  const height = Math.max(
+    MIN_WINDOW_HEIGHT,
+    Math.round(Number(raw?.height)) || DEFAULT_WINDOW_BOUNDS.height
+  )
+  const x =
+    typeof raw?.x === 'number' && Number.isFinite(raw.x) && raw.x > -10_000
+      ? raw.x
+      : undefined
+  const y =
+    typeof raw?.y === 'number' && Number.isFinite(raw.y) && raw.y > -10_000
+      ? raw.y
+      : undefined
+  return { width, height, ...(x !== undefined ? { x } : {}), ...(y !== undefined ? { y } : {}) }
+}
+
 export function getPreferences(): AppPreferences {
   return {
     theme: sanitizeTheme(prefsStore.get('theme', defaults.theme)),
@@ -150,7 +174,9 @@ export function getPreferences(): AppPreferences {
     spellcheckDictionaryUrl: sanitizeDictionaryUrl(
       prefsStore.get('spellcheckDictionaryUrl', defaults.spellcheckDictionaryUrl)
     ),
-    windowBounds: prefsStore.get('windowBounds', defaults.windowBounds)
+    windowBounds: sanitizeStoredBounds(
+      prefsStore.get('windowBounds', defaults.windowBounds)
+    )
   }
 }
 
@@ -170,6 +196,11 @@ export function setPreference<K extends keyof AppPreferences>(
     prefsStore.set(key, sanitizeLocale(value) as AppPreferences[K])
   } else if (key === 'theme') {
     prefsStore.set(key, sanitizeTheme(value) as AppPreferences[K])
+  } else if (key === 'windowBounds') {
+    prefsStore.set(
+      key,
+      sanitizeStoredBounds(value as AppPreferences['windowBounds']) as AppPreferences[K]
+    )
   } else {
     prefsStore.set(key, value)
   }

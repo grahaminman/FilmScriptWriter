@@ -78,6 +78,28 @@ EXT. STREET - DAY
     expect(doc.elements.some((e) => e.type === 'transition')).toBe(true)
   })
 
+  it('parses multiline notes including blank lines', () => {
+    const doc = parseFountain(`INT. ROOM - DAY
+
+[[ DAILY PROMPT
+Community: filmscriptwriter-3192
+
+Person:
+Place:
+
+When you are done, FADE OUT. This note does not print. ]]
+
+Visible action.
+`)
+    expect(doc.elements.filter((e) => e.type === 'note').length).toBeGreaterThan(1)
+    expect(doc.elements.some((e) => e.type === 'action' && e.text.includes('Visible'))).toBe(
+      true
+    )
+    expect(
+      doc.elements.some((e) => e.type === 'action' && e.text.includes('DAILY PROMPT'))
+    ).toBe(false)
+  })
+
   it('ignores boneyard and notes for structure', () => {
     const doc = parseFountain(`
 INT. ROOM - DAY

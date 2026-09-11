@@ -15,6 +15,7 @@ import {
   saveFile,
   setDocumentDirty,
   showError,
+  restartScriptsWatcher,
   useDefaultScriptsFolder
 } from './file-service'
 import { buildApplicationMenu } from './menu'
@@ -47,6 +48,9 @@ export function registerIpcHandlers(): void {
         partial.spellcheckDictionaryUrl !== undefined)
     ) {
       applySpellcheckToAllSessions()
+    }
+    if (partial && partial.scriptsFolder !== undefined) {
+      restartScriptsWatcher()
     }
     return next
   })

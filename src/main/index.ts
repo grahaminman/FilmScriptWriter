@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { join } from 'path'
 import {
   DEFAULT_WINDOW_BOUNDS,
@@ -6,7 +6,12 @@ import {
   MIN_WINDOW_HEIGHT,
   MIN_WINDOW_WIDTH
 } from '../shared/constants/screenplay'
-import { confirmDiscard, getDocumentState } from './file-service'
+import {
+  confirmDiscard,
+  getDocumentState,
+  restartScriptsWatcher,
+  setScriptsWatchHandler
+} from './file-service'
 import { registerIpcHandlers } from './ipc'
 import { buildApplicationMenu } from './menu'
 import {
@@ -24,15 +29,53 @@ if (process.platform === 'linux') {
 }
 
 let mainWindow: BrowserWindow | null = null
-let quitting = false
+let skipClosePrompt = false
+let appIsQuitting = false
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+
+function clampBoundsToDisplay(b: {
+  width: number
+  height: number
+  x?: number
+  y?: number
+}): { width: number; height: number; x?: number; y?: number } {
+  const probe = {
+    x: b.x ?? 0,
+    y: b.y ?? 0,
+    width: Math.max(MIN_WINDOW_WIDTH, b.width || DEFAULT_WINDOW_BOUNDS.width),
+    height: Math.max(MIN_WINDOW_HEIGHT, b.height || DEFAULT_WINDOW_BOUNDS.height)
+  }
+  const work = screen.getDisplayMatching(probe).workArea
+  const width = Math.min(Math.max(MIN_WINDOW_WIDTH, probe.width), work.width)
+  const height = Math.min(Math.max(MIN_WINDOW_HEIGHT, probe.height), work.height)
+  let x = typeof b.x === 'number' ? b.x : work.x
+  let y = typeof b.y === 'number' ? b.y : work.y
+  if (x + width < work.x + 80) x = work.x
+  if (y + 40 < work.y) y = work.y
+  if (x > work.x + work.width - 80) x = work.x + Math.max(0, work.width - width)
+  if (y > work.y + work.height - 80) y = work.y + Math.max(0, work.height - height)
+  return { width, height, x, y }
+}
+
+function persistNormalBounds(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  if (mainWindow.isMinimized() || mainWindow.isMaximized() || mainWindow.isFullScreen()) {
+    return
+  }
+  const next = clampBoundsToDisplay(mainWindow.getBounds())
+  if (persistTimer) clearTimeout(persistTimer)
+  persistTimer = setTimeout(() => {
+    setPreference('windowBounds', next)
+  }, 300)
+}
 
 function createWindow(): void {
   const prefs = getPreferences()
-  const bounds = prefs.windowBounds
+  const bounds = clampBoundsToDisplay(prefs.windowBounds)
 
   mainWindow = new BrowserWindow({
-    width: bounds.width || DEFAULT_WINDOW_BOUNDS.width,
-    height: bounds.height || DEFAULT_WINDOW_BOUNDS.height,
+    width: bounds.width,
+    height: bounds.height,
     x: bounds.x,
     y: bounds.y,
     minWidth: MIN_WINDOW_WIDTH,
@@ -58,29 +101,34 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  const persistBounds = (): void => {
-    if (!mainWindow || mainWindow.isDestroyed()) return
-    const b = mainWindow.getBounds()
-    setPreference('windowBounds', b)
-  }
-  mainWindow.on('resize', persistBounds)
-  mainWindow.on('move', persistBounds)
+  mainWindow.on('resize', persistNormalBounds)
+  mainWindow.on('move', persistNormalBounds)
+  mainWindow.on('unmaximize', persistNormalBounds)
 
   mainWindow.on('close', (e) => {
-    if (quitting) return
+    persistNormalBounds()
+    if (skipClosePrompt) return
     const state = getDocumentState()
     if (!state.dirty) return
     e.preventDefault()
     void (async () => {
       if (!mainWindow) return
       const choice = await confirmDiscard(mainWindow)
-      if (choice === 'cancel') return
+      if (choice === 'cancel') {
+        appIsQuitting = false
+        return
+      }
       if (choice === 'save') {
         mainWindow.webContents.send(IPC.MENU_ACTION, 'file:save-then-quit')
         return
       }
-      quitting = true
-      mainWindow.destroy()
+      skipClosePrompt = true
+      if (appIsQuitting) {
+        app.quit()
+      } else {
+        mainWindow.destroy()
+        skipClosePrompt = false
+      }
     })()
   })
 
@@ -97,12 +145,30 @@ function createWindow(): void {
 
 registerHunspellPath()
 
+app.on('before-quit', () => {
+  appIsQuitting = true
+})
+
 app.whenReady().then(() => {
   registerIpcHandlers()
+  ipcMain.handle(IPC.APP_QUIT, () => {
+    skipClosePrompt = true
+    app.quit()
+  })
+  ipcMain.handle(IPC.APP_ABORT_QUIT, () => {
+    appIsQuitting = false
+  })
   void initSpellcheck().catch((err) => {
     console.warn('[spellcheck] init failed:', err)
   })
   createWindow()
+  setScriptsWatchHandler(() => {
+    const win = mainWindow
+    if (win && !win.isDestroyed()) {
+      win.webContents.send(IPC.FILE_SCRIPTS_CHANGED)
+    }
+  })
+  restartScriptsWatcher()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

@@ -383,9 +383,7 @@ export function paginateLayoutLines(
 
   for (const line of lines) {
     if (line.type === 'page_break') {
-      // Always start a new page at an explicit break
-      if (current.length > 0 || pages.length === 0) flush()
-      else flush()
+      flush()
       continue
     }
 

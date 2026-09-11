@@ -137,10 +137,10 @@ export const IPC = {
   FILE_GET_STARTUP: 'file:get-startup',
   FILE_GET_TEMPLATE: 'file:get-template',
   FILE_LIST_SCRIPTS: 'file:list-scripts',
+  FILE_SCRIPTS_CHANGED: 'file:scripts-changed',
 
   DIALOG_CONFIRM_DISCARD: 'dialog:confirm-discard',
   DIALOG_SHOW_ERROR: 'dialog:show-error',
-  DIALOG_SHOW_ABOUT: 'dialog:show-about',
 
   PREFS_GET: 'prefs:get',
   PREFS_SET: 'prefs:set',
@@ -150,6 +150,8 @@ export const IPC = {
 
   APP_GET_VERSION: 'app:get-version',
   APP_GET_DEFAULT_SCRIPTS: 'app:get-default-scripts',
+  APP_QUIT: 'app:quit',
+  APP_ABORT_QUIT: 'app:abort-quit',
 
   SCRIPTS_CHOOSE_FOLDER: 'scripts:choose-folder',
   SCRIPTS_USE_DEFAULT: 'scripts:use-default',

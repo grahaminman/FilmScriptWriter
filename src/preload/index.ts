@@ -110,6 +110,9 @@ export interface ElectronAPI {
   useDefaultScriptsFolder: () => Promise<FileResult>
 
   onMenuAction: (cb: (action: string) => void) => () => void
+  onScriptsChanged: (cb: () => void) => () => void
+  quit: () => Promise<void>
+  abortQuit: () => Promise<void>
 
   getSpellcheckStatus: () => Promise<SpellcheckStatus>
   downloadSpellcheckDictionaries: (languages?: string[]) => Promise<SpellcheckStatus>
@@ -154,6 +157,13 @@ const api: ElectronAPI = {
     ipcRenderer.on(IPC.MENU_ACTION, listener)
     return () => ipcRenderer.removeListener(IPC.MENU_ACTION, listener)
   },
+  onScriptsChanged: (cb) => {
+    const listener = (): void => cb()
+    ipcRenderer.on(IPC.FILE_SCRIPTS_CHANGED, listener)
+    return () => ipcRenderer.removeListener(IPC.FILE_SCRIPTS_CHANGED, listener)
+  },
+  quit: () => ipcRenderer.invoke(IPC.APP_QUIT),
+  abortQuit: () => ipcRenderer.invoke(IPC.APP_ABORT_QUIT),
 
   getSpellcheckStatus: () => ipcRenderer.invoke(IPC.SPELLCHECK_STATUS),
   downloadSpellcheckDictionaries: (languages) =>

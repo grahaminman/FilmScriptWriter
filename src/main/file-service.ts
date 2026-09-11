@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog } from 'electron'
+import { watch, type FSWatcher } from 'fs'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import {
@@ -271,6 +272,7 @@ export async function chooseScriptsFolder(win: BrowserWindow): Promise<FileResul
   }
   const folder = result.filePaths[0]
   setPreference('scriptsFolder', folder)
+  restartScriptsWatcher()
   return { cancelled: false, path: folder }
 }
 
@@ -278,5 +280,34 @@ export async function useDefaultScriptsFolder(): Promise<FileResult> {
   const folder = suggestedScriptsFolder()
   await fs.mkdir(folder, { recursive: true })
   setPreference('scriptsFolder', folder)
+  restartScriptsWatcher()
   return { cancelled: false, path: folder }
+}
+
+let scriptsWatcher: FSWatcher | null = null
+let watchTimer: ReturnType<typeof setTimeout> | null = null
+let watchCallback: (() => void) | null = null
+
+export function setScriptsWatchHandler(cb: () => void): void {
+  watchCallback = cb
+}
+
+export function restartScriptsWatcher(): void {
+  if (scriptsWatcher) {
+    scriptsWatcher.close()
+    scriptsWatcher = null
+  }
+  const folder = getPreferences().scriptsFolder
+  if (!folder || !watchCallback) return
+  try {
+    scriptsWatcher = watch(folder, () => {
+      if (watchTimer) clearTimeout(watchTimer)
+      watchTimer = setTimeout(() => watchCallback?.(), 300)
+    })
+    scriptsWatcher.on('error', () => {
+      scriptsWatcher = null
+    })
+  } catch {
+    scriptsWatcher = null
+  }
 }

@@ -170,6 +170,11 @@ body {
   font-size: 12px;
 }
 
+.files-head span {
+  display: inline-flex;
+  gap: 4px;
+}
+
 .files-head button,
 .files-expand {
   width: 24px;
@@ -296,7 +301,7 @@ body {
   position: relative;
   font-family: 'Courier New', Courier, monospace;
   font-size: 12pt;
-  line-height: 12pt;
+  line-height: var(--sp-line-height, 12pt);
   transform: scale(var(--preview-zoom, 1));
   transform-origin: top center;
 }
@@ -309,7 +314,8 @@ body {
 }
 
 .sp-page-body {
-  padding: 1in 1in 1in 1.5in;
+  padding: var(--sp-margin-top, 1in) var(--sp-margin-right, 1in)
+    var(--sp-margin-bottom, 1in) var(--sp-margin-left, 1.5in);
 }
 
 .sp-line {

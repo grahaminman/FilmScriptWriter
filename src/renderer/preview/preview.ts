@@ -9,8 +9,10 @@ import {
   CHARACTER_LEFT_IN,
   DIALOGUE_LEFT_IN,
   LINE_HEIGHT_PT,
+  MARGIN_BOTTOM_IN,
   MARGIN_LEFT_IN,
   MARGIN_RIGHT_IN,
+  MARGIN_TOP_IN,
   PAGE_HEIGHT_IN,
   PAGE_WIDTH_IN,
   PARENTHETICAL_LEFT_IN
@@ -294,5 +296,7 @@ export function applyPageCssVars(root: HTMLElement = document.documentElement): 
   root.style.setProperty('--sp-page-height', inch(PAGE_HEIGHT_IN))
   root.style.setProperty('--sp-margin-left', inch(MARGIN_LEFT_IN))
   root.style.setProperty('--sp-margin-right', inch(MARGIN_RIGHT_IN))
+  root.style.setProperty('--sp-margin-top', inch(MARGIN_TOP_IN))
+  root.style.setProperty('--sp-margin-bottom', inch(MARGIN_BOTTOM_IN))
   root.style.setProperty('--sp-line-height', `${LINE_HEIGHT_PT}pt`)
 }
