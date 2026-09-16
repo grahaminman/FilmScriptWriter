@@ -156,7 +156,8 @@ body {
 }
 
 .files-pane.collapsed,
-.files-pane.hidden {
+.files-pane.hidden,
+.right-pane.hidden {
   display: none;
 }
 

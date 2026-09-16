@@ -4,7 +4,7 @@ import type { SyntaxColorPalette, SyntaxColorPresetId } from '../shared/constant
 import type { SpellcheckLanguageId } from '../shared/constants/spellcheck'
 import type { TemplateId } from '../shared/templates/text'
 
-export type RightPaneMode = 'preview' | 'help'
+export type RightPaneMode = 'preview' | 'help' | 'hidden'
 
 export interface AppPreferences {
   theme: ThemeMode

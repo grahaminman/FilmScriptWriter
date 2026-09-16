@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   estimateWrappedLines,
+  wrapTextLines,
   paginateSource,
   countPages,
   elementsToLayoutLines,
@@ -37,6 +38,16 @@ Hi.
   it('estimateWrappedLines handles empty text', () => {
     expect(estimateWrappedLines('', 60)).toBe(1)
     expect(estimateWrappedLines('   ', 60)).toBe(1)
+  })
+
+  it('wrapTextLines keeps the tail of a long action paragraph', () => {
+    const words = Array.from({ length: 80 }, (_, i) => `wrapword${i}`)
+    words.push('WRAP_TAIL_OMEGA_99')
+    const long = words.join(' ')
+    const lines = wrapTextLines(long, 60)
+    expect(lines.join(' ')).toContain('WRAP_TAIL_OMEGA_99')
+    expect(estimateWrappedLines(long, 60)).toBe(lines.length)
+    expect(lines.length).toBeGreaterThan(5)
   })
 
   it('paginates across multiple pages for long scripts', () => {

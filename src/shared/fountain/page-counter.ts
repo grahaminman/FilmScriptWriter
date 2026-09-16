@@ -38,60 +38,69 @@ import type {
 } from './types'
 
 /**
+ * Wrap text to visual lines at `charsPerLine` monospaced characters.
+ * Same algorithm as page counting and PDF drawing so they stay in sync.
+ * Empty text still occupies 1 line. Hard returns start a new visual line.
+ */
+export function wrapTextLines(text: string, charsPerLine: number): string[] {
+  if (charsPerLine <= 0) return [text || '']
+  const normalised = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  if (!normalised) return ['']
+
+  const out: string[] = []
+  for (const segment of normalised.split('\n')) {
+    out.push(...wrapSingleParagraph(segment, charsPerLine))
+  }
+  return out.length ? out : ['']
+}
+
+function wrapSingleParagraph(text: string, charsPerLine: number): string[] {
+  const raw = text.replace(/[ \t]+/g, ' ').trim()
+  if (!raw) return ['']
+
+  const words = raw.split(' ')
+  const lines: string[] = []
+  let current = ''
+
+  const startWord = (word: string): void => {
+    if (word.length <= charsPerLine) {
+      current = word
+      return
+    }
+    let rest = word
+    while (rest.length > charsPerLine) {
+      lines.push(rest.slice(0, charsPerLine))
+      rest = rest.slice(charsPerLine)
+    }
+    current = rest
+  }
+
+  for (const word of words) {
+    if (!current) {
+      startWord(word)
+      continue
+    }
+    if (current.length + 1 + word.length <= charsPerLine) {
+      current += ` ${word}`
+    } else {
+      lines.push(current)
+      startWord(word)
+    }
+  }
+  if (current) lines.push(current)
+  return lines.length ? lines : ['']
+}
+
+/**
  * Estimate how many layout lines a text block occupies when wrapped at
  * `charsPerLine` monospaced characters. Empty text still occupies 1 line
  * if the element is visible.
- *
- * Hard line breaks inside the text (rare in Fountain, but possible) each
- * start a new visual line before soft-wrapping is applied.
  */
 export function estimateWrappedLines(
   text: string,
   charsPerLine: number
 ): number {
-  if (charsPerLine <= 0) return 1
-  if (!text) return 1
-
-  // Honour hard returns: each segment wraps independently.
-  const segments = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
-  let total = 0
-  for (const segment of segments) {
-    total += estimateSingleParagraph(segment, charsPerLine)
-  }
-  return Math.max(1, total)
-}
-
-function estimateSingleParagraph(text: string, charsPerLine: number): number {
-  const raw = text.replace(/[ \t]+/g, ' ').trim()
-  if (!raw) return 1
-
-  const words = raw.split(' ')
-  let lines = 1
-  let col = 0
-  for (const word of words) {
-    const w = word.length
-    if (col === 0) {
-      col = w
-      if (w > charsPerLine) {
-        const extra = Math.ceil(w / charsPerLine) - 1
-        lines += extra
-        col = w % charsPerLine
-      }
-      continue
-    }
-    if (col + 1 + w <= charsPerLine) {
-      col += 1 + w
-    } else {
-      lines += 1
-      col = w
-      if (w > charsPerLine) {
-        const extra = Math.ceil(w / charsPerLine) - 1
-        lines += extra
-        col = w % charsPerLine
-      }
-    }
-  }
-  return Math.max(1, lines)
+  return Math.max(1, wrapTextLines(text, charsPerLine).length)
 }
 
 /** Characters-per-line for a given element type. */

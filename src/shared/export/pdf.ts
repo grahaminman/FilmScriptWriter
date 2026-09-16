@@ -2,10 +2,13 @@
  * Hollywood-format PDF export using PDFKit.
  *
  * Matches live preview: emphasis, dual dialogue columns, forced @ names.
+ * Text is wrapped with the same character-width rules as the paginator
+ * and drawn one visual line at a time so PDFKit cannot clip overflow.
  */
 
 import PDFDocument from 'pdfkit'
 import {
+  ACTION_CHARS_PER_LINE,
   CHARACTER_LEFT_IN,
   DIALOGUE_LEFT_IN,
   DIALOGUE_RIGHT_IN,
@@ -26,9 +29,9 @@ import {
   inchesToPoints
 } from '../constants/screenplay'
 import { emphasisToRuns, type EmphasisRun } from '../fountain/emphasis'
+import { charsPerLineFor, paginateDocument, wrapTextLines } from '../fountain/page-counter'
 import { parseFountain } from '../fountain/parser'
-import { paginateDocument } from '../fountain/page-counter'
-import type { LayoutLine, ScreenplayPage } from '../fountain/types'
+import type { LayoutLine, ScreenplayPage, TitlePage } from '../fountain/types'
 
 export interface PdfExportOptions {
   title?: string
@@ -102,59 +105,53 @@ function fontForRun(run: EmphasisRun): string {
   return 'Courier'
 }
 
+function bodyTop(): number {
+  return inchesToPoints(MARGIN_TOP_IN)
+}
+
+function bodyBottom(): number {
+  return inchesToPoints(PAGE_HEIGHT_IN) - inchesToPoints(MARGIN_BOTTOM_IN)
+}
+
+/** Start a new PDF page when the next visual line would leave the bottom margin. */
+function ensureLine(doc: PDFKit.PDFDocument, y: number): number {
+  const top = bodyTop()
+  if (y + LINE_HEIGHT_PT > bodyBottom() && y > top) {
+    doc.addPage()
+    return top
+  }
+  return y
+}
+
 /**
- * Draw styled Fountain text (emphasis) at a fixed position.
- * Underline is simulated with a line under each run.
+ * Draw one already-wrapped visual line. No PDFKit wrap/clip.
  */
-function drawEmphasizedText(
+function drawSingleLine(
   doc: PDFKit.PDFDocument,
-  text: string,
+  runs: EmphasisRun[],
   x: number,
   y: number,
   width: number,
-  align: 'left' | 'right' | 'center',
-  lineCount: number
-): number {
-  const runs = emphasisToRuns(text)
+  align: 'left' | 'right' | 'center'
+): void {
   const plain = runs.map((r) => r.text).join('')
-  if (!plain) {
-    return y + lineCount * LINE_HEIGHT_PT
-  }
+  if (!plain) return
 
-  // Single-run fast path
-  if (runs.length === 1 && !runs[0].style.bold && !runs[0].style.italic && !runs[0].style.underline) {
-    doc.font('Courier').fontSize(FONT_SIZE_PT)
-    doc.text(plain, x, y, {
-      width,
-      align,
-      lineGap: 0,
-      lineBreak: true,
-      height: lineCount * LINE_HEIGHT_PT + 1
-    })
-    return y + lineCount * LINE_HEIGHT_PT
-  }
-
-  // Multi-style: draw run-by-run on one line when short; otherwise plain fallback
-  // PDFKit continued text for mixed styles is awkward for wrapping — use plain stripped
-  // when the line is long, and mixed fonts when it fits one line.
   doc.font('Courier').fontSize(FONT_SIZE_PT)
   const plainWidth = doc.widthOfString(plain)
-  if (plainWidth > width * 0.98 || plain.includes('\n')) {
-    doc.text(plain, x, y, {
-      width,
-      align,
-      lineGap: 0,
-      lineBreak: true,
-      height: lineCount * LINE_HEIGHT_PT + 1
-    })
-    return y + lineCount * LINE_HEIGHT_PT
-  }
-
   let cursorX = x
   if (align === 'center') {
     cursorX = x + (width - plainWidth) / 2
   } else if (align === 'right') {
     cursorX = x + width - plainWidth
+  }
+
+  const styled = runs.some(
+    (r) => r.style.bold || r.style.italic || r.style.underline
+  )
+  if (!styled) {
+    doc.text(plain, cursorX, y, { lineBreak: false, continued: false })
+    return
   }
 
   for (const run of runs) {
@@ -170,8 +167,146 @@ function drawEmphasizedText(
     }
     cursorX += w
   }
+}
 
-  return y + lineCount * LINE_HEIGHT_PT
+/**
+ * Map Fountain text onto paginator visual lines, keeping emphasis when
+ * the block fits on one line.
+ */
+function visualRunLines(text: string, charsPerLine: number): EmphasisRun[][] {
+  const runs = emphasisToRuns(text)
+  const plain = runs.map((r) => r.text).join('')
+  const wrapped = wrapTextLines(plain, charsPerLine)
+  if (wrapped.length <= 1) return [runs]
+  return wrapped.map((line) => [{ text: line, style: {} }])
+}
+
+function drawWrappedBlock(
+  doc: PDFKit.PDFDocument,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  align: 'left' | 'right' | 'center',
+  charsPerLine: number
+): number {
+  const lines = visualRunLines(text, charsPerLine)
+  let cursor = y
+  for (const runs of lines) {
+    cursor = ensureLine(doc, cursor)
+    drawSingleLine(doc, runs, x, cursor, width, align)
+    cursor += LINE_HEIGHT_PT
+  }
+  return cursor
+}
+
+type DualVisual = {
+  runs: EmphasisRun[]
+  x: number
+  width: number
+  align: 'left' | 'right' | 'center'
+}
+
+function layoutToDualVisual(
+  lines: LayoutLine[],
+  column: 'left' | 'right'
+): DualVisual[] {
+  const out: DualVisual[] = []
+  for (const L of lines) {
+    if (L.isSpacer || L.type === 'empty') continue
+    const g = geometryFor(L.type, column)
+    const vis = visualRunLines(L.text || ' ', charsPerLineFor(L.type))
+    for (const runs of vis) {
+      out.push({ runs, x: g.x, width: g.width, align: g.align })
+    }
+  }
+  return out
+}
+
+function titlePageHasPrintable(tp: TitlePage): boolean {
+  return Boolean(
+    tp.title?.trim() ||
+      tp.credit?.trim() ||
+      tp.author?.trim() ||
+      tp.draftDate?.trim() ||
+      tp.contact?.trim()
+  )
+}
+
+function drawTitlePage(doc: PDFKit.PDFDocument, tp: TitlePage): void {
+  const leftM = inchesToPoints(MARGIN_LEFT_IN)
+  const pageW = inchesToPoints(PAGE_WIDTH_IN)
+  const rightM = inchesToPoints(MARGIN_RIGHT_IN)
+  const bodyW = pageW - leftM - rightM
+  const cpl = ACTION_CHARS_PER_LINE
+
+  let y = inchesToPoints(3.5)
+
+  const drawCentered = (text: string): void => {
+    const vis = visualRunLines(text, cpl)
+    for (const runs of vis) {
+      drawSingleLine(doc, runs, leftM, y, bodyW, 'center')
+      y += LINE_HEIGHT_PT
+    }
+  }
+
+  if (tp.title?.trim()) {
+    drawCentered(tp.title.trim())
+    y += LINE_HEIGHT_PT * 2
+  }
+
+  const credit = tp.credit?.trim() || (tp.author?.trim() ? 'Written by' : '')
+  if (credit) {
+    drawCentered(credit)
+    y += LINE_HEIGHT_PT
+  }
+  if (tp.author?.trim()) {
+    drawCentered(tp.author.trim())
+  }
+
+  const dateLines = tp.draftDate?.trim()
+    ? wrapTextLines(tp.draftDate.trim(), cpl)
+    : []
+  const contactLines = tp.contact?.trim()
+    ? wrapTextLines(tp.contact.trim(), cpl)
+    : []
+  const bottomLines: string[] = [
+    ...dateLines,
+    ...(dateLines.length && contactLines.length ? [''] : []),
+    ...contactLines
+  ]
+  if (bottomLines.length === 0) return
+
+  let by =
+    bodyBottom() - bottomLines.length * LINE_HEIGHT_PT
+  if (by < y + LINE_HEIGHT_PT) by = y + LINE_HEIGHT_PT
+  for (const line of bottomLines) {
+    if (line) {
+      drawSingleLine(
+        doc,
+        [{ text: line, style: {} }],
+        leftM,
+        by,
+        bodyW,
+        'left'
+      )
+    }
+    by += LINE_HEIGHT_PT
+  }
+}
+
+function drawPageNumber(doc: PDFKit.PDFDocument, pageNumber: number): void {
+  const pageNumX =
+    inchesToPoints(PAGE_WIDTH_IN) - inchesToPoints(PAGE_NUMBER_RIGHT_IN)
+  const pageNumY = inchesToPoints(PAGE_NUMBER_TOP_IN)
+  doc
+    .font('Courier')
+    .fontSize(FONT_SIZE_PT)
+    .text(`${pageNumber}.`, pageNumX - 40, pageNumY, {
+      width: 40,
+      align: 'right',
+      lineBreak: false
+    })
 }
 
 function drawPage(
@@ -183,22 +318,9 @@ function drawPage(
     doc.addPage()
   }
 
-  const pageNumX =
-    inchesToPoints(PAGE_WIDTH_IN) - inchesToPoints(PAGE_NUMBER_RIGHT_IN)
-  const pageNumY = inchesToPoints(PAGE_NUMBER_TOP_IN)
-  doc
-    .font('Courier')
-    .fontSize(FONT_SIZE_PT)
-    .text(`${page.pageNumber}.`, pageNumX - 40, pageNumY, {
-      width: 40,
-      align: 'right',
-      lineBreak: false
-    })
+  drawPageNumber(doc, page.pageNumber)
 
-  let y = inchesToPoints(MARGIN_TOP_IN)
-  const bottomLimit =
-    inchesToPoints(PAGE_HEIGHT_IN) - inchesToPoints(MARGIN_BOTTOM_IN)
-
+  let y = bodyTop()
   const lines = page.lines
   let i = 0
 
@@ -215,9 +337,6 @@ function drawPage(
       continue
     }
 
-    if (y > bottomLimit) break
-
-    // Dual dialogue: draw left and right columns sharing vertical space
     if (line.dualGroup != null && line.dualColumn === 'left') {
       const group = line.dualGroup
       const left: LayoutLine[] = []
@@ -244,49 +363,51 @@ function drawPage(
         right.push(lines[i])
         i += 1
       }
-      const yStart = y
-      let yLeft = yStart
-      let yRight = yStart
-      for (const L of left) {
-        if (L.isSpacer || L.type === 'empty') continue
-        const g = geometryFor(L.type, 'left')
-        yLeft = drawEmphasizedText(
-          doc,
-          L.text || ' ',
-          g.x,
-          yLeft,
-          g.width,
-          g.align,
-          Math.max(1, L.lineCount)
-        )
+      const leftVis = layoutToDualVisual(left, 'left')
+      const rightVis = layoutToDualVisual(right, 'right')
+      const n = Math.max(leftVis.length, rightVis.length)
+      for (let k = 0; k < n; k++) {
+        y = ensureLine(doc, y)
+        const L = leftVis[k]
+        const R = rightVis[k]
+        if (L) drawSingleLine(doc, L.runs, L.x, y, L.width, L.align)
+        if (R) drawSingleLine(doc, R.runs, R.x, y, R.width, R.align)
+        y += LINE_HEIGHT_PT
       }
-      for (const R of right) {
-        if (R.isSpacer || R.type === 'empty') continue
-        const g = geometryFor(R.type, 'right')
-        yRight = drawEmphasizedText(
-          doc,
-          R.text || ' ',
-          g.x,
-          yRight,
-          g.width,
-          g.align,
-          Math.max(1, R.lineCount)
-        )
-      }
-      y = Math.max(yLeft, yRight)
       continue
     }
 
     if (line.dualGroup != null && line.dualColumn === 'right') {
-      // Already consumed with left; skip orphans
-      i += 1
+      const group = line.dualGroup
+      const right: LayoutLine[] = []
+      while (
+        i < lines.length &&
+        lines[i].dualGroup === group &&
+        lines[i].dualColumn === 'right'
+      ) {
+        right.push(lines[i])
+        i += 1
+      }
+      const rightVis = layoutToDualVisual(right, 'right')
+      for (const R of rightVis) {
+        y = ensureLine(doc, y)
+        drawSingleLine(doc, R.runs, R.x, y, R.width, R.align)
+        y += LINE_HEIGHT_PT
+      }
       continue
     }
 
     const { x, width, align } = geometryFor(line.type, line.dualColumn)
     const text = line.text ?? ''
-    const lc = Math.max(1, line.lineCount)
-    y = drawEmphasizedText(doc, text, x, y, width, align, lc)
+    y = drawWrappedBlock(
+      doc,
+      text,
+      x,
+      y,
+      width,
+      align,
+      charsPerLineFor(line.type)
+    )
     i += 1
   }
 }
@@ -297,6 +418,7 @@ export function fountainToPdf(
 ): Promise<Buffer> {
   const parsed = parseFountain(source)
   const pagination = paginateDocument(parsed)
+  const printTitle = titlePageHasPrintable(parsed.titlePage)
 
   const title =
     options.title ||
@@ -327,11 +449,19 @@ export function fountainToPdf(
       doc.on('end', () => resolve(Buffer.concat(chunks)))
       doc.on('error', reject)
 
+      if (printTitle) {
+        drawTitlePage(doc, parsed.titlePage)
+      }
+
       const pages = pagination.pages
       if (pages.length === 0) {
-        doc.font('Courier').fontSize(FONT_SIZE_PT).text('')
+        if (!printTitle) {
+          doc.font('Courier').fontSize(FONT_SIZE_PT).text('')
+        }
       } else {
-        pages.forEach((page, idx) => drawPage(doc, page, idx === 0))
+        pages.forEach((page, idx) =>
+          drawPage(doc, page, idx === 0 && !printTitle)
+        )
       }
 
       doc.end()

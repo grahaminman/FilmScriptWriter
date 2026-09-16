@@ -55,6 +55,8 @@ const els = {
   btnCollapseFiles: document.getElementById('btn-collapse-files') as HTMLButtonElement,
   btnExpandFiles: document.getElementById('btn-expand-files') as HTMLButtonElement,
   editorPane: document.getElementById('editor-pane') as HTMLElement,
+  rightPane: document.getElementById('right-pane') as HTMLElement,
+  resizerRight: document.getElementById('resizer-right') as HTMLElement,
   previewHost: document.getElementById('preview-host') as HTMLElement,
   fountainHelp: document.getElementById('fountain-help') as HTMLElement,
   statusFile: document.getElementById('status-file') as HTMLElement,
@@ -98,8 +100,7 @@ function applyI18n(): void {
     [els.filesTitle, 'files.title']
   ]
   for (const [el, key] of map) el.textContent = t(L, key)
-  els.btnRight.textContent =
-    prefs.rightPaneMode === 'help' ? t(L, 'toolbar.preview') : t(L, 'toolbar.help')
+  els.btnRight.textContent = t(L, 'toolbar.preview')
   els.btnCollapseFiles.title = t(L, 'files.collapse')
   els.btnRefreshFiles.title = t(L, 'files.refresh')
   els.btnExpandFiles.title = t(L, 'files.expand')
@@ -126,13 +127,16 @@ function updateStatus(): void {
 }
 
 function applyRightPane(): void {
-  const help = prefs.rightPaneMode === 'help'
-  els.previewHost.classList.toggle('hidden', help)
-  els.fountainHelp.classList.toggle('hidden', !help)
-  if (help) helpPane.show()
+  const mode = prefs.rightPaneMode
+  const hidden = mode === 'hidden'
+  els.rightPane.classList.toggle('hidden', hidden)
+  els.resizerRight.classList.toggle('hidden', hidden)
+  els.previewHost.classList.toggle('hidden', mode !== 'preview')
+  els.fountainHelp.classList.toggle('hidden', mode !== 'help')
+  if (mode === 'help') helpPane.show()
   else helpPane.hide()
-  els.btnRight.textContent = help ? t(loc(), 'toolbar.preview') : t(loc(), 'toolbar.help')
-  els.btnRight.classList.toggle('active', help)
+  els.btnRight.textContent = t(loc(), 'toolbar.preview')
+  els.btnRight.classList.toggle('active', mode === 'preview')
 }
 
 function applyFilesSidebar(): void {
@@ -589,8 +593,20 @@ async function handleMenu(action: string): Promise<void> {
       prefs = await api.setPreferences({ filesSidebarVisible: !prefs.filesSidebarVisible })
       applyFilesSidebar()
       break
+    case 'view:toggle-preview':
+      prefs = await api.setPreferences({
+        rightPaneMode: prefs.rightPaneMode === 'preview' ? 'hidden' : 'preview'
+      })
+      applyRightPane()
+      break
     case 'view:preview':
       prefs = await api.setPreferences({ rightPaneMode: 'preview' })
+      applyRightPane()
+      break
+    case 'view:toggle-help':
+      prefs = await api.setPreferences({
+        rightPaneMode: prefs.rightPaneMode === 'help' ? 'hidden' : 'help'
+      })
       applyRightPane()
       break
     case 'view:help':
@@ -673,7 +689,7 @@ async function boot(): Promise<void> {
   els.btnSave.addEventListener('click', () => void persist(false))
   els.btnSaveAs.addEventListener('click', () => void persist(true))
   els.btnRight.addEventListener('click', () => {
-    const next = prefs.rightPaneMode === 'help' ? 'preview' : 'help'
+    const next = prefs.rightPaneMode === 'preview' ? 'hidden' : 'preview'
     void api.setPreferences({ rightPaneMode: next }).then((p) => {
       prefs = p
       applyRightPane()

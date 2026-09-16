@@ -143,15 +143,15 @@ export function buildApplicationMenu(win: BrowserWindow): void {
         },
         {
           label: t(loc, 'menu.view.preview'),
-          type: 'radio',
+          type: 'checkbox',
           checked: prefs.rightPaneMode === 'preview',
-          click: () => send(win, 'view:preview')
+          click: () => send(win, 'view:toggle-preview')
         },
         {
           label: t(loc, 'menu.view.help'),
-          type: 'radio',
+          type: 'checkbox',
           checked: prefs.rightPaneMode === 'help',
-          click: () => send(win, 'view:help')
+          click: () => send(win, 'view:toggle-help')
         },
         { type: 'separator' },
         {

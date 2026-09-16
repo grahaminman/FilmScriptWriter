@@ -25,7 +25,7 @@ import {
   type SpellcheckLanguageId
 } from '../shared/constants/spellcheck'
 
-export type RightPaneMode = 'preview' | 'help'
+export type RightPaneMode = 'preview' | 'help' | 'hidden'
 
 export interface AppPreferences {
   theme: ThemeMode
@@ -105,6 +105,11 @@ function sanitizeTheme(raw: unknown): ThemeMode {
   return DEFAULT_THEME
 }
 
+function sanitizeRightPaneMode(raw: unknown): RightPaneMode {
+  if (raw === 'preview' || raw === 'help' || raw === 'hidden') return raw
+  return 'preview'
+}
+
 function sanitizeStoredBounds(
   raw: AppPreferences['windowBounds'] | undefined
 ): AppPreferences['windowBounds'] {
@@ -155,10 +160,9 @@ export function getPreferences(): AppPreferences {
     autosaveMinutes: clampAutosave(
       prefsStore.get('autosaveMinutes', defaults.autosaveMinutes)
     ),
-    rightPaneMode:
-      prefsStore.get('rightPaneMode', defaults.rightPaneMode) === 'help'
-        ? 'help'
-        : 'preview',
+    rightPaneMode: sanitizeRightPaneMode(
+      prefsStore.get('rightPaneMode', defaults.rightPaneMode)
+    ),
     fountainHelpIndexCollapsed: Boolean(
       prefsStore.get(
         'fountainHelpIndexCollapsed',
@@ -196,6 +200,8 @@ export function setPreference<K extends keyof AppPreferences>(
     prefsStore.set(key, sanitizeLocale(value) as AppPreferences[K])
   } else if (key === 'theme') {
     prefsStore.set(key, sanitizeTheme(value) as AppPreferences[K])
+  } else if (key === 'rightPaneMode') {
+    prefsStore.set(key, sanitizeRightPaneMode(value) as AppPreferences[K])
   } else if (key === 'windowBounds') {
     prefsStore.set(
       key,
