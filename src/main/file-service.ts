@@ -12,15 +12,9 @@ import { fountainToPdf } from '../shared/export/pdf'
 import { t } from '../shared/i18n/locales'
 import type { TemplateId } from '../shared/templates/text'
 import { pathExists } from './path-exists'
-import {
-  listScriptsTree,
-  type ScriptFileInfo,
-  type ScriptTreeNode
-} from './scripts-tree'
+import { listScriptsTree, type ScriptTreeNode } from './scripts-tree'
 import { getPreferences, setPreference } from './store'
 import { loadTemplate, suggestedScriptsFolder } from './templates'
-
-export type { ScriptFileInfo, ScriptTreeNode }
 
 export interface DocumentState {
   filePath: string | null
@@ -234,21 +228,20 @@ export async function showError(win: BrowserWindow, message: string): Promise<vo
 
 export async function listScriptsFolder(): Promise<{
   folder: string
-  files: ScriptFileInfo[]
   tree: ScriptTreeNode[]
   missing: boolean
 }> {
   const folder = getPreferences().scriptsFolder
-  if (!folder) return { folder: '', files: [], tree: [], missing: false }
+  if (!folder) return { folder: '', tree: [], missing: false }
   if (!(await pathExists(folder))) {
-    return { folder, files: [], tree: [], missing: true }
+    return { folder, tree: [], missing: true }
   }
   try {
     const listed = await listScriptsTree(folder)
     syncScriptsWatchDirs(listed.dirs)
-    return { folder, files: listed.files, tree: listed.tree, missing: false }
+    return { folder, tree: listed.tree, missing: false }
   } catch {
-    return { folder, files: [], tree: [], missing: true }
+    return { folder, tree: [], missing: true }
   }
 }
 

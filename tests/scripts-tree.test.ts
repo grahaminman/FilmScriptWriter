@@ -2,10 +2,26 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
-import { isInsideScriptsRoot, listScriptsTree } from '../src/main/scripts-tree'
+import {
+  isInsideScriptsRoot,
+  listScriptsTree,
+  type ScriptTreeNode
+} from '../src/main/scripts-tree'
 
 async function makeRoot(): Promise<string> {
   return mkdtemp(path.join(tmpdir(), 'fsw-scripts-'))
+}
+
+function flattenFiles(nodes: ScriptTreeNode[]): ScriptTreeNode[] {
+  const out: ScriptTreeNode[] = []
+  const walk = (list: ScriptTreeNode[]): void => {
+    for (const n of list) {
+      if (n.kind === 'file') out.push(n)
+      else if (n.children) walk(n.children)
+    }
+  }
+  walk(nodes)
+  return out
 }
 
 function rels(root: string, files: { path: string }[]): string[] {
@@ -27,8 +43,8 @@ describe('listScriptsTree', () => {
     await writeFile(path.join(root, 'shorts', 'b.fountain'), 'Title: B')
     await writeFile(path.join(root, 'shorts', 'nested', 'c.txt'), 'Title: C')
 
-    const { files, tree } = await listScriptsTree(root)
-    expect(rels(root, files)).toEqual([
+    const { tree } = await listScriptsTree(root)
+    expect(rels(root, flattenFiles(tree))).toEqual([
       'a.fountain',
       path.join('shorts', 'b.fountain'),
       path.join('shorts', 'nested', 'c.txt')
@@ -45,8 +61,8 @@ describe('listScriptsTree', () => {
   it('shows a folder that contains only subfolders', async () => {
     root = await makeRoot()
     await mkdir(path.join(root, 'features', 'drafts'), { recursive: true })
-    const { files, tree } = await listScriptsTree(root)
-    expect(files).toEqual([])
+    const { tree } = await listScriptsTree(root)
+    expect(flattenFiles(tree)).toEqual([])
     expect(tree).toHaveLength(1)
     expect(tree[0]).toMatchObject({ kind: 'dir', name: 'features' })
     expect(tree[0].children?.[0]).toMatchObject({ kind: 'dir', name: 'drafts' })
@@ -62,7 +78,8 @@ describe('listScriptsTree', () => {
       await symlink(outsideFile, path.join(root, 'link.fountain'))
       await symlink(outsideDir, path.join(root, 'escaped'))
 
-      const { files, tree } = await listScriptsTree(root)
+      const { tree } = await listScriptsTree(root)
+      const files = flattenFiles(tree)
       expect(rels(root, files)).toEqual(['a.fountain'])
       expect(files.some((f) => f.path === outsideFile || f.name === 'link.fountain')).toBe(
         false
@@ -80,8 +97,8 @@ describe('listScriptsTree', () => {
     await writeFile(parentFile, 'Title: Out')
     try {
       await symlink('..', path.join(root, 'up'))
-      const { files, tree } = await listScriptsTree(root)
-      expect(rels(root, files)).toEqual(['a.fountain'])
+      const { tree } = await listScriptsTree(root)
+      expect(rels(root, flattenFiles(tree))).toEqual(['a.fountain'])
       expect(tree.some((n) => n.name === 'up' || n.name === '..')).toBe(false)
       expect(isInsideScriptsRoot(root, path.resolve(root, '..'))).toBe(false)
       expect(isInsideScriptsRoot(root, path.resolve(root, '..', 'a.fountain'))).toBe(false)
@@ -98,8 +115,8 @@ describe('listScriptsTree', () => {
       await mkdir(dir)
       await writeFile(path.join(dir, `f${i}.fountain`), `Title: ${i}`)
     }
-    const { files, tree } = await listScriptsTree(root)
-    const names = files.map((f) => f.name)
+    const { tree } = await listScriptsTree(root)
+    const names = flattenFiles(tree).map((f) => f.name)
     expect(names).toContain('f8.fountain')
     expect(names).not.toContain('f9.fountain')
     const dirNames: string[] = []
@@ -122,8 +139,8 @@ describe('listScriptsTree', () => {
     await mkdir(path.join(root, 'node_modules', 'pkg'), { recursive: true })
     await writeFile(path.join(root, 'node_modules', 'pkg', 'dep.fountain'), 'Title: Dep')
     await writeFile(path.join(root, 'a.fountain'), 'Title: A')
-    const { files, tree } = await listScriptsTree(root)
-    expect(rels(root, files)).toEqual(['a.fountain'])
+    const { tree } = await listScriptsTree(root)
+    expect(rels(root, flattenFiles(tree))).toEqual(['a.fountain'])
     expect(tree.map((n) => n.name)).toEqual(['a.fountain'])
   })
 
@@ -133,8 +150,8 @@ describe('listScriptsTree', () => {
       await writeFile(path.join(root, `p${String(i).padStart(4, '0')}.pdf`), 'x')
     }
     await writeFile(path.join(root, 'z.fountain'), 'Title: Z')
-    const { files, tree } = await listScriptsTree(root)
-    expect(files).toEqual([])
+    const { tree } = await listScriptsTree(root)
+    expect(flattenFiles(tree)).toEqual([])
     expect(tree).toEqual([])
   })
 
@@ -143,8 +160,8 @@ describe('listScriptsTree', () => {
     for (let i = 0; i < 2100; i++) {
       await writeFile(path.join(root, `s${String(i).padStart(4, '0')}.fountain`), 'x')
     }
-    const { files, tree } = await listScriptsTree(root)
-    expect(files).toHaveLength(2000)
+    const { tree } = await listScriptsTree(root)
+    expect(flattenFiles(tree)).toHaveLength(2000)
     expect(tree).toHaveLength(2000)
   })
 })

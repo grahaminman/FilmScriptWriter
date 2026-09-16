@@ -5,11 +5,6 @@ import * as path from 'path'
 export const SCRIPTS_TREE_MAX_DEPTH = 8
 export const SCRIPTS_TREE_MAX_ENTRIES = 2000
 
-export interface ScriptFileInfo {
-  name: string
-  path: string
-}
-
 export interface ScriptTreeNode {
   kind: 'file' | 'dir'
   name: string
@@ -21,7 +16,6 @@ export interface ScriptTreeNode {
 
 interface ScriptsTreeResult {
   tree: ScriptTreeNode[]
-  files: ScriptFileInfo[]
   dirs: string[]
 }
 
@@ -61,7 +55,6 @@ function sortNodes(a: ScriptTreeNode, b: ScriptTreeNode): number {
 }
 
 export async function listScriptsTree(root: string): Promise<ScriptsTreeResult> {
-  const files: ScriptFileInfo[] = []
   const dirs: string[] = []
   const visited = new Set<string>()
   let remaining = SCRIPTS_TREE_MAX_ENTRIES
@@ -122,7 +115,6 @@ export async function listScriptsTree(root: string): Promise<ScriptsTreeResult> 
         const real = await resolveInside(full)
         if (!real) continue
         nodes.push({ kind: 'file', name, path: full, realPath: real, relativePath })
-        files.push({ name, path: full })
         continue
       }
 
@@ -133,26 +125,11 @@ export async function listScriptsTree(root: string): Promise<ScriptsTreeResult> 
           const st = await fs.stat(real)
           if (st.isFile()) {
             nodes.push({ kind: 'file', name, path: full, realPath: real, relativePath })
-            files.push({ name, path: full })
-          } else if (st.isDirectory() && depth < SCRIPTS_TREE_MAX_DEPTH) {
-            const key = normalizeForCompare(real)
-            if (visited.has(key)) continue
-            visited.add(key)
-            dirs.push(full)
-            const children = await walk(full, relativePath, depth + 1)
-            nodes.push({
-              kind: 'dir',
-              name,
-              path: full,
-              realPath: real,
-              relativePath,
-              children
-            })
+            continue
           }
         } catch {
           continue
         }
-        continue
       }
 
       const maybeDir = lst.isDirectory() || lst.isSymbolicLink()
@@ -188,5 +165,5 @@ export async function listScriptsTree(root: string): Promise<ScriptsTreeResult> 
   }
 
   const tree = await walk(logicalRoot, '', 0)
-  return { tree, files, dirs }
+  return { tree, dirs }
 }

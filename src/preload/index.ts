@@ -37,11 +37,6 @@ export interface DocumentState {
   dirty: boolean
 }
 
-export interface ScriptFileInfo {
-  name: string
-  path: string
-}
-
 export interface ScriptTreeNode {
   kind: 'file' | 'dir'
   name: string
@@ -86,7 +81,6 @@ export interface StartupDocument {
 
 export interface ScriptsList {
   folder: string
-  files: ScriptFileInfo[]
   tree: ScriptTreeNode[]
   missing: boolean
 }
