@@ -39,6 +39,10 @@ let dirty = false
 let autosaveTimer: number | null = null
 let ignoreChanges = false
 let version = '2.0.0-beta.1'
+const expandedDirs = new Set<string>()
+let expandedForPath: string | null = null
+
+type ScriptTreeNode = Awaited<ReturnType<typeof api.listScripts>>['tree'][number]
 
 const els = {
   mark: document.getElementById('toolbar-mark') as HTMLImageElement,
@@ -162,6 +166,67 @@ function scheduleAutosave(): void {
   }, minutes * 60_000)
 }
 
+function expandAncestorsOf(filePath: string, nodes: ScriptTreeNode[]): boolean {
+  for (const node of nodes) {
+    if (node.kind === 'file' && node.path === filePath) return true
+    if (node.kind === 'dir' && node.children && expandAncestorsOf(filePath, node.children)) {
+      expandedDirs.add(node.relativePath)
+      return true
+    }
+  }
+  return false
+}
+
+function appendTree(parent: HTMLElement, nodes: ScriptTreeNode[], depth: number): void {
+  for (const node of nodes) {
+    if (node.kind === 'dir') {
+      const expanded = expandedDirs.has(node.relativePath)
+      const branch = document.createElement('div')
+      branch.className = 'file-branch' + (expanded ? '' : ' collapsed')
+      branch.dataset.rel = node.relativePath
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'file-dir'
+      btn.style.paddingLeft = `${6 + depth * 14}px`
+      btn.setAttribute('aria-expanded', expanded ? 'true' : 'false')
+      btn.title = node.path
+      const chev = document.createElement('span')
+      chev.className = 'file-chevron'
+      chev.setAttribute('aria-hidden', 'true')
+      chev.textContent = expanded ? '▾' : '▸'
+      const label = document.createElement('span')
+      label.className = 'file-name'
+      label.textContent = node.name
+      btn.append(chev, label)
+      btn.addEventListener('click', () => {
+        const willExpand = branch.classList.contains('collapsed')
+        branch.classList.toggle('collapsed', !willExpand)
+        btn.setAttribute('aria-expanded', willExpand ? 'true' : 'false')
+        chev.textContent = willExpand ? '▾' : '▸'
+        if (willExpand) expandedDirs.add(node.relativePath)
+        else expandedDirs.delete(node.relativePath)
+      })
+      const children = document.createElement('div')
+      children.className = 'file-children'
+      if (node.children?.length) appendTree(children, node.children, depth + 1)
+      branch.append(btn, children)
+      parent.append(branch)
+      continue
+    }
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'file-row' + (node.path === currentPath ? ' active' : '')
+    btn.style.paddingLeft = `${6 + depth * 14}px`
+    btn.title = node.path
+    const label = document.createElement('span')
+    label.className = 'file-name'
+    label.textContent = node.name
+    btn.append(label)
+    btn.addEventListener('click', () => void openExisting(node.path))
+    parent.append(btn)
+  }
+}
+
 async function refreshFileList(): Promise<void> {
   const list = await api.listScripts()
   const L = loc()
@@ -189,22 +254,18 @@ async function refreshFileList(): Promise<void> {
     els.filesBody.append(p)
     return
   }
-  if (list.files.length === 0) {
+  if (list.tree.length === 0) {
     const p = document.createElement('div')
     p.className = 'files-empty'
     p.textContent = t(L, 'files.empty')
     els.filesBody.append(p)
     return
   }
-  for (const file of list.files) {
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'file-row' + (file.path === currentPath ? ' active' : '')
-    btn.textContent = file.name
-    btn.title = file.path
-    btn.addEventListener('click', () => void openExisting(file.path))
-    els.filesBody.append(btn)
+  if (currentPath && currentPath !== expandedForPath) {
+    expandAncestorsOf(currentPath, list.tree)
+    expandedForPath = currentPath
   }
+  appendTree(els.filesBody, list.tree, 0)
 }
 
 async function maybeDiscard(): Promise<boolean> {

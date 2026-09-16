@@ -108,6 +108,7 @@ body {
 .toolbar button,
 .modal-card button,
 .files-body button.file-row,
+.files-body button.file-dir,
 .status-btn {
   appearance: none;
   border: 1px solid var(--line);
@@ -207,20 +208,50 @@ body {
   line-height: 1.45;
 }
 
-.file-row {
-  display: block;
+.file-row,
+.file-dir {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   width: 100%;
   text-align: left;
   margin-bottom: 4px;
+}
+
+.file-row .file-name,
+.file-dir .file-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .file-row.active {
   background: var(--accent-muted);
   border-color: var(--film-blue);
   color: var(--navy);
+}
+
+.file-dir {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.file-chevron {
+  display: inline-block;
+  width: 1em;
+  flex-shrink: 0;
+  color: var(--slate);
+}
+
+.file-branch.collapsed > .file-children {
+  display: none;
+}
+
+.files-body button.file-row:focus-visible,
+.files-body button.file-dir:focus-visible {
+  outline: 2px solid var(--film-blue);
+  outline-offset: 1px;
 }
 
 .resizer {

@@ -42,6 +42,14 @@ export interface ScriptFileInfo {
   path: string
 }
 
+export interface ScriptTreeNode {
+  kind: 'file' | 'dir'
+  name: string
+  path: string
+  relativePath: string
+  children?: ScriptTreeNode[]
+}
+
 export interface FileResult {
   cancelled: boolean
   content?: string
@@ -78,6 +86,7 @@ export interface StartupDocument {
 export interface ScriptsList {
   folder: string
   files: ScriptFileInfo[]
+  tree: ScriptTreeNode[]
   missing: boolean
 }
 

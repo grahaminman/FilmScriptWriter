@@ -12,17 +12,19 @@ import { fountainToPdf } from '../shared/export/pdf'
 import { t } from '../shared/i18n/locales'
 import type { TemplateId } from '../shared/templates/text'
 import { pathExists } from './path-exists'
+import {
+  listScriptsTree,
+  type ScriptFileInfo,
+  type ScriptTreeNode
+} from './scripts-tree'
 import { getPreferences, setPreference } from './store'
 import { loadTemplate, suggestedScriptsFolder } from './templates'
+
+export type { ScriptFileInfo, ScriptTreeNode }
 
 export interface DocumentState {
   filePath: string | null
   dirty: boolean
-}
-
-export interface ScriptFileInfo {
-  name: string
-  path: string
 }
 
 export interface FileResult {
@@ -233,31 +235,20 @@ export async function showError(win: BrowserWindow, message: string): Promise<vo
 export async function listScriptsFolder(): Promise<{
   folder: string
   files: ScriptFileInfo[]
+  tree: ScriptTreeNode[]
   missing: boolean
 }> {
   const folder = getPreferences().scriptsFolder
-  if (!folder) return { folder: '', files: [], missing: false }
+  if (!folder) return { folder: '', files: [], tree: [], missing: false }
   if (!(await pathExists(folder))) {
-    return { folder, files: [], missing: true }
+    return { folder, files: [], tree: [], missing: true }
   }
   try {
-    const names = await fs.readdir(folder)
-    const files: ScriptFileInfo[] = []
-    for (const name of names) {
-      const ext = path.extname(name).toLowerCase()
-      if (ext !== '.fountain' && ext !== '.txt') continue
-      const full = path.join(folder, name)
-      try {
-        const stat = await fs.stat(full)
-        if (stat.isFile()) files.push({ name, path: full })
-      } catch {
-        /* skip unreadable entries */
-      }
-    }
-    files.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-    return { folder, files, missing: false }
+    const listed = await listScriptsTree(folder)
+    syncScriptsWatchDirs(listed.dirs)
+    return { folder, files: listed.files, tree: listed.tree, missing: false }
   } catch {
-    return { folder, files: [], missing: true }
+    return { folder, files: [], tree: [], missing: true }
   }
 }
 
@@ -285,6 +276,8 @@ export async function useDefaultScriptsFolder(): Promise<FileResult> {
 }
 
 let scriptsWatcher: FSWatcher | null = null
+let extraWatchers = new Map<string, FSWatcher>()
+let watchRecursive = false
 let watchTimer: ReturnType<typeof setTimeout> | null = null
 let watchCallback: (() => void) | null = null
 
@@ -292,22 +285,78 @@ export function setScriptsWatchHandler(cb: () => void): void {
   watchCallback = cb
 }
 
+function notifyScriptsChanged(): void {
+  if (watchTimer) clearTimeout(watchTimer)
+  watchTimer = setTimeout(() => watchCallback?.(), 300)
+}
+
+function closeExtraWatchers(): void {
+  for (const w of extraWatchers.values()) {
+    try {
+      w.close()
+    } catch {
+      /* already closed */
+    }
+  }
+  extraWatchers.clear()
+}
+
+function watchDir(dir: string): FSWatcher | null {
+  try {
+    const w = watch(dir, notifyScriptsChanged)
+    w.on('error', () => {
+      extraWatchers.delete(path.resolve(dir))
+    })
+    return w
+  } catch {
+    return null
+  }
+}
+
+function syncScriptsWatchDirs(dirs: string[]): void {
+  if (watchRecursive || !watchCallback) return
+  const root = path.resolve(getPreferences().scriptsFolder || '')
+  const wanted = new Set(
+    dirs.map((d) => path.resolve(d)).filter((d) => d !== root)
+  )
+  for (const [p, w] of extraWatchers) {
+    if (wanted.has(p)) continue
+    try {
+      w.close()
+    } catch {
+      /* already closed */
+    }
+    extraWatchers.delete(p)
+  }
+  for (const p of wanted) {
+    if (extraWatchers.has(p)) continue
+    const w = watchDir(p)
+    if (w) extraWatchers.set(p, w)
+  }
+}
+
 export function restartScriptsWatcher(): void {
   if (scriptsWatcher) {
     scriptsWatcher.close()
     scriptsWatcher = null
   }
+  closeExtraWatchers()
+  watchRecursive = false
   const folder = getPreferences().scriptsFolder
   if (!folder || !watchCallback) return
   try {
-    scriptsWatcher = watch(folder, () => {
-      if (watchTimer) clearTimeout(watchTimer)
-      watchTimer = setTimeout(() => watchCallback?.(), 300)
-    })
-    scriptsWatcher.on('error', () => {
-      scriptsWatcher = null
-    })
+    scriptsWatcher = watch(folder, { recursive: true }, notifyScriptsChanged)
+    watchRecursive = true
   } catch {
-    scriptsWatcher = null
+    try {
+      scriptsWatcher = watch(folder, notifyScriptsChanged)
+    } catch {
+      scriptsWatcher = null
+      return
+    }
   }
+  scriptsWatcher.on('error', () => {
+    scriptsWatcher = null
+    watchRecursive = false
+  })
 }
