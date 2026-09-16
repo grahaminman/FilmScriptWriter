@@ -9,10 +9,8 @@ Contact:
 Community: filmscriptwriter-3192
 Write one complete short film today. Aim for 2–5 pages.
 
-Person:
-Place:
-Prop:
-Optional dialogue:
+Prompt:
+{daily promot}
 
 When you are done, FADE OUT. This note does not print. ]]
 
@@ -21,6 +19,5 @@ FADE IN:
 INT. 
 
 
-FADE OUT.
+>FADE OUT.
 
->THE END<
