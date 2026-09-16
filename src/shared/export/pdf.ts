@@ -113,11 +113,36 @@ function bodyBottom(): number {
   return inchesToPoints(PAGE_HEIGHT_IN) - inchesToPoints(MARGIN_BOTTOM_IN)
 }
 
-/** Start a new PDF page when the next visual line would leave the bottom margin. */
-function ensureLine(doc: PDFKit.PDFDocument, y: number): number {
+type PageSeq = { n: number }
+
+function charsPerLineForWidth(widthPt: number): number {
+  const bodyW =
+    inchesToPoints(PAGE_WIDTH_IN) -
+    inchesToPoints(MARGIN_LEFT_IN) -
+    inchesToPoints(MARGIN_RIGHT_IN)
+  return Math.max(1, Math.floor((widthPt / bodyW) * ACTION_CHARS_PER_LINE))
+}
+
+function drawPageNumber(doc: PDFKit.PDFDocument, pageNumber: number): void {
+  const pageNumX =
+    inchesToPoints(PAGE_WIDTH_IN) - inchesToPoints(PAGE_NUMBER_RIGHT_IN)
+  const pageNumY = inchesToPoints(PAGE_NUMBER_TOP_IN)
+  doc
+    .font('Courier')
+    .fontSize(FONT_SIZE_PT)
+    .text(`${pageNumber}.`, pageNumX - 40, pageNumY, {
+      width: 40,
+      align: 'right',
+      lineBreak: false
+    })
+}
+
+function ensureLine(doc: PDFKit.PDFDocument, y: number, seq: PageSeq): number {
   const top = bodyTop()
   if (y + LINE_HEIGHT_PT > bodyBottom() && y > top) {
     doc.addPage()
+    seq.n += 1
+    drawPageNumber(doc, seq.n)
     return top
   }
   return y
@@ -169,16 +194,132 @@ function drawSingleLine(
   }
 }
 
-/**
- * Map Fountain text onto paginator visual lines, keeping emphasis when
- * the block fits on one line.
- */
+type StyledChar = { ch: string; style: EmphasisRun['style'] }
+
+function flattenRuns(runs: EmphasisRun[]): StyledChar[] {
+  const out: StyledChar[] = []
+  for (const run of runs) {
+    for (const ch of run.text) {
+      out.push({ ch, style: run.style })
+    }
+  }
+  return out
+}
+
+function sameStyle(a: EmphasisRun['style'], b: EmphasisRun['style']): boolean {
+  return (
+    Boolean(a.bold) === Boolean(b.bold) &&
+    Boolean(a.italic) === Boolean(b.italic) &&
+    Boolean(a.underline) === Boolean(b.underline)
+  )
+}
+
+function charsToRuns(chars: StyledChar[]): EmphasisRun[] {
+  const runs: EmphasisRun[] = []
+  for (const c of chars) {
+    const last = runs[runs.length - 1]
+    if (last && sameStyle(last.style, c.style)) last.text += c.ch
+    else runs.push({ text: c.ch, style: { ...c.style } })
+  }
+  return runs
+}
+
+function collapseStyled(segment: StyledChar[]): StyledChar[] {
+  const tmp: StyledChar[] = []
+  for (const c of segment) {
+    if (c.ch === ' ' || c.ch === '\t') {
+      if (tmp.length && (tmp[tmp.length - 1].ch === ' ' || tmp[tmp.length - 1].ch === '\t')) {
+        continue
+      }
+      tmp.push({ ch: ' ', style: c.style })
+    } else {
+      tmp.push(c)
+    }
+  }
+  while (tmp.length && tmp[0].ch === ' ') tmp.shift()
+  while (tmp.length && tmp[tmp.length - 1].ch === ' ') tmp.pop()
+  return tmp
+}
+
+/** Same wrap as wrapTextLines, carrying emphasis onto each visual line. */
+function wrapStyledParagraph(
+  segment: StyledChar[],
+  charsPerLine: number
+): EmphasisRun[][] {
+  const raw = collapseStyled(segment)
+  if (raw.length === 0) return [[]]
+
+  const words: StyledChar[][] = []
+  let word: StyledChar[] = []
+  for (const c of raw) {
+    if (c.ch === ' ') {
+      if (word.length) words.push(word)
+      word = []
+    } else {
+      word.push(c)
+    }
+  }
+  if (word.length) words.push(word)
+
+  const lines: StyledChar[][] = []
+  let current: StyledChar[] = []
+
+  const startWord = (w: StyledChar[]): void => {
+    if (w.length <= charsPerLine) {
+      current = w.slice()
+      return
+    }
+    let rest = w
+    while (rest.length > charsPerLine) {
+      lines.push(rest.slice(0, charsPerLine))
+      rest = rest.slice(charsPerLine)
+    }
+    current = rest.slice()
+  }
+
+  for (const w of words) {
+    if (current.length === 0) {
+      startWord(w)
+      continue
+    }
+    if (current.length + 1 + w.length <= charsPerLine) {
+      current = [...current, { ch: ' ', style: {} }, ...w]
+    } else {
+      lines.push(current)
+      startWord(w)
+    }
+  }
+  if (current.length) lines.push(current)
+  return (lines.length ? lines : [[]]).map(charsToRuns)
+}
+
 function visualRunLines(text: string, charsPerLine: number): EmphasisRun[][] {
   const runs = emphasisToRuns(text)
-  const plain = runs.map((r) => r.text).join('')
-  const wrapped = wrapTextLines(plain, charsPerLine)
-  if (wrapped.length <= 1) return [runs]
-  return wrapped.map((line) => [{ text: line, style: {} }])
+  if (charsPerLine <= 0) return [runs]
+  const chars = flattenRuns(runs)
+  const normalised: StyledChar[] = []
+  for (let i = 0; i < chars.length; i++) {
+    const c = chars[i]
+    if (c.ch === '\r') {
+      if (chars[i + 1]?.ch !== '\n') normalised.push({ ...c, ch: '\n' })
+      continue
+    }
+    normalised.push(c)
+  }
+  if (normalised.length === 0) return [runs]
+
+  const out: EmphasisRun[][] = []
+  let segment: StyledChar[] = []
+  for (const c of normalised) {
+    if (c.ch === '\n') {
+      out.push(...wrapStyledParagraph(segment, charsPerLine))
+      segment = []
+    } else {
+      segment.push(c)
+    }
+  }
+  out.push(...wrapStyledParagraph(segment, charsPerLine))
+  return out.length ? out : [runs]
 }
 
 function drawWrappedBlock(
@@ -188,12 +329,13 @@ function drawWrappedBlock(
   y: number,
   width: number,
   align: 'left' | 'right' | 'center',
-  charsPerLine: number
+  charsPerLine: number,
+  seq: PageSeq
 ): number {
   const lines = visualRunLines(text, charsPerLine)
   let cursor = y
   for (const runs of lines) {
-    cursor = ensureLine(doc, cursor)
+    cursor = ensureLine(doc, cursor, seq)
     drawSingleLine(doc, runs, x, cursor, width, align)
     cursor += LINE_HEIGHT_PT
   }
@@ -215,7 +357,7 @@ function layoutToDualVisual(
   for (const L of lines) {
     if (L.isSpacer || L.type === 'empty') continue
     const g = geometryFor(L.type, column)
-    const vis = visualRunLines(L.text || ' ', charsPerLineFor(L.type))
+    const vis = visualRunLines(L.text || ' ', charsPerLineForWidth(g.width))
     for (const runs of vis) {
       out.push({ runs, x: g.x, width: g.width, align: g.align })
     }
@@ -295,30 +437,17 @@ function drawTitlePage(doc: PDFKit.PDFDocument, tp: TitlePage): void {
   }
 }
 
-function drawPageNumber(doc: PDFKit.PDFDocument, pageNumber: number): void {
-  const pageNumX =
-    inchesToPoints(PAGE_WIDTH_IN) - inchesToPoints(PAGE_NUMBER_RIGHT_IN)
-  const pageNumY = inchesToPoints(PAGE_NUMBER_TOP_IN)
-  doc
-    .font('Courier')
-    .fontSize(FONT_SIZE_PT)
-    .text(`${pageNumber}.`, pageNumX - 40, pageNumY, {
-      width: 40,
-      align: 'right',
-      lineBreak: false
-    })
-}
-
 function drawPage(
   doc: PDFKit.PDFDocument,
   page: ScreenplayPage,
-  isFirst: boolean
+  isFirst: boolean,
+  seq: PageSeq
 ): void {
   if (!isFirst) {
     doc.addPage()
   }
-
-  drawPageNumber(doc, page.pageNumber)
+  seq.n += 1
+  drawPageNumber(doc, seq.n)
 
   let y = bodyTop()
   const lines = page.lines
@@ -367,7 +496,7 @@ function drawPage(
       const rightVis = layoutToDualVisual(right, 'right')
       const n = Math.max(leftVis.length, rightVis.length)
       for (let k = 0; k < n; k++) {
-        y = ensureLine(doc, y)
+        y = ensureLine(doc, y, seq)
         const L = leftVis[k]
         const R = rightVis[k]
         if (L) drawSingleLine(doc, L.runs, L.x, y, L.width, L.align)
@@ -390,7 +519,7 @@ function drawPage(
       }
       const rightVis = layoutToDualVisual(right, 'right')
       for (const R of rightVis) {
-        y = ensureLine(doc, y)
+        y = ensureLine(doc, y, seq)
         drawSingleLine(doc, R.runs, R.x, y, R.width, R.align)
         y += LINE_HEIGHT_PT
       }
@@ -406,7 +535,8 @@ function drawPage(
       y,
       width,
       align,
-      charsPerLineFor(line.type)
+      charsPerLineFor(line.type),
+      seq
     )
     i += 1
   }
@@ -454,13 +584,14 @@ export function fountainToPdf(
       }
 
       const pages = pagination.pages
+      const seq: PageSeq = { n: 0 }
       if (pages.length === 0) {
         if (!printTitle) {
           doc.font('Courier').fontSize(FONT_SIZE_PT).text('')
         }
       } else {
         pages.forEach((page, idx) =>
-          drawPage(doc, page, idx === 0 && !printTitle)
+          drawPage(doc, page, idx === 0 && !printTitle, seq)
         )
       }
 

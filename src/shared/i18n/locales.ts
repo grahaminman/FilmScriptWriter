@@ -59,7 +59,6 @@ export type MessageKey =
   | 'toolbar.save'
   | 'toolbar.saveAs'
   | 'toolbar.preview'
-  | 'toolbar.help'
   | 'toolbar.settings'
   | 'files.title'
   | 'files.empty'
@@ -206,7 +205,6 @@ const en_GB: Messages = {
   'toolbar.save': 'Save',
   'toolbar.saveAs': 'Save as',
   'toolbar.preview': 'Preview',
-  'toolbar.help': 'Help',
   'toolbar.settings': 'Settings',
   'files.title': 'Scripts',
   'files.empty': 'No .fountain or .txt files in this folder.',
@@ -377,7 +375,6 @@ const es_419: Messages = {
   'toolbar.save': 'Guardar',
   'toolbar.saveAs': 'Guardar como',
   'toolbar.preview': 'Vista previa',
-  'toolbar.help': 'Ayuda',
   'toolbar.settings': 'Ajustes',
   'files.title': 'Guiones',
   'files.empty': 'No hay archivos .fountain o .txt en esta carpeta.',
@@ -531,7 +528,6 @@ const de_DE: Messages = {
   'toolbar.save': 'Speichern',
   'toolbar.saveAs': 'Speichern unter',
   'toolbar.preview': 'Vorschau',
-  'toolbar.help': 'Hilfe',
   'toolbar.settings': 'Einstellungen',
   'files.title': 'Drehbücher',
   'files.empty': 'Keine .fountain- oder .txt-Dateien in diesem Ordner.',
@@ -685,7 +681,6 @@ const fr_FR: Messages = {
   'toolbar.save': 'Enregistrer',
   'toolbar.saveAs': 'Enregistrer sous',
   'toolbar.preview': 'Aperçu',
-  'toolbar.help': 'Aide',
   'toolbar.settings': 'Réglages',
   'files.title': 'Scénarios',
   'files.empty': 'Aucun fichier .fountain ou .txt dans ce dossier.',
@@ -839,7 +834,6 @@ const it_IT: Messages = {
   'toolbar.save': 'Salva',
   'toolbar.saveAs': 'Salva come',
   'toolbar.preview': 'Anteprima',
-  'toolbar.help': 'Aiuto',
   'toolbar.settings': 'Impostazioni',
   'files.title': 'Sceneggiature',
   'files.empty': 'Nessun file .fountain o .txt in questa cartella.',

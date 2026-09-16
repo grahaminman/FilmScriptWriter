@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
 import { inflateRawSync, inflateSync } from 'node:zlib'
 import { fountainToPdf } from '../src/shared/export/pdf'
-import { ACTION_CHARS_PER_LINE } from '../src/shared/constants/screenplay'
+import {
+  ACTION_CHARS_PER_LINE,
+  MARGIN_LEFT_IN,
+  MARGIN_RIGHT_IN,
+  PAGE_WIDTH_IN,
+  POINTS_PER_INCH
+} from '../src/shared/constants/screenplay'
 import { SHORT_DAILY_TEMPLATE } from '../src/shared/templates/text'
 
 function tryPdftotext(buffer: Buffer): string | null {
@@ -151,6 +157,37 @@ export function extractPdfText(buffer: Buffer): string {
   return parts.join('')
 }
 
+function extractPdfBBoxWords(
+  buffer: Buffer
+): Array<{ text: string; xMin: number; xMax: number }> {
+  const r = spawnSync('pdftotext', ['-bbox', '-', '-'], {
+    input: buffer,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024
+  })
+  if (r.status !== 0 || typeof r.stdout !== 'string') return []
+  const words: Array<{ text: string; xMin: number; xMax: number }> = []
+  const re =
+    /<word xMin="([^"]+)" yMin="[^"]+" xMax="([^"]+)" yMax="[^"]+">([^<]*)<\/word>/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(r.stdout))) {
+    words.push({ xMin: Number(m[1]), xMax: Number(m[2]), text: m[3] })
+  }
+  return words
+}
+
+function pdfContainsFont(buffer: Buffer, name: string): boolean {
+  if (buffer.toString('latin1').includes(name)) return true
+  const latin = buffer.toString('latin1')
+  const re = /stream\r?\n([\s\S]*?)endstream/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(latin))) {
+    const decoded = inflateMaybe(Buffer.from(m[1], 'latin1'))
+    if (decoded.toString('latin1').includes(name)) return true
+  }
+  return false
+}
+
 describe('PDF export', () => {
   it('generates a non-empty PDF buffer for a short script', async () => {
     const source = `
@@ -272,6 +309,67 @@ BETARIGHTDUAL
     expect(text).toContain('ALICE')
     expect(text).toContain('BOB')
   })
+
+  it('wraps long dual dialogue to column width without overlapping', async () => {
+    const left = `LeftDualStart ${'Lwrapxx '.repeat(18)}LeftDualEnd`
+    const right = `RightDualStart ${'Rwrapyy '.repeat(18)}RightDualEnd`
+    const source = `
+INT. ROOM - DAY
+
+ALICE
+${left}
+
+BOB ^
+${right}
+`
+    const buffer = await fountainToPdf(source)
+    const text = extractPdfText(buffer)
+    expect(text).toContain('LeftDualStart')
+    expect(text).toContain('LeftDualEnd')
+    expect(text).toContain('RightDualStart')
+    expect(text).toContain('RightDualEnd')
+
+    const bodyW = (PAGE_WIDTH_IN - MARGIN_LEFT_IN - MARGIN_RIGHT_IN) * POINTS_PER_INCH
+    const leftM = MARGIN_LEFT_IN * POINTS_PER_INCH
+    const leftEdge = leftM + bodyW * 0.48
+    const rightEdge = leftM + bodyW * 0.52
+    const words = extractPdfBBoxWords(buffer)
+    expect(words.length).toBeGreaterThan(0)
+    const leftWords = words.filter(
+      (w) => w.text === 'Lwrapxx' || w.text.startsWith('LeftDual')
+    )
+    const rightWords = words.filter(
+      (w) => w.text === 'Rwrapyy' || w.text.startsWith('RightDual')
+    )
+    expect(leftWords.length).toBeGreaterThan(0)
+    expect(rightWords.length).toBeGreaterThan(0)
+    for (const w of leftWords) {
+      expect(w.xMax, w.text).toBeLessThanOrEqual(leftEdge + 1)
+    }
+    for (const w of rightWords) {
+      expect(w.xMin, w.text).toBeGreaterThanOrEqual(rightEdge - 1)
+    }
+  }, 15_000)
+
+  it('numbers PDF pages created when a block overflows the paginator page', async () => {
+    const source = Array.from({ length: 2000 }, (_, i) => `pgw${i}`).join(' ')
+    const buffer = await fountainToPdf(source)
+    const text = extractPdfText(buffer)
+    expect(text).toContain('pgw0')
+    expect(text).toContain('pgw1999')
+    expect(text).toMatch(/\b1\./)
+    expect(text).toMatch(/\b2\./)
+  }, 15_000)
+
+  it('keeps emphasis on wrapped PDF lines', async () => {
+    const inner = Array.from({ length: 50 }, (_, i) => `italword${i}`).join(' ')
+    const source = `INT. ROOM - DAY\n\n*${inner} ItalTail*\n`
+    const buffer = await fountainToPdf(source)
+    const text = extractPdfText(buffer)
+    expect(text).toContain('italword0')
+    expect(text).toContain('ItalTail')
+    expect(pdfContainsFont(buffer, 'Courier-Oblique')).toBe(true)
+  }, 15_000)
 
   it('omits daily-prompt notes from the PDF', async () => {
     const buffer = await fountainToPdf(SHORT_DAILY_TEMPLATE)
