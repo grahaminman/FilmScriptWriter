@@ -98,9 +98,53 @@ describe('listScriptsTree', () => {
       await mkdir(dir)
       await writeFile(path.join(dir, `f${i}.fountain`), `Title: ${i}`)
     }
-    const { files } = await listScriptsTree(root)
+    const { files, tree } = await listScriptsTree(root)
     const names = files.map((f) => f.name)
     expect(names).toContain('f8.fountain')
     expect(names).not.toContain('f9.fountain')
+    const dirNames: string[] = []
+    const walkDirs = (nodes: typeof tree): void => {
+      for (const n of nodes) {
+        if (n.kind !== 'dir') continue
+        dirNames.push(n.name)
+        if (n.children) walkDirs(n.children)
+      }
+    }
+    walkDirs(tree)
+    expect(dirNames).toContain('d8')
+    expect(dirNames).not.toContain('d9')
+  })
+
+  it('skips hidden directories and node_modules', async () => {
+    root = await makeRoot()
+    await mkdir(path.join(root, '.git', 'objects'), { recursive: true })
+    await writeFile(path.join(root, '.git', 'objects', 'hidden.fountain'), 'Title: Git')
+    await mkdir(path.join(root, 'node_modules', 'pkg'), { recursive: true })
+    await writeFile(path.join(root, 'node_modules', 'pkg', 'dep.fountain'), 'Title: Dep')
+    await writeFile(path.join(root, 'a.fountain'), 'Title: A')
+    const { files, tree } = await listScriptsTree(root)
+    expect(rels(root, files)).toEqual(['a.fountain'])
+    expect(tree.map((n) => n.name)).toEqual(['a.fountain'])
+  })
+
+  it('caps examined dirents at 2000 including non-script files', async () => {
+    root = await makeRoot()
+    for (let i = 0; i < 2000; i++) {
+      await writeFile(path.join(root, `p${String(i).padStart(4, '0')}.pdf`), 'x')
+    }
+    await writeFile(path.join(root, 'z.fountain'), 'Title: Z')
+    const { files, tree } = await listScriptsTree(root)
+    expect(files).toEqual([])
+    expect(tree).toEqual([])
+  })
+
+  it('stops listing scripts once the 2000-entry ceiling is reached', async () => {
+    root = await makeRoot()
+    for (let i = 0; i < 2100; i++) {
+      await writeFile(path.join(root, `s${String(i).padStart(4, '0')}.fountain`), 'x')
+    }
+    const { files, tree } = await listScriptsTree(root)
+    expect(files).toHaveLength(2000)
+    expect(tree).toHaveLength(2000)
   })
 })

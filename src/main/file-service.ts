@@ -344,10 +344,17 @@ export function restartScriptsWatcher(): void {
   watchRecursive = false
   const folder = getPreferences().scriptsFolder
   if (!folder || !watchCallback) return
-  try {
-    scriptsWatcher = watch(folder, { recursive: true }, notifyScriptsChanged)
-    watchRecursive = true
-  } catch {
+  // Linux recursive fs.watch is one inotify watch per subdirectory, uncapped.
+  const tryRecursive = process.platform !== 'linux'
+  if (tryRecursive) {
+    try {
+      scriptsWatcher = watch(folder, { recursive: true }, notifyScriptsChanged)
+      watchRecursive = true
+    } catch {
+      scriptsWatcher = null
+    }
+  }
+  if (!scriptsWatcher) {
     try {
       scriptsWatcher = watch(folder, notifyScriptsChanged)
     } catch {

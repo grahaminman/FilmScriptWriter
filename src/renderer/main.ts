@@ -166,9 +166,26 @@ function scheduleAutosave(): void {
   }, minutes * 60_000)
 }
 
+const foldPathCase = /Mac|Win/i.test(navigator.platform)
+
+function samePath(a: string, b: string): boolean {
+  const na = a.replace(/\\/g, '/')
+  const nb = b.replace(/\\/g, '/')
+  if (na === nb) return true
+  return foldPathCase && na.toLowerCase() === nb.toLowerCase()
+}
+
+function isCurrentFile(node: ScriptTreeNode): boolean {
+  if (!currentPath) return false
+  if (samePath(node.path, currentPath)) return true
+  return Boolean(node.realPath) && samePath(node.realPath, currentPath)
+}
+
 function expandAncestorsOf(filePath: string, nodes: ScriptTreeNode[]): boolean {
   for (const node of nodes) {
-    if (node.kind === 'file' && node.path === filePath) return true
+    if (node.kind === 'file' && (samePath(node.path, filePath) || samePath(node.realPath, filePath))) {
+      return true
+    }
     if (node.kind === 'dir' && node.children && expandAncestorsOf(filePath, node.children)) {
       expandedDirs.add(node.relativePath)
       return true
@@ -183,10 +200,10 @@ function appendTree(parent: HTMLElement, nodes: ScriptTreeNode[], depth: number)
       const expanded = expandedDirs.has(node.relativePath)
       const branch = document.createElement('div')
       branch.className = 'file-branch' + (expanded ? '' : ' collapsed')
-      branch.dataset.rel = node.relativePath
       const btn = document.createElement('button')
       btn.type = 'button'
       btn.className = 'file-dir'
+      btn.dataset.path = node.path
       btn.style.paddingLeft = `${6 + depth * 14}px`
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false')
       btn.title = node.path
@@ -213,11 +230,14 @@ function appendTree(parent: HTMLElement, nodes: ScriptTreeNode[], depth: number)
       parent.append(branch)
       continue
     }
+    const active = isCurrentFile(node)
     const btn = document.createElement('button')
     btn.type = 'button'
-    btn.className = 'file-row' + (node.path === currentPath ? ' active' : '')
+    btn.className = 'file-row' + (active ? ' active' : '')
+    btn.dataset.path = node.path
     btn.style.paddingLeft = `${6 + depth * 14}px`
     btn.title = node.path
+    if (active) btn.setAttribute('aria-current', 'true')
     const label = document.createElement('span')
     label.className = 'file-name'
     label.textContent = node.name
@@ -228,6 +248,12 @@ function appendTree(parent: HTMLElement, nodes: ScriptTreeNode[], depth: number)
 }
 
 async function refreshFileList(): Promise<void> {
+  const scrollTop = els.filesBody.scrollTop
+  const focused = document.activeElement
+  const restorePath =
+    focused instanceof HTMLElement && els.filesBody.contains(focused)
+      ? focused.dataset.path ?? null
+      : null
   const list = await api.listScripts()
   const L = loc()
   els.filesBody.innerHTML = ''
@@ -261,11 +287,19 @@ async function refreshFileList(): Promise<void> {
     els.filesBody.append(p)
     return
   }
-  if (currentPath && currentPath !== expandedForPath) {
-    expandAncestorsOf(currentPath, list.tree)
-    expandedForPath = currentPath
+  if (currentPath && (!expandedForPath || !samePath(currentPath, expandedForPath))) {
+    if (expandAncestorsOf(currentPath, list.tree)) expandedForPath = currentPath
   }
   appendTree(els.filesBody, list.tree, 0)
+  els.filesBody.scrollTop = scrollTop
+  const activeRow = els.filesBody.querySelector('.file-row.active')
+  if (activeRow instanceof HTMLElement) {
+    activeRow.scrollIntoView({ block: 'nearest' })
+  }
+  if (restorePath) {
+    const again = els.filesBody.querySelector(`[data-path="${CSS.escape(restorePath)}"]`)
+    if (again instanceof HTMLElement) again.focus({ preventScroll: true })
+  }
 }
 
 async function maybeDiscard(): Promise<boolean> {
@@ -288,7 +322,7 @@ function loadBuffer(content: string, path: string | null, markDirty: boolean): v
   void api.setDirty(dirty)
   preview.render(content)
   updateStatus()
-  void refreshFileList()
+  void refreshFileList().then(() => editor.focus())
 }
 
 async function persist(forceSaveAs: boolean): Promise<boolean> {
@@ -310,7 +344,7 @@ async function persist(forceSaveAs: boolean): Promise<boolean> {
 }
 
 async function openExisting(filePath: string): Promise<void> {
-  if (filePath === currentPath) return
+  if (currentPath && samePath(filePath, currentPath)) return
   if (!(await maybeDiscard())) return
   const result = await api.openPath(filePath)
   if (result.error) {

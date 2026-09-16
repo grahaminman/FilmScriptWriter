@@ -46,6 +46,7 @@ export interface ScriptTreeNode {
   kind: 'file' | 'dir'
   name: string
   path: string
+  realPath: string
   relativePath: string
   children?: ScriptTreeNode[]
 }

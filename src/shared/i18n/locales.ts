@@ -207,7 +207,7 @@ const en_GB: Messages = {
   'toolbar.preview': 'Preview',
   'toolbar.settings': 'Settings',
   'files.title': 'Scripts',
-  'files.empty': 'No .fountain or .txt files or subfolders in this folder.',
+  'files.empty': 'This folder has no .fountain or .txt files and no subfolders.',
   'files.choose': 'Choose a Scripts folder in Settings.',
   'files.useDefault': 'Use default folder',
   'files.collapse': 'Hide scripts list',
